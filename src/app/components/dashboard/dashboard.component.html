@@ -39,6 +39,11 @@
         <span class="action-icon">🎉</span>
         <span class="action-text">Eventos</span>
       </button>
+      
+      <button class="action" routerLink="/transport-management" *ngIf="canManageTransport">
+        <span class="action-icon">🚌</span>
+        <span class="action-text">Transporte</span>
+      </button>
     </div>
 
     <!-- Agenda de Eventos -->
@@ -84,6 +89,15 @@
             </div>
             <div class="total-people-info" *ngIf="event.requiresTransport">
               <span class="total-people-text">👥 {{ getTotalPeopleForEvent(event) }} personas total</span>
+            </div>
+            
+            <div class="transport-info" *ngIf="event.requiresTransport && getTransportRequest(event.id)">
+              <button class="transport-btn" (click)="viewTransportMap(event.id)">
+                🗺️ Ver Mapa de Asientos
+              </button>
+              <div class="cost-info" *ngIf="getTransportCost(event.id) > 0">
+                <span class="cost-text">💰 ${{ getUnitCost(event.id) }} por persona</span>
+              </div>
             </div>
             <button class="view-event-btn" (click)="viewEventDetails(event.id)">
               Ver Detalles
@@ -216,4 +230,76 @@
       </div>
     </div>
   </main>
+  
+  <!-- Modal de Mapa de Asientos -->
+  <div class="transport-modal" *ngIf="showTransportModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>🗺️ Mapa de Asientos del Transporte</h3>
+        <button class="close-btn" (click)="closeTransportModal()">✕</button>
+      </div>
+      
+      <div class="modal-body">
+        <div class="transport-summary">
+          <div class="summary-item">
+            <span class="summary-label">Costo total:</span>
+            <span class="summary-value">${{ selectedTransportConfig?.totalCost || 0 }}</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-label">Costo por persona:</span>
+            <span class="summary-value">${{ getUnitCostFromConfig() }}</span>
+          </div>
+        </div>
+        
+        <div class="my-transport-info">
+          <h4>👤 Mi Información de Transporte</h4>
+          <div class="my-seats" *ngIf="getMySeats().length > 0">
+            <div class="seat-info" *ngFor="let seatInfo of getMySeats()">
+              <div class="seat-details">
+                <span class="passenger-name">{{ seatInfo.passengerName }}</span>
+                <span class="seat-location">Vehículo {{ seatInfo.vehicleIndex + 1 }} - Asiento {{ seatInfo.seatIndex + 1 }}</span>
+                <span class="passenger-type">{{ seatInfo.isCompanion ? 'Acompañante' : 'Integrante' }}</span>
+              </div>
+              <div class="cost-info">
+                <span class="individual-cost">${{ getUnitCostFromConfig() }}</span>
+              </div>
+            </div>
+            <div class="total-cost">
+              <span class="total-label">Total a pagar:</span>
+              <span class="total-amount">${{ getMyTotalCost() }}</span>
+            </div>
+          </div>
+          <div class="no-seats" *ngIf="getMySeats().length === 0">
+            <p>Aún no tienes asientos asignados</p>
+          </div>
+        </div>
+        
+        <div class="vehicles-section">
+          <h4>Distribución de Asientos</h4>
+          <div class="vehicles-grid">
+            <div class="vehicle-card" *ngFor="let vehicle of selectedTransportConfig?.vehicles; let i = index">
+              <div class="vehicle-header">
+                <h5>🚐 Vehículo {{ i + 1 }}</h5>
+                <span class="occupancy">{{ vehicle.occupiedSeats }}/{{ vehicle.totalSeats }}</span>
+              </div>
+              <div class="seats-grid">
+                <div 
+                  class="seat" 
+                  *ngFor="let seat of vehicle.seats; let j = index"
+                  [class.occupied]="seat.occupied"
+                  [class.my-seat]="isMyseat(seat)">
+                  <span *ngIf="seat.occupied" class="seat-label">{{ seat.passengerName }}</span>
+                  <span *ngIf="!seat.occupied" class="seat-number">{{ j + 1 }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="modal-footer">
+        <button class="close-btn-footer" (click)="closeTransportModal()">Cerrar</button>
+      </div>
+    </div>
+  </div>
 </div>

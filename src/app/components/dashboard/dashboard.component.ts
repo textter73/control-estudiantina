@@ -19,6 +19,9 @@ export class DashboardComponent implements OnInit {
   participationPercentage: number = 0;
   participationAttendances: number = 0;
   activeEvents: any[] = [];
+  transportRequests: any[] = [];
+  showTransportModal = false;
+  selectedTransportConfig: any = null;
   attendanceStats = {
     presente: 0,
     escuela: 0,
@@ -51,6 +54,11 @@ export class DashboardComponent implements OnInit {
            this.userProfile?.profiles?.includes('agenda') || false;
   }
 
+  get canManageTransport(): boolean {
+    return this.userProfile?.profiles?.includes('administrador') || 
+           this.userProfile?.profiles?.includes('transporte') || false;
+  }
+
   constructor(
     private afAuth: AngularFireAuth,
     private firestore: AngularFirestore,
@@ -66,6 +74,7 @@ export class DashboardComponent implements OnInit {
         this.userProfile = userDoc?.data();
         this.loadAttendanceData();
         this.loadActiveEvents();
+        this.loadTransportRequests();
       } else {
         this.router.navigate(['/']);
       }
@@ -212,5 +221,88 @@ export class DashboardComponent implements OnInit {
       .reduce((total: number, c: any) => {
         return total + 1 + (parseInt(c.companions) || 0);
       }, 0);
+  }
+
+  loadTransportRequests() {
+    this.firestore.collection('transport-requests')
+      .valueChanges({ idField: 'id' }).subscribe((requests: any[]) => {
+        this.transportRequests = requests;
+      });
+  }
+
+  getTransportRequest(eventId: string) {
+    return this.transportRequests.find(req => req.eventId === eventId);
+  }
+
+  getTransportCost(eventId: string): number {
+    const request = this.getTransportRequest(eventId);
+    return request?.transportConfig?.totalCost || 0;
+  }
+
+  getUnitCost(eventId: string): number {
+    const totalCost = this.getTransportCost(eventId);
+    const totalPeople = this.getTotalPeopleForEvent(this.activeEvents.find(e => e.id === eventId));
+    return totalPeople > 0 ? Math.round((totalCost / totalPeople) * 100) / 100 : 0;
+  }
+
+  viewTransportMap(eventId: string) {
+    const request = this.getTransportRequest(eventId);
+    if (request?.transportConfig) {
+      this.selectedTransportConfig = request.transportConfig;
+      this.showTransportModal = true;
+    }
+  }
+
+  closeTransportModal() {
+    this.showTransportModal = false;
+    this.selectedTransportConfig = null;
+  }
+
+  getUnitCostFromConfig(): number {
+    if (!this.selectedTransportConfig) return 0;
+    const totalCost = this.selectedTransportConfig.totalCost || 0;
+    const totalSeats = this.selectedTransportConfig.vehicles?.reduce((total: number, vehicle: any) => {
+      return total + vehicle.occupiedSeats;
+    }, 0) || 0;
+    return totalSeats > 0 ? Math.round((totalCost / totalSeats) * 100) / 100 : 0;
+  }
+
+  isMyseat(seat: any): boolean {
+    if (!seat.occupied || !seat.passenger) return false;
+    const userName = this.userProfile?.name || this.user?.email;
+    return seat.passenger.name === userName || seat.passengerName === userName;
+  }
+
+  getMySeats(): any[] {
+    if (!this.selectedTransportConfig?.vehicles) return [];
+    
+    const userName = this.userProfile?.name || this.user?.email;
+    const mySeats: any[] = [];
+    
+    this.selectedTransportConfig.vehicles.forEach((vehicle: any, vehicleIndex: number) => {
+      vehicle.seats.forEach((seat: any, seatIndex: number) => {
+        if (seat.occupied && seat.passenger) {
+          const isMyName = seat.passenger.name === userName || seat.passengerName === userName;
+          const isMyCompanion = seat.passenger.name?.includes(`Acompañante de ${userName}`);
+          
+          if (isMyName || isMyCompanion) {
+            mySeats.push({
+              vehicleIndex,
+              seatIndex,
+              passengerName: seat.passenger.name || seat.passengerName,
+              isCompanion: isMyCompanion
+            });
+          }
+        }
+      });
+    });
+    
+    return mySeats;
+  }
+
+  getMyTotalCost(): number {
+    const mySeatsCount = this.getMySeats().length;
+    const unitCost = this.getUnitCostFromConfig();
+    return Math.round((mySeatsCount * unitCost) * 100) / 100;
   }
 }

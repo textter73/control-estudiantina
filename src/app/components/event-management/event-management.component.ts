@@ -89,7 +89,12 @@ export class EventManagementComponent implements OnInit {
     };
 
     try {
-      await this.firestore.collection('events').add(eventData);
+      const eventRef = await this.firestore.collection('events').add(eventData);
+      
+      if (this.newEvent.requiresTransport) {
+        await this.createTransportRequest(eventRef.id, eventData);
+      }
+      
       Swal.fire('Éxito', 'Evento creado correctamente', 'success');
       this.resetForm();
     } catch (error) {
@@ -197,5 +202,24 @@ export class EventManagementComponent implements OnInit {
 
   viewEventDetails(eventId: string) {
     this.router.navigate(['/event-details', eventId], { queryParams: { returnUrl: '/event-management' } });
+  }
+
+  async createTransportRequest(eventId: string, eventData: any) {
+    const transportRequest = {
+      eventId: eventId,
+      eventTitle: eventData.title,
+      eventDate: eventData.date,
+      eventLocation: eventData.location,
+      meetingPoint: eventData.meetingPoint,
+      meetingTime: eventData.meetingTime,
+      startTime: eventData.startTime,
+      status: 'pendiente',
+      createdAt: new Date(),
+      createdBy: this.user.uid,
+      assignedTo: null,
+      notes: ''
+    };
+
+    await this.firestore.collection('transport-requests').add(transportRequest);
   }
 }

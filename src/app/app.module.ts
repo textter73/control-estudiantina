@@ -16,6 +16,7 @@ import { AngularFireModule } from '@angular/fire/compat';
 import { AngularFireAuthModule } from '@angular/fire/compat/auth';
 import { AngularFirestoreModule } from '@angular/fire/compat/firestore';
 import { firebaseConfig } from '../environments/firebase.config';
+import { TransportManagementComponent } from './components/transport-management/transport-management.component';
 
 @NgModule({
   declarations: [
@@ -28,7 +29,8 @@ import { firebaseConfig } from '../environments/firebase.config';
     AttendanceTrackingComponent,
     AttendanceSummaryComponent,
     EventManagementComponent,
-    EventDetailsComponent
+    EventDetailsComponent,
+    TransportManagementComponent
   ],
   imports: [
     BrowserModule,

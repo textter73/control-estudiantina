@@ -13,6 +13,7 @@ import { AttendanceGuard } from './guards/attendance.guard';
 import { EventGuard } from './guards/event.guard';
 import { EventManagementComponent } from './components/event-management/event-management.component';
 import { EventDetailsComponent } from './components/event-details/event-details.component';
+import { TransportManagementComponent } from './components/transport-management/transport-management.component';
 
 const routes: Routes = [
   { path: '', component: LoginComponent },
@@ -24,6 +25,7 @@ const routes: Routes = [
   { path: 'attendance-summary', component: AttendanceSummaryComponent, canActivate: [AttendanceGuard] },
   { path: 'event-management', component: EventManagementComponent, canActivate: [EventGuard] },
   { path: 'event-details/:id', component: EventDetailsComponent, canActivate: [AuthGuard] },
+  { path: 'transport-management', component: TransportManagementComponent, canActivate: [AuthGuard] },
   { path: '**', redirectTo: '' }
 ];
 

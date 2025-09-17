@@ -1,0 +1,184 @@
+<div class="transport-container">
+  <header class="transport-header">
+    <div class="header-content">
+      <div class="logo-section">
+        <h2>🚌 Gestión de Transporte</h2>
+      </div>
+      <div class="user-info">
+        <button class="back-btn" (click)="goBack()">
+          ← Dashboard
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="transport-main">
+    <div class="page-title">
+      <p>Solicitudes de transporte para eventos</p>
+    </div>
+
+  <div class="requests-list">
+
+    <div class="request-card" *ngFor="let request of transportRequests">
+      <div class="request-header">
+        <h3>{{ request.eventTitle }}</h3>
+        <span class="status-badge" [class]="getStatusClass(request.status)">
+          {{ getStatusText(request.status) }}
+        </span>
+      </div>
+
+      <div class="request-details">
+        <div class="detail-row">
+          <span class="detail-icon">📅</span>
+          <span>{{ request.eventDate }}</span>
+        </div>
+        <div class="detail-row" *ngIf="request.eventLocation">
+          <span class="detail-icon">📍</span>
+          <span>{{ request.eventLocation }}</span>
+        </div>
+        <div class="detail-row" *ngIf="request.meetingPoint">
+          <span class="detail-icon">🚩</span>
+          <span>Reunión: {{ request.meetingPoint }}</span>
+        </div>
+        <div class="detail-row" *ngIf="request.meetingTime">
+          <span class="detail-icon">🕐</span>
+          <span>{{ request.meetingTime }}</span>
+        </div>
+      </div>
+
+      <div class="attendees-info" *ngIf="request.assignedTo === user.uid">
+        <h4>👥 Organización del Transporte</h4>
+        <div class="attendees-summary">
+          <div class="summary-item">
+            <span class="summary-label">Integrantes que asisten:</span>
+            <span class="summary-value">{{ getEventAttendees(request.eventId).attendees }}</span>
+          </div>
+          <div class="summary-item">
+            <span class="summary-label">Acompañantes:</span>
+            <span class="summary-value">{{ getEventAttendees(request.eventId).companions }}</span>
+          </div>
+          <div class="summary-item total">
+            <span class="summary-label">Total personas:</span>
+            <span class="summary-value">{{ getEventAttendees(request.eventId).total }}</span>
+          </div>
+        </div>
+        
+        <div class="attendees-list">
+          <h5>Lista de Asistentes:</h5>
+          <div class="attendee-item" *ngFor="let attendee of getEventAttendeesList(request.eventId)">
+            <span class="attendee-name">{{ attendee.userName }}</span>
+            <span class="attendee-companions" *ngIf="attendee.companions > 0">
+              + {{ attendee.companions }} acompañantes
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="request-actions">
+        <button 
+          class="action-btn assign-btn" 
+          *ngIf="request.status === 'pendiente'"
+          (click)="assignRequest(request.id)">
+          Asignar a mí
+        </button>
+        <button 
+          class="action-btn manage-btn" 
+          *ngIf="request.status === 'asignado' || request.status === 'guardado'"
+          (click)="manageTransport(request)">
+          Gestionar Transporte
+        </button>
+        <button 
+          class="action-btn finalize-btn" 
+          *ngIf="request.status === 'guardado'"
+          (click)="finalizeTransport(request.id)">
+          Finalizar Transporte
+        </button>
+        <button 
+          class="action-btn cancel-btn" 
+          *ngIf="request.status !== 'completado' && request.status !== 'cancelado'"
+          (click)="updateRequestStatus(request.id, 'cancelado')">
+          Cancelar
+        </button>
+      </div>
+    </div>
+
+    <div class="no-requests" *ngIf="transportRequests.length === 0">
+      <p>No hay solicitudes de transporte</p>
+    </div>
+  </div>
+  
+  <!-- Modal de Gestión de Transporte -->
+  <div class="transport-modal" *ngIf="showTransportModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>🚌 Gestión de Transporte - {{ selectedRequest?.eventTitle }}</h3>
+        <button class="close-btn" (click)="closeTransportModal()">✕</button>
+      </div>
+      
+      <div class="modal-body">
+        <!-- Configuración de Vehículos -->
+        <div class="vehicle-config">
+          <h4>Configuración de Vehículos</h4>
+          <div class="config-row">
+            <label>Número de vehículos:</label>
+            <input type="number" [(ngModel)]="vehicleCount" min="1" max="10" (change)="updateVehicles()">
+          </div>
+          <div class="config-row">
+            <label>Costo total del transporte:</label>
+            <input type="number" [(ngModel)]="totalCost" min="0" step="0.01">
+          </div>
+        </div>
+        
+        <!-- Visualización de Vehículos -->
+        <div class="vehicles-section">
+          <h4>Asignación de Asientos</h4>
+          <div class="vehicles-grid">
+            <div class="vehicle-card" *ngFor="let vehicle of vehicles; let i = index">
+              <div class="vehicle-header">
+                <h5>🚐 Vehículo {{ i + 1 }}</h5>
+                <div class="vehicle-controls">
+                  <input type="number" [(ngModel)]="vehicle.totalSeats" min="1" max="50" (change)="updateVehicleSeats(i)" class="capacity-input">
+                  <span class="occupancy">{{ vehicle.occupiedSeats }}/{{ vehicle.totalSeats }}</span>
+                </div>
+              </div>
+              <div class="seats-grid">
+                <div 
+                  class="seat" 
+                  *ngFor="let seat of vehicle.seats; let j = index"
+                  [class.occupied]="seat.occupied"
+                  [class.selected]="selectedSeat?.vehicleIndex === i && selectedSeat?.seatIndex === j"
+                  (click)="selectSeat(i, j)">
+                  <span *ngIf="seat.occupied" class="seat-label">{{ seat.passengerName }}</span>
+                  <span *ngIf="!seat.occupied" class="seat-number">{{ j + 1 }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Lista de Pasajeros -->
+        <div class="passengers-section">
+          <h4>Pasajeros por Asignar</h4>
+          <div class="passengers-list">
+            <div 
+              class="passenger-item" 
+              *ngFor="let passenger of unassignedPassengers"
+              [class.selected]="selectedPassenger === passenger"
+              (click)="selectPassenger(passenger)">
+              <span class="passenger-name">{{ passenger.name }}</span>
+              <span class="passenger-type">{{ passenger.type }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="modal-footer">
+        <button class="save-btn" (click)="saveTransportConfig()">💾 Guardar Configuración</button>
+        <button class="finalize-btn" *ngIf="selectedRequest?.status === 'guardado'" (click)="finalizeTransportFromModal()">✓ Finalizar Transporte</button>
+        <button class="cancel-btn" (click)="closeTransportModal()">Cancelar</button>
+      </div>
+    </div>
+  </div>
+  
+  </main>
+</div>

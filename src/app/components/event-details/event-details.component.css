@@ -193,6 +193,15 @@
   font-size: 1rem;
 }
 
+.transport-highlight {
+  color: #1b5e20 !important;
+  font-weight: 600 !important;
+  background: #e8f5e8;
+  padding: 0.3rem 0.6rem;
+  border-radius: 6px;
+  border-left: 3px solid #2e7d32;
+}
+
 .cost-highlight {
   color: #e65100 !important;
   font-weight: 600 !important;
@@ -200,6 +209,24 @@
   padding: 0.3rem 0.6rem;
   border-radius: 6px;
   border-left: 3px solid #f57c00;
+}
+
+.final-note {
+  font-size: 0.9rem;
+  color: #666;
+  margin-top: 0.5rem;
+  font-style: italic;
+  background: #f0f8ff;
+  padding: 0.5rem;
+  border-radius: 6px;
+  border-left: 3px solid #189d98;
+}
+
+.instruction-text {
+  font-size: 1rem;
+  color: #333;
+  margin-bottom: 1rem;
+  text-align: center;
 }
 
 .confirmation-card h3 {

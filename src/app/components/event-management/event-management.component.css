@@ -287,6 +287,27 @@
   font-weight: 600;
 }
 
+.event-transport {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0.5rem 0;
+  padding: 0.5rem;
+  background: #e8f5e8;
+  border-radius: 6px;
+  border-left: 3px solid #2e7d32;
+}
+
+.transport-icon {
+  font-size: 1rem;
+}
+
+.transport-text {
+  color: #1b5e20;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
 .event-cost {
   display: flex;
   align-items: center;

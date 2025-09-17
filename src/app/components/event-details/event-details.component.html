@@ -66,6 +66,14 @@
           </div>
         </div>
 
+        <div class="detail-item" *ngIf="event.requiresTransport">
+          <span class="detail-icon">🚌</span>
+          <div class="detail-content">
+            <span class="detail-label">Transporte</span>
+            <span class="detail-value transport-highlight">Se requiere transporte</span>
+          </div>
+        </div>
+
         <div class="detail-item" *ngIf="event.hasTravelCost">
           <span class="detail-icon">💰</span>
           <div class="detail-content">
@@ -92,28 +100,27 @@
       <p>Por favor, confirma tu asistencia al evento:</p>
 
       <div class="my-response" *ngIf="userConfirmation">
-        <h4>Tu confirmación actual:</h4>
+        <h4>Tu confirmación:</h4>
         <span class="response-badge" [class]="getResponseClass(userConfirmation.response)">
           {{ getResponseText(userConfirmation.response) }}
         </span>
+        <p class="final-note">Tu confirmación ha sido registrada y no puede ser modificada.</p>
       </div>
 
-      <div class="response-buttons">
+      <div class="response-buttons" *ngIf="!userConfirmation">
+        <p class="instruction-text">Selecciona tu confirmación de asistencia:</p>
         <button 
           class="response-btn yes-btn" 
-          [class.active]="userConfirmation?.response === 'asistire'"
           (click)="submitConfirmation('asistire')">
           ✅ Asistiré
         </button>
         <button 
           class="response-btn maybe-btn" 
-          [class.active]="userConfirmation?.response === 'tal-vez'"
           (click)="submitConfirmation('tal-vez')">
           🤔 Tal vez
         </button>
         <button 
           class="response-btn no-btn" 
-          [class.active]="userConfirmation?.response === 'no-asistire'"
           (click)="submitConfirmation('no-asistire')">
           ❌ No asistiré
         </button>

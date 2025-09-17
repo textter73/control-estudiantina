@@ -84,6 +84,14 @@
         <div class="cost-section">
           <div class="form-group checkbox-group">
             <label class="checkbox-label">
+              <input type="checkbox" [(ngModel)]="newEvent.requiresTransport">
+              <span class="checkmark"></span>
+              ¿Se requiere transporte?
+            </label>
+          </div>
+          
+          <div class="form-group checkbox-group">
+            <label class="checkbox-label">
               <input type="checkbox" [(ngModel)]="newEvent.hasTravelCost">
               <span class="checkmark"></span>
               ¿Tiene costo de traslado?
@@ -144,6 +152,10 @@
                 <span class="time-label">⏹️ Fin:</span>
                 <span class="time-value">{{ event.endTime }}</span>
               </div>
+            </div>
+            <div class="event-transport" *ngIf="event.requiresTransport">
+              <span class="transport-icon">🚌</span>
+              <span class="transport-text">Requiere transporte</span>
             </div>
             <div class="event-cost" *ngIf="event.hasTravelCost">
               <span class="cost-icon">💰</span>

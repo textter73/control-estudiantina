@@ -27,6 +27,7 @@ export class EventManagementComponent implements OnInit {
     endTime: '',
     hasTravelCost: false,
     travelCost: '',
+    requiresTransport: false,
     attire: 'ropa-normal',
     type: 'callejoneada',
     status: 'abierto'
@@ -186,6 +187,7 @@ export class EventManagementComponent implements OnInit {
       endTime: '',
       hasTravelCost: false,
       travelCost: '',
+      requiresTransport: false,
       attire: 'ropa-normal',
       type: 'callejoneada',
       status: 'abierto'

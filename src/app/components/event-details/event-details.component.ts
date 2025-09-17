@@ -55,7 +55,7 @@ export class EventDetailsComponent implements OnInit {
     this.firestore.collection('events').doc(this.eventId).valueChanges().subscribe((event: any) => {
       this.event = event;
       if (event) {
-        this.userConfirmation = event.confirmations?.find((c: any) => c.userId === this.user.uid);
+        this.userConfirmation = event.confirmations?.find((c: any) => c && c.userId === this.user.uid);
       }
     });
   }
@@ -88,7 +88,7 @@ export class EventDetailsComponent implements OnInit {
     }
 
     const confirmations = this.event.confirmations || [];
-    const existingIndex = confirmations.findIndex((c: any) => c.userId === this.user.uid);
+    const existingIndex = confirmations.findIndex((c: any) => c && c.userId === this.user.uid);
     
     if (existingIndex >= 0) {
       confirmations[existingIndex] = confirmation;
@@ -159,18 +159,18 @@ export class EventDetailsComponent implements OnInit {
 
   getConfirmationStats() {
     const confirmations = this.event?.confirmations || [];
-    const asistireConfirmations = confirmations.filter((c: any) => c.response === 'asistire');
+    const asistireConfirmations = confirmations.filter((c: any) => c && c.response === 'asistire');
     
     const totalCompanions = asistireConfirmations.reduce((total: number, c: any) => {
-      return total + (parseInt(c.companions) || 0);
+      return total + (parseInt(c?.companions) || 0);
     }, 0);
     
     const totalPeople = asistireConfirmations.length + totalCompanions;
     
     return {
       asistire: asistireConfirmations.length,
-      noAsistire: confirmations.filter((c: any) => c.response === 'no-asistire').length,
-      talVez: confirmations.filter((c: any) => c.response === 'tal-vez').length,
+      noAsistire: confirmations.filter((c: any) => c && c.response === 'no-asistire').length,
+      talVez: confirmations.filter((c: any) => c && c.response === 'tal-vez').length,
       total: confirmations.length,
       totalCompanions: totalCompanions,
       totalPeople: totalPeople
@@ -181,9 +181,9 @@ export class EventDetailsComponent implements OnInit {
     if (!this.event?.confirmations) return 0;
     
     return this.event.confirmations
-      .filter((c: any) => c.response === 'asistire')
+      .filter((c: any) => c && c.response === 'asistire')
       .reduce((total: number, c: any) => {
-        return total + 1 + (parseInt(c.companions) || 0);
+        return total + 1 + (parseInt(c?.companions) || 0);
       }, 0);
   }
 }

@@ -330,10 +330,12 @@
 .modal-content {
   background: white;
   border-radius: 12px;
-  width: 90%;
-  max-width: 1200px;
-  max-height: 90vh;
-  overflow-y: auto;
+  width: 95%;
+  max-width: 1400px;
+  max-height: 95vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 .modal-header {
@@ -357,6 +359,8 @@
 
 .modal-body {
   padding: 1.5rem;
+  overflow-y: auto;
+  flex: 1;
 }
 
 .vehicle-config {
@@ -387,9 +391,11 @@
 
 .vehicles-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 1rem;
   margin-bottom: 1.5rem;
+  max-height: 60vh;
+  overflow-y: auto;
 }
 
 .vehicle-card {
@@ -397,6 +403,8 @@
   border-radius: 8px;
   padding: 1rem;
   background: white;
+  min-width: 280px;
+  overflow: hidden;
 }
 
 .vehicle-header {
@@ -422,6 +430,108 @@
   font-size: 0.8rem;
 }
 
+.vehicle-schedule {
+  background: #f8f9fa;
+  padding: 0.75rem;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+  border: 1px solid #e0e0e0;
+}
+
+.schedule-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.schedule-row:last-child {
+  margin-bottom: 0;
+}
+
+.schedule-row label {
+  min-width: 120px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #555;
+}
+
+.time-input {
+  padding: 0.4rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  width: 100px;
+}
+
+.cost-input {
+  padding: 0.4rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  width: 120px;
+}
+
+.ticket-price {
+  background: #e8f5e8;
+  padding: 0.75rem;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+  border-left: 4px solid #28a745;
+}
+
+.price-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.price-label {
+  font-weight: 500;
+  color: #155724;
+}
+
+.price-value {
+  font-weight: 700;
+  color: #28a745;
+  font-size: 1.1rem;
+}
+
+.total-vehicle {
+  text-align: center;
+}
+
+.total-label {
+  font-size: 0.85rem;
+  color: #6c757d;
+}
+
+.global-price {
+  background: #d1ecf1;
+  padding: 0.75rem;
+  border-radius: 6px;
+  margin-top: 1rem;
+  border-left: 4px solid #17a2b8;
+}
+
+.global-price-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.global-price-label {
+  font-weight: 600;
+  color: #0c5460;
+}
+
+.global-price-value {
+  font-weight: 700;
+  color: #17a2b8;
+  font-size: 1.2rem;
+}
+
 .occupancy {
   background: #189d98;
   color: white;
@@ -434,6 +544,9 @@
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   gap: 0.25rem;
+  overflow-x: auto;
+  min-width: 250px;
+  padding-bottom: 0.5rem;
 }
 
 .seat {

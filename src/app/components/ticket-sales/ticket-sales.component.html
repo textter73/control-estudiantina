@@ -1,0 +1,165 @@
+<div class="ticket-sales-container">
+  <header class="ticket-sales-header">
+    <div class="header-content">
+      <div class="logo-section">
+        <img src="assets/estonantzin.jpeg" alt="Logo Estudiantina" class="logo">
+        <h4>Estudiantina Tonantzin Guadalupe</h4>
+      </div>
+      <div class="user-info">
+        <button class="back-btn" (click)="goBack()">
+          ← Dashboard
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="ticket-sales-main">
+    <div class="page-title">
+      <h2>🎫 Gestión de Boletos</h2>
+      <p>Control de pagos y ventas de transporte</p>
+    </div>
+
+    <!-- Dashboard de Métricas -->
+    <div class="metrics-dashboard">
+      <div class="metric-card revenue">
+        <div class="metric-icon">💰</div>
+        <div class="metric-content">
+          <h3>${{ getTotalRevenue() }}</h3>
+          <p>Total Recaudado</p>
+        </div>
+      </div>
+      <div class="metric-card pending">
+        <div class="metric-icon">⏳</div>
+        <div class="metric-content">
+          <h3>${{ getPendingRevenue() }}</h3>
+          <p>Pendiente de Cobro</p>
+        </div>
+      </div>
+      <div class="metric-card tickets">
+        <div class="metric-icon">🎫</div>
+        <div class="metric-content">
+          <h3>{{ filteredTickets.length }}</h3>
+          <p>Boletos Totales</p>
+        </div>
+      </div>
+      <div class="metric-card paid-tickets">
+        <div class="metric-icon">✅</div>
+        <div class="metric-content">
+          <h3>{{ getPaidTicketsCount() }}</h3>
+          <p>Boletos Pagados</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="filters-section">
+      <div class="filter-group">
+        <label>🎯 Evento:</label>
+        <select [(ngModel)]="selectedEvent" (change)="filterByEvent()">
+          <option value="">Todos los eventos</option>
+          <option *ngFor="let event of events" [value]="event.id">{{ event.title }}</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label>💳 Estado:</label>
+        <select [(ngModel)]="selectedStatus" (change)="filterByStatus()">
+          <option value="">Todos los estados</option>
+          <option value="pagado">Pagados</option>
+          <option value="pendiente">Pendientes</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Lista de Boletos en Tarjetas -->
+    <div class="tickets-container">
+      <div class="tickets-header">
+        <h3>🎫 Lista de Boletos</h3>
+        <div class="header-actions">
+          <span class="tickets-count">{{ filteredTickets.length }} boletos</span>
+          <button class="export-btn" (click)="exportData()">📊 Exportar</button>
+        </div>
+      </div>
+      
+      <div class="tickets-grid">
+        <div class="ticket-card" *ngFor="let ticket of filteredTickets; trackBy: trackByTicketId">
+          <div class="ticket-header">
+            <div class="event-info">
+              <h4 class="event-title">{{ ticket.eventTitle }}</h4>
+              <span class="event-date">📅 {{ getEventDate(ticket.eventId) }}</span>
+            </div>
+            <div class="payment-status" [class]="getPaymentStatusClass(ticket.paymentStatus)">
+              <span class="status-text">{{ getPaymentStatusText(ticket.paymentStatus) }}</span>
+              <span class="status-icon" *ngIf="ticket.paymentStatus === 'pagado'">✅</span>
+              <span class="status-icon" *ngIf="ticket.paymentStatus === 'pendiente'">⏳</span>
+            </div>
+          </div>
+
+          <div class="ticket-body">
+            <div class="passenger-section">
+              <div class="passenger-info">
+                <span class="passenger-icon">👤</span>
+                <div class="passenger-details">
+                  <span class="passenger-name">{{ ticket.passengerName }}</span>
+                  <span class="passenger-type">{{ ticket.passengerType }}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="transport-section">
+              <div class="transport-info">
+                <span class="transport-icon">🚐</span>
+                <div class="transport-details">
+                  <span class="vehicle-text">Vehículo {{ ticket.vehicleIndex }}</span>
+                  <span class="seat-text">Asiento {{ ticket.seatNumber }}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="price-section">
+              <div class="price-info">
+                <span class="price-icon">💰</span>
+                <div class="price-details">
+                  <span class="price-amount">${{ ticket.price }}</span>
+                  <span class="price-label">Costo del boleto</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="payment-section" *ngIf="ticket.paidAt">
+              <div class="payment-info">
+                <span class="payment-icon">📅</span>
+                <div class="payment-details">
+                  <span class="payment-date">{{ ticket.paidAt.toDate() | date:'dd/MM/yyyy' }}</span>
+                  <span class="payment-time">{{ ticket.paidAt.toDate() | date:'HH:mm' }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="ticket-actions">
+            <button 
+              class="action-btn paid-btn" 
+              *ngIf="ticket.paymentStatus === 'pendiente'"
+              (click)="markAsPaid(ticket.id)">
+              ✅ Marcar como Pagado
+            </button>
+            <button 
+              class="action-btn pending-btn" 
+              *ngIf="ticket.paymentStatus === 'pagado'"
+              (click)="markAsPending(ticket.id)">
+              ⏳ Marcar como Pendiente
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="no-tickets" *ngIf="filteredTickets.length === 0">
+        <div class="empty-state">
+          <div class="empty-icon">🎫</div>
+          <h3>No hay boletos</h3>
+          <p>No se encontraron boletos con los filtros seleccionados</p>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>

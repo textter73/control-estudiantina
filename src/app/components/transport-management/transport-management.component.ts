@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
-import { Router } from '@angular/router';
 import Swal from 'sweetalert2';
 
 @Component({
@@ -128,10 +128,10 @@ export class TransportManagementComponent implements OnInit {
       return { attendees: 0, companions: 0, total: 0 };
     }
 
-    const attendingConfirmations = event.confirmations.filter((c: any) => c.response === 'asistire');
+    const attendingConfirmations = event.confirmations.filter((c: any) => c && c.response === 'asistire');
     const attendees = attendingConfirmations.length;
     const companions = attendingConfirmations.reduce((total: number, c: any) => {
-      return total + (parseInt(c.companions) || 0);
+      return total + (parseInt(c?.companions) || 0);
     }, 0);
 
     return {
@@ -148,10 +148,10 @@ export class TransportManagementComponent implements OnInit {
     }
 
     return event.confirmations
-      .filter((c: any) => c.response === 'asistire')
+      .filter((c: any) => c && c.response === 'asistire')
       .map((c: any) => ({
-        userName: c.userName,
-        companions: parseInt(c.companions) || 0
+        userName: c?.userName || 'Usuario desconocido',
+        companions: parseInt(c?.companions) || 0
       }));
   }
 
@@ -203,18 +203,21 @@ export class TransportManagementComponent implements OnInit {
     this.unassignedPassengers = [];
     
     attendees.forEach((attendee: any) => {
-      this.unassignedPassengers.push({
-        name: attendee.userName,
-        type: 'Integrante',
-        originalAttendee: attendee
-      });
-      
-      for (let i = 0; i < attendee.companions; i++) {
+      if (attendee && attendee.userName) {
         this.unassignedPassengers.push({
-          name: `Acompañante de ${attendee.userName} #${i + 1}`,
-          type: 'Acompañante',
+          name: attendee.userName,
+          type: 'Integrante',
           originalAttendee: attendee
         });
+        
+        const companionsCount = attendee.companions || 0;
+        for (let i = 0; i < companionsCount; i++) {
+          this.unassignedPassengers.push({
+            name: `Acompañante de ${attendee.userName} #${i + 1}`,
+            type: 'Acompañante',
+            originalAttendee: attendee
+          });
+        }
       }
     });
   }
@@ -244,7 +247,10 @@ export class TransportManagementComponent implements OnInit {
     return {
       totalSeats: capacity,
       occupiedSeats: 0,
-      seats: seats
+      seats: seats,
+      boardingTime: '',
+      departureTime: '',
+      vehicleCost: 0
     };
   }
 
@@ -317,6 +323,8 @@ export class TransportManagementComponent implements OnInit {
   }
 
   finalizeTransport(requestId: string) {
+    const currentRequest = this.selectedRequest;
+    
     Swal.fire({
       title: '¿Finalizar transporte?',
       text: 'Una vez finalizado no podrás hacer más cambios',
@@ -330,7 +338,8 @@ export class TransportManagementComponent implements OnInit {
           status: 'configurado',
           finalizedAt: new Date()
         }).then(() => {
-          Swal.fire('Éxito', 'Transporte finalizado correctamente', 'success');
+          this.createTicketSales(requestId, currentRequest);
+          Swal.fire('Éxito', 'Transporte finalizado y boletos creados para venta', 'success');
         }).catch(() => {
           Swal.fire('Error', 'Error al finalizar transporte', 'error');
         });
@@ -341,5 +350,63 @@ export class TransportManagementComponent implements OnInit {
   finalizeTransportFromModal() {
     this.finalizeTransport(this.selectedRequest.id);
     this.closeTransportModal();
+  }
+
+  getVehicleTicketPrice(vehicle: any): number {
+    if (!vehicle.vehicleCost || vehicle.occupiedSeats === 0) return 0;
+    return Math.round((vehicle.vehicleCost / vehicle.occupiedSeats) * 100) / 100;
+  }
+
+  getTotalTicketPrice(): number {
+    const totalPeople = this.vehicles.reduce((total: number, vehicle: any) => total + vehicle.occupiedSeats, 0);
+    if (totalPeople === 0) return 0;
+    return Math.round((this.totalCost / totalPeople) * 100) / 100;
+  }
+
+  createTicketSales(requestId: string, request?: any) {
+    const currentRequest = request || this.selectedRequest;
+    
+    if (!currentRequest) {
+      return;
+    }
+    
+    const tickets: any[] = [];
+    
+    this.vehicles.forEach((vehicle: any, vehicleIndex: number) => {
+      vehicle.seats.forEach((seat: any, seatIndex: number) => {
+        if (seat.occupied && seat.passenger) {
+          const ticketPrice = this.getVehicleTicketPrice(vehicle) || this.getTotalTicketPrice();
+          
+          const ticket = {
+            requestId: requestId,
+            eventId: currentRequest.eventId,
+            eventTitle: currentRequest.eventTitle,
+            passengerName: seat.passenger.name,
+            passengerType: seat.passenger.type,
+            vehicleIndex: vehicleIndex + 1,
+            seatNumber: seatIndex + 1,
+            price: ticketPrice,
+            paymentStatus: 'pendiente',
+            createdAt: new Date(),
+            createdBy: this.user.uid
+          };
+          
+          tickets.push(ticket);
+        }
+      });
+    });
+    
+    if (tickets.length === 0) {
+      return;
+    }
+
+    // Crear colección de tickets para venta
+    const batch = this.firestore.firestore.batch();
+    tickets.forEach(ticket => {
+      const ticketRef = this.firestore.collection('ticket-sales').doc().ref;
+      batch.set(ticketRef, ticket);
+    });
+
+    batch.commit();
   }
 }

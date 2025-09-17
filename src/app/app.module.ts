@@ -1,5 +1,6 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
+import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -17,6 +18,7 @@ import { AngularFireAuthModule } from '@angular/fire/compat/auth';
 import { AngularFirestoreModule } from '@angular/fire/compat/firestore';
 import { firebaseConfig } from '../environments/firebase.config';
 import { TransportManagementComponent } from './components/transport-management/transport-management.component';
+import { TicketSalesComponent } from './components/ticket-sales/ticket-sales.component';
 
 @NgModule({
   declarations: [
@@ -30,10 +32,12 @@ import { TransportManagementComponent } from './components/transport-management/
     AttendanceSummaryComponent,
     EventManagementComponent,
     EventDetailsComponent,
-    TransportManagementComponent
+    TransportManagementComponent,
+    TicketSalesComponent
   ],
   imports: [
     BrowserModule,
+    CommonModule,
     FormsModule,
     AppRoutingModule,
     AngularFireModule.initializeApp(firebaseConfig),

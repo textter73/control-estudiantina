@@ -127,6 +127,12 @@
             <label>Costo total del transporte:</label>
             <input type="number" [(ngModel)]="totalCost" min="0" step="0.01">
           </div>
+          <div class="global-price" *ngIf="getTotalTicketPrice() > 0">
+            <div class="global-price-info">
+              <span class="global-price-label">🎫 Precio promedio por boleto:</span>
+              <span class="global-price-value">${{ getTotalTicketPrice() }}</span>
+            </div>
+          </div>
         </div>
         
         <!-- Visualización de Vehículos -->
@@ -139,6 +145,31 @@
                 <div class="vehicle-controls">
                   <input type="number" [(ngModel)]="vehicle.totalSeats" min="1" max="50" (change)="updateVehicleSeats(i)" class="capacity-input">
                   <span class="occupancy">{{ vehicle.occupiedSeats }}/{{ vehicle.totalSeats }}</span>
+                </div>
+              </div>
+              
+              <div class="vehicle-schedule">
+                <div class="schedule-row">
+                  <label>Hora de abordaje:</label>
+                  <input type="time" [(ngModel)]="vehicle.boardingTime" class="time-input">
+                </div>
+                <div class="schedule-row">
+                  <label>Hora de salida:</label>
+                  <input type="time" [(ngModel)]="vehicle.departureTime" class="time-input">
+                </div>
+                <div class="schedule-row">
+                  <label>Costo del vehículo:</label>
+                  <input type="number" [(ngModel)]="vehicle.vehicleCost" min="0" step="0.01" class="cost-input">
+                </div>
+              </div>
+              
+              <div class="ticket-price" *ngIf="vehicle.occupiedSeats > 0">
+                <div class="price-info">
+                  <span class="price-label">🎫 Precio por boleto:</span>
+                  <span class="price-value">${{ getVehicleTicketPrice(vehicle) }}</span>
+                </div>
+                <div class="total-vehicle" *ngIf="vehicle.vehicleCost > 0">
+                  <span class="total-label">Total vehículo: ${{ vehicle.vehicleCost }}</span>
                 </div>
               </div>
               <div class="seats-grid">

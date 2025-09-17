@@ -44,6 +44,11 @@
         <span class="action-icon">🚌</span>
         <span class="action-text">Transporte</span>
       </button>
+      
+      <button class="action" routerLink="/ticket-sales" *ngIf="canManageTickets">
+        <span class="action-icon">🎫</span>
+        <span class="action-text">Boletos</span>
+      </button>
     </div>
 
     <!-- Agenda de Eventos -->
@@ -84,19 +89,29 @@
                 {{ getConfirmationText(event.userConfirmation) }}
               </span>
             </div>
-            <div class="companions-info" *ngIf="event.requiresTransport && event.userConfirmation?.companions !== undefined">
-              <span class="companions-text">🚌 {{ event.userConfirmation.companions }} acompañantes</span>
+            <div class="companions-info" *ngIf="event.requiresTransport && event.userConfirmation?.companions !== undefined && event.userConfirmation?.companions !== null">
+              <span class="companions-text">🚌 {{ event.userConfirmation?.companions || 0 }} acompañantes</span>
             </div>
             <div class="total-people-info" *ngIf="event.requiresTransport">
               <span class="total-people-text">👥 {{ getTotalPeopleForEvent(event) }} personas total</span>
             </div>
             
-            <div class="transport-info" *ngIf="event.requiresTransport && getTransportRequest(event.id)">
+            <div class="transport-info" *ngIf="event.requiresTransport && hasTransportConfig(event.id)">
               <button class="transport-btn" (click)="viewTransportMap(event.id)">
                 🗺️ Ver Mapa de Asientos
               </button>
-              <div class="cost-info" *ngIf="getTransportCost(event.id) > 0">
-                <span class="cost-text">💰 ${{ getUnitCost(event.id) }} por persona</span>
+              <div class="payment-status-info">
+                <div class="payment-status" [class]="getPaymentStatusClass(getPaymentStatusForEvent(event.id).status)">
+                  <span class="payment-label">Estado de Pago:</span>
+                  <span class="payment-text">{{ getPaymentStatusText(getPaymentStatusForEvent(event.id).status) }}</span>
+                </div>
+                <div class="payment-amounts" *ngIf="getPaymentStatusForEvent(event.id).total > 0">
+                  <span class="payment-amount">Total: ${{ getPaymentStatusForEvent(event.id).total }}</span>
+                  <span class="payment-paid" *ngIf="getPaymentStatusForEvent(event.id).paid > 0">Pagado: ${{ getPaymentStatusForEvent(event.id).paid }}</span>
+                </div>
+              </div>
+              <div class="cost-info" *ngIf="getTransportCost(event.id) > 0 && getPaymentStatusForEvent(event.id).status === 'sin-boletos'">
+                <span class="cost-text">💰 ${{ getUnitCost(event.id) }} por persona (estimado)</span>
               </div>
             </div>
             <button class="view-event-btn" (click)="viewEventDetails(event.id)">
@@ -232,24 +247,15 @@
   </main>
   
   <!-- Modal de Mapa de Asientos -->
-  <div class="transport-modal" *ngIf="showTransportModal">
-    <div class="modal-content">
+  <div class="transport-modal" *ngIf="showTransportModal" (click)="closeTransportModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
       <div class="modal-header">
         <h3>🗺️ Mapa de Asientos del Transporte</h3>
         <button class="close-btn" (click)="closeTransportModal()">✕</button>
       </div>
       
       <div class="modal-body">
-        <div class="transport-summary">
-          <div class="summary-item">
-            <span class="summary-label">Costo total:</span>
-            <span class="summary-value">${{ selectedTransportConfig?.totalCost || 0 }}</span>
-          </div>
-          <div class="summary-item">
-            <span class="summary-label">Costo por persona:</span>
-            <span class="summary-value">${{ getUnitCostFromConfig() }}</span>
-          </div>
-        </div>
+
         
         <div class="my-transport-info">
           <h4>👤 Mi Información de Transporte</h4>
@@ -280,7 +286,25 @@
             <div class="vehicle-card" *ngFor="let vehicle of selectedTransportConfig?.vehicles; let i = index">
               <div class="vehicle-header">
                 <h5>🚐 Vehículo {{ i + 1 }}</h5>
-                <span class="occupancy">{{ vehicle.occupiedSeats }}/{{ vehicle.totalSeats }}</span>
+                <div class="vehicle-info">
+                  <span class="occupancy">{{ vehicle.occupiedSeats }}/{{ vehicle.totalSeats }}</span>
+                  <span class="vehicle-cost" *ngIf="vehicle.vehicleCost > 0">${{ vehicle.vehicleCost }}</span>
+                </div>
+              </div>
+              
+              <div class="vehicle-pricing" *ngIf="vehicle.vehicleCost > 0 && vehicle.occupiedSeats > 0">
+                <span class="price-per-seat">💰 ${{ (vehicle.vehicleCost / vehicle.occupiedSeats).toFixed(2) }} por asiento</span>
+              </div>
+              
+              <div class="vehicle-schedule-info" *ngIf="vehicle.boardingTime || vehicle.departureTime">
+                <div class="schedule-info" *ngIf="vehicle.boardingTime">
+                  <span class="schedule-icon">🕰️</span>
+                  <span class="schedule-text">Abordaje: {{ vehicle.boardingTime }}</span>
+                </div>
+                <div class="schedule-info" *ngIf="vehicle.departureTime">
+                  <span class="schedule-icon">🚀</span>
+                  <span class="schedule-text">Salida: {{ vehicle.departureTime }}</span>
+                </div>
               </div>
               <div class="seats-grid">
                 <div 

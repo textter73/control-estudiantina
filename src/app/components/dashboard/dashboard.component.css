@@ -668,6 +668,90 @@
   background: #138496;
 }
 
+.payment-status-info {
+  margin: 0.5rem 0;
+  padding: 0.5rem;
+  background: #f8f9fa;
+  border-radius: 6px;
+  border-left: 3px solid #6c757d;
+}
+
+.payment-status {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.25rem;
+}
+
+.payment-label {
+  font-size: 0.8rem;
+  color: #6c757d;
+  font-weight: 500;
+}
+
+.payment-text {
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.2rem 0.5rem;
+  border-radius: 12px;
+}
+
+.payment-paid .payment-status-info {
+  border-left-color: #28a745;
+  background: #d4edda;
+}
+
+.payment-paid .payment-text {
+  background: #28a745;
+  color: white;
+}
+
+.payment-partial .payment-status-info {
+  border-left-color: #ffc107;
+  background: #fff3cd;
+}
+
+.payment-partial .payment-text {
+  background: #ffc107;
+  color: #212529;
+}
+
+.payment-pending .payment-status-info {
+  border-left-color: #dc3545;
+  background: #f8d7da;
+}
+
+.payment-pending .payment-text {
+  background: #dc3545;
+  color: white;
+}
+
+.payment-none .payment-status-info {
+  border-left-color: #6c757d;
+  background: #e9ecef;
+}
+
+.payment-none .payment-text {
+  background: #6c757d;
+  color: white;
+}
+
+.payment-amounts {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: #495057;
+}
+
+.payment-amount {
+  font-weight: 600;
+}
+
+.payment-paid {
+  color: #28a745;
+  font-weight: 600;
+}
+
 .cost-info {
   text-align: center;
 }
@@ -699,10 +783,12 @@
 .modal-content {
   background: white;
   border-radius: 12px;
-  width: 90%;
-  max-width: 1000px;
-  max-height: 90vh;
-  overflow-y: auto;
+  width: 95%;
+  max-width: 1400px;
+  max-height: 95vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 .modal-header {
@@ -726,6 +812,8 @@
 
 .modal-body {
   padding: 1.5rem;
+  overflow-y: auto;
+  flex: 1;
 }
 
 .transport-summary {
@@ -757,8 +845,10 @@
 
 .vehicles-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 1rem;
+  max-height: 50vh;
+  overflow-y: auto;
 }
 
 .vehicle-card {
@@ -766,6 +856,8 @@
   border-radius: 8px;
   padding: 1rem;
   background: white;
+  min-width: 280px;
+  overflow: hidden;
 }
 
 .vehicle-header {
@@ -775,6 +867,37 @@
   margin-bottom: 1rem;
   padding-bottom: 0.5rem;
   border-bottom: 1px solid #f0f0f0;
+}
+
+.vehicle-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.25rem;
+}
+
+.vehicle-cost {
+  background: #17a2b8;
+  color: white;
+  padding: 0.2rem 0.4rem;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.vehicle-pricing {
+  background: #e8f4f8;
+  padding: 0.5rem;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+  text-align: center;
+  border-left: 3px solid #17a2b8;
+}
+
+.price-per-seat {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #0c5460;
 }
 
 .occupancy {
@@ -789,6 +912,9 @@
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   gap: 0.25rem;
+  overflow-x: auto;
+  min-width: 250px;
+  padding-bottom: 0.5rem;
 }
 
 .seat {
@@ -925,6 +1051,35 @@
   padding: 1rem;
   color: #6c757d;
   font-style: italic;
+}
+
+.vehicle-schedule-info {
+  background: #e8f5e8;
+  padding: 0.5rem;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+  border-left: 3px solid #28a745;
+}
+
+.schedule-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.schedule-info:last-child {
+  margin-bottom: 0;
+}
+
+.schedule-icon {
+  font-size: 0.9rem;
+}
+
+.schedule-text {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #155724;
 }
 
 @media (max-width: 768px) {

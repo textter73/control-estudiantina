@@ -3,7 +3,6 @@ import { AngularFireAuth } from '@angular/fire/compat/auth';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
-import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-dashboard',
@@ -20,6 +19,7 @@ export class DashboardComponent implements OnInit {
   participationAttendances: number = 0;
   activeEvents: any[] = [];
   transportRequests: any[] = [];
+  ticketSales: any[] = [];
   showTransportModal = false;
   selectedTransportConfig: any = null;
   attendanceStats = {
@@ -59,6 +59,11 @@ export class DashboardComponent implements OnInit {
            this.userProfile?.profiles?.includes('transporte') || false;
   }
 
+  get canManageTickets(): boolean {
+    return this.userProfile?.profiles?.includes('administrador') || 
+           this.userProfile?.profiles?.includes('finanzas') || false;
+  }
+
   constructor(
     private afAuth: AngularFireAuth,
     private firestore: AngularFirestore,
@@ -75,6 +80,7 @@ export class DashboardComponent implements OnInit {
         this.loadAttendanceData();
         this.loadActiveEvents();
         this.loadTransportRequests();
+        this.loadTicketSales();
       } else {
         this.router.navigate(['/']);
       }
@@ -217,9 +223,9 @@ export class DashboardComponent implements OnInit {
     if (!event.confirmations) return 0;
     
     return event.confirmations
-      .filter((c: any) => c.response === 'asistire')
+      .filter((c: any) => c && c.response === 'asistire')
       .reduce((total: number, c: any) => {
-        return total + 1 + (parseInt(c.companions) || 0);
+        return total + 1 + (parseInt(c?.companions) || 0);
       }, 0);
   }
 
@@ -232,6 +238,11 @@ export class DashboardComponent implements OnInit {
 
   getTransportRequest(eventId: string) {
     return this.transportRequests.find(req => req.eventId === eventId);
+  }
+
+  hasTransportConfig(eventId: string): boolean {
+    const request = this.getTransportRequest(eventId);
+    return request && request.transportConfig && request.transportConfig.vehicles && request.transportConfig.vehicles.length > 0;
   }
 
   getTransportCost(eventId: string): number {
@@ -254,16 +265,41 @@ export class DashboardComponent implements OnInit {
   }
 
   closeTransportModal() {
-    this.showTransportModal = false;
-    this.selectedTransportConfig = null;
+    try {
+      this.showTransportModal = false;
+      this.selectedTransportConfig = null;
+    } catch (error) {
+      console.error('Error closing transport modal:', error);
+      this.showTransportModal = false;
+      this.selectedTransportConfig = null;
+    }
   }
 
   getUnitCostFromConfig(): number {
-    if (!this.selectedTransportConfig) return 0;
-    const totalCost = this.selectedTransportConfig.totalCost || 0;
-    const totalSeats = this.selectedTransportConfig.vehicles?.reduce((total: number, vehicle: any) => {
-      return total + vehicle.occupiedSeats;
-    }, 0) || 0;
+    if (!this.selectedTransportConfig?.vehicles) return 0;
+    
+    // Calcular costo promedio ponderado por vehículo
+    let totalCost = 0;
+    let totalSeats = 0;
+    
+    this.selectedTransportConfig.vehicles.forEach((vehicle: any) => {
+      if (vehicle.occupiedSeats > 0) {
+        const vehicleCost = vehicle.vehicleCost || 0;
+        if (vehicleCost > 0) {
+          totalCost += vehicleCost;
+          totalSeats += vehicle.occupiedSeats;
+        }
+      }
+    });
+    
+    // Si no hay costos individuales, usar el costo total
+    if (totalCost === 0) {
+      totalCost = this.selectedTransportConfig.totalCost || 0;
+      totalSeats = this.selectedTransportConfig.vehicles.reduce((total: number, vehicle: any) => {
+        return total + vehicle.occupiedSeats;
+      }, 0);
+    }
+    
     return totalSeats > 0 ? Math.round((totalCost / totalSeats) * 100) / 100 : 0;
   }
 
@@ -301,8 +337,86 @@ export class DashboardComponent implements OnInit {
   }
 
   getMyTotalCost(): number {
-    const mySeatsCount = this.getMySeats().length;
-    const unitCost = this.getUnitCostFromConfig();
-    return Math.round((mySeatsCount * unitCost) * 100) / 100;
+    if (!this.selectedTransportConfig?.vehicles) return 0;
+    
+    let totalCost = 0;
+    const userName = this.userProfile?.name || this.user?.email;
+    
+    this.selectedTransportConfig.vehicles.forEach((vehicle: any) => {
+      vehicle.seats.forEach((seat: any) => {
+        if (seat.occupied && seat.passenger) {
+          const isMyName = seat.passenger.name === userName || seat.passengerName === userName;
+          const isMyCompanion = seat.passenger.name?.includes(`Acompañante de ${userName}`);
+          
+          if (isMyName || isMyCompanion) {
+            // Usar costo individual del vehículo si está disponible
+            if (vehicle.vehicleCost && vehicle.occupiedSeats > 0) {
+              totalCost += vehicle.vehicleCost / vehicle.occupiedSeats;
+            } else {
+              // Fallback al cálculo general
+              totalCost += this.getUnitCostFromConfig();
+            }
+          }
+        }
+      });
+    });
+    
+    return Math.round(totalCost * 100) / 100;
+  }
+
+  loadTicketSales() {
+    if (!this.user) return;
+    
+    const userName = this.userProfile?.name || this.user?.email;
+    this.firestore.collection('ticket-sales').valueChanges({ idField: 'id' }).subscribe((allTickets: any[]) => {
+      // Filtrar tickets propios y de acompañantes
+      this.ticketSales = allTickets.filter(ticket => 
+        ticket.passengerName === userName || 
+        ticket.passengerName?.includes(`Acompañante de ${userName}`)
+      );
+    });
+  }
+
+  getMyTicketsForEvent(eventId: string): any[] {
+    return this.ticketSales.filter(ticket => ticket.eventId === eventId);
+  }
+
+  getPaymentStatusForEvent(eventId: string): { status: string, total: number, paid: number } {
+    const myTickets = this.getMyTicketsForEvent(eventId);
+    if (myTickets.length === 0) {
+      return { status: 'sin-boletos', total: 0, paid: 0 };
+    }
+    
+    const paidTickets = myTickets.filter(ticket => ticket.paymentStatus === 'pagado');
+    const total = myTickets.reduce((sum, ticket) => sum + (ticket.price || 0), 0);
+    const paid = paidTickets.reduce((sum, ticket) => sum + (ticket.price || 0), 0);
+    
+    if (paidTickets.length === myTickets.length) {
+      return { status: 'pagado', total, paid };
+    } else if (paidTickets.length > 0) {
+      return { status: 'parcial', total, paid };
+    } else {
+      return { status: 'pendiente', total, paid };
+    }
+  }
+
+  getPaymentStatusText(status: string): string {
+    switch (status) {
+      case 'pagado': return 'Pagado';
+      case 'parcial': return 'Pago Parcial';
+      case 'pendiente': return 'Pendiente';
+      case 'sin-boletos': return 'Sin Boletos';
+      default: return status;
+    }
+  }
+
+  getPaymentStatusClass(status: string): string {
+    switch (status) {
+      case 'pagado': return 'payment-paid';
+      case 'parcial': return 'payment-partial';
+      case 'pendiente': return 'payment-pending';
+      case 'sin-boletos': return 'payment-none';
+      default: return '';
+    }
   }
 }

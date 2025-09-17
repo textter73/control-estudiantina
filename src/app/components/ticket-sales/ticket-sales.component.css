@@ -1,0 +1,618 @@
+.ticket-sales-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+}
+
+.ticket-sales-header {
+  background: linear-gradient(135deg, #189d98 0%, #0f6b68 100%);
+  color: white;
+  padding: 1rem 0;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+}
+
+.header-content {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logo-section {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.logo {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(255,255,255,0.3);
+}
+
+.back-btn {
+  background: rgba(255,255,255,0.2);
+  color: white;
+  border: 1px solid rgba(255,255,255,0.3);
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.back-btn:hover {
+  background: rgba(255,255,255,0.3);
+}
+
+.ticket-sales-main {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}
+
+.page-title {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.page-title h2 {
+  color: #2c3e50;
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.page-title p {
+  color: #7f8c8d;
+  font-size: 1.1rem;
+}
+
+/* Dashboard de Métricas */
+.metrics-dashboard {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.metric-card {
+  background: white;
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.metric-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.15);
+}
+
+.metric-icon {
+  font-size: 2.5rem;
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+}
+
+.metric-card.revenue .metric-icon {
+  background: linear-gradient(135deg, #28a745, #20c997);
+}
+
+.metric-card.pending .metric-icon {
+  background: linear-gradient(135deg, #ffc107, #fd7e14);
+}
+
+.metric-card.tickets .metric-icon {
+  background: linear-gradient(135deg, #007bff, #6610f2);
+}
+
+.metric-card.paid-tickets .metric-icon {
+  background: linear-gradient(135deg, #28a745, #17a2b8);
+}
+
+.metric-content h3 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #2c3e50;
+  margin: 0;
+}
+
+.metric-content p {
+  color: #6c757d;
+  margin: 0;
+  font-weight: 500;
+}
+
+/* Filtros */
+.filters-section {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  display: flex;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 200px;
+}
+
+.filter-group label {
+  font-weight: 600;
+  color: #495057;
+  font-size: 0.9rem;
+}
+
+.filter-group select {
+  padding: 0.75rem;
+  border: 2px solid #e9ecef;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  transition: border-color 0.3s ease;
+}
+
+.filter-group select:focus {
+  outline: none;
+  border-color: #189d98;
+}
+
+/* Lista de Boletos en Tarjetas */
+.tickets-container {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  overflow: hidden;
+}
+
+.tickets-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+  background: #f8f9fa;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.tickets-header h3 {
+  margin: 0;
+  color: #2c3e50;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.tickets-count {
+  color: #6c757d;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.export-btn {
+  background: linear-gradient(135deg, #17a2b8, #138496);
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: transform 0.2s ease;
+}
+
+.export-btn:hover {
+  transform: translateY(-1px);
+}
+
+.tickets-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+  gap: 1.5rem;
+  padding: 1.5rem;
+}
+
+.ticket-card {
+  background: white;
+  border: 2px solid #f1f3f4;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.ticket-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+  border-color: #189d98;
+}
+
+.ticket-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 1.25rem;
+  background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+  border-bottom: 1px solid #e9ecef;
+}
+
+.event-info .event-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #2c3e50;
+  margin: 0 0 0.25rem 0;
+}
+
+.event-info .event-date {
+  font-size: 0.85rem;
+  color: #6c757d;
+  font-weight: 500;
+}
+
+.payment-status {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.payment-status.status-paid {
+  background: #d4edda;
+  color: #155724;
+}
+
+.payment-status.status-pending {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.status-icon {
+  font-size: 1rem;
+}
+
+.ticket-body {
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.passenger-section,
+.transport-section,
+.price-section,
+.payment-section {
+  display: flex;
+  align-items: center;
+}
+
+.passenger-info,
+.transport-info,
+.price-info,
+.payment-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+.passenger-icon,
+.transport-icon,
+.price-icon,
+.payment-icon {
+  font-size: 1.25rem;
+  width: 32px;
+  text-align: center;
+}
+
+.passenger-details,
+.transport-details,
+.price-details,
+.payment-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.passenger-name {
+  font-weight: 600;
+  color: #2c3e50;
+  font-size: 1rem;
+}
+
+.passenger-type {
+  font-size: 0.8rem;
+  color: #6c757d;
+  background: #e9ecef;
+  padding: 0.2rem 0.6rem;
+  border-radius: 12px;
+  width: fit-content;
+}
+
+.vehicle-text {
+  font-weight: 600;
+  color: #1976d2;
+  font-size: 0.95rem;
+}
+
+.seat-text {
+  font-size: 0.85rem;
+  color: #6c757d;
+}
+
+.price-amount {
+  font-weight: 700;
+  color: #28a745;
+  font-size: 1.2rem;
+}
+
+.price-label {
+  font-size: 0.8rem;
+  color: #6c757d;
+}
+
+.payment-date {
+  font-weight: 600;
+  color: #2c3e50;
+  font-size: 0.9rem;
+}
+
+.payment-time {
+  font-size: 0.8rem;
+  color: #6c757d;
+}
+
+.ticket-actions {
+  padding: 1rem 1.25rem;
+  background: #f8f9fa;
+  border-top: 1px solid #e9ecef;
+}
+
+.action-btn {
+  width: 100%;
+  padding: 0.75rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.action-btn.paid-btn {
+  background: linear-gradient(135deg, #28a745, #20c997);
+  color: white;
+}
+
+.action-btn.paid-btn:hover {
+  background: linear-gradient(135deg, #218838, #1ea085);
+  transform: translateY(-1px);
+}
+
+.action-btn.pending-btn {
+  background: linear-gradient(135deg, #ffc107, #fd7e14);
+  color: #212529;
+}
+
+.action-btn.pending-btn:hover {
+  background: linear-gradient(135deg, #e0a800, #e8690b);
+  transform: translateY(-1px);
+}
+
+/* Estado vacío */
+.no-tickets {
+  padding: 3rem;
+}
+
+.empty-state {
+  text-align: center;
+  color: #6c757d;
+}
+
+.empty-icon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+  opacity: 0.5;
+}
+
+.empty-state h3 {
+  color: #495057;
+  margin-bottom: 0.5rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .ticket-sales-main {
+    padding: 1rem 0.5rem;
+  }
+  
+  .page-title h2 {
+    font-size: 2rem;
+  }
+  
+  .metrics-dashboard {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+  
+  .metric-card {
+    padding: 1rem;
+  }
+  
+  .metric-icon {
+    font-size: 2rem;
+    width: 50px;
+    height: 50px;
+  }
+  
+  .metric-content h3 {
+    font-size: 1.5rem;
+  }
+  
+  .filters-section {
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1rem;
+  }
+  
+  .filter-group {
+    min-width: auto;
+  }
+  
+  .tickets-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    padding: 1rem;
+  }
+  
+  .tickets-header {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: stretch;
+    padding: 1rem;
+  }
+  
+  .header-actions {
+    justify-content: space-between;
+  }
+  
+  .ticket-card {
+    border-radius: 8px;
+  }
+  
+  .ticket-header {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: stretch;
+    padding: 1rem;
+  }
+  
+  .payment-status {
+    align-self: flex-start;
+  }
+  
+  .ticket-body {
+    padding: 1rem;
+    gap: 0.75rem;
+  }
+  
+  .passenger-icon,
+  .transport-icon,
+  .price-icon,
+  .payment-icon {
+    font-size: 1.1rem;
+    width: 28px;
+  }
+  
+  .ticket-actions {
+    padding: 1rem;
+  }
+  
+  .action-btn {
+    padding: 1rem;
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .ticket-sales-main {
+    padding: 0.5rem;
+  }
+  
+  .page-title h2 {
+    font-size: 1.8rem;
+  }
+  
+  .metrics-dashboard {
+    grid-template-columns: 1fr;
+  }
+  
+  .metric-card {
+    padding: 0.75rem;
+  }
+  
+  .metric-icon {
+    font-size: 1.8rem;
+    width: 45px;
+    height: 45px;
+  }
+  
+  .metric-content h3 {
+    font-size: 1.3rem;
+  }
+  
+  .filters-section {
+    padding: 0.75rem;
+  }
+  
+  .tickets-grid {
+    padding: 0.5rem;
+  }
+  
+  .tickets-header {
+    padding: 0.75rem;
+  }
+  
+  .tickets-header h3 {
+    font-size: 1.1rem;
+  }
+  
+  .export-btn {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.85rem;
+  }
+  
+  .ticket-header {
+    padding: 0.75rem;
+  }
+  
+  .event-info .event-title {
+    font-size: 1rem;
+  }
+  
+  .payment-status {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8rem;
+  }
+  
+  .ticket-body {
+    padding: 0.75rem;
+  }
+  
+  .passenger-name {
+    font-size: 0.9rem;
+  }
+  
+  .price-amount {
+    font-size: 1.1rem;
+  }
+  
+  .ticket-actions {
+    padding: 0.75rem;
+  }
+  
+  .action-btn {
+    padding: 0.75rem;
+    font-size: 0.9rem;
+  }
+}

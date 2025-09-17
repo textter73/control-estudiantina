@@ -10,6 +10,8 @@ import { AdminComponent } from './components/admin/admin.component';
 import { AttendanceComponent } from './components/attendance/attendance.component';
 import { AttendanceTrackingComponent } from './components/attendance-tracking/attendance-tracking.component';
 import { AttendanceSummaryComponent } from './components/attendance-summary/attendance-summary.component';
+import { EventManagementComponent } from './components/event-management/event-management.component';
+import { EventDetailsComponent } from './components/event-details/event-details.component';
 import { AngularFireModule } from '@angular/fire/compat';
 import { AngularFireAuthModule } from '@angular/fire/compat/auth';
 import { AngularFirestoreModule } from '@angular/fire/compat/firestore';
@@ -24,7 +26,9 @@ import { firebaseConfig } from '../environments/firebase.config';
     AdminComponent,
     AttendanceComponent,
     AttendanceTrackingComponent,
-    AttendanceSummaryComponent
+    AttendanceSummaryComponent,
+    EventManagementComponent,
+    EventDetailsComponent
   ],
   imports: [
     BrowserModule,

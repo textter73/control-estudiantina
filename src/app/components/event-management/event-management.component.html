@@ -1,0 +1,200 @@
+<div class="event-management-container">
+  <header class="event-header">
+    <div class="header-content">
+      <button class="back-btn" routerLink="/dashboard">
+        ← Volver al Dashboard
+      </button>
+      <h1>Gestión de Eventos</h1>
+      <button class="create-btn" (click)="showCreateForm = !showCreateForm">
+        + Crear Evento
+      </button>
+    </div>
+  </header>
+
+  <main class="event-main">
+    <!-- Formulario de creación -->
+    <div class="create-form-container" *ngIf="showCreateForm">
+      <div class="create-form">
+        <h3>Nuevo Evento</h3>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Título *</label>
+            <input type="text" [(ngModel)]="newEvent.title" placeholder="Nombre del evento">
+          </div>
+          <div class="form-group">
+            <label>Tipo</label>
+            <select [(ngModel)]="newEvent.type">
+              <option value="callejoneada">Callejoneada</option>
+              <option value="evento">Evento</option>
+              <option value="participacion">Participación</option>
+              <option value="contrato">Contrato</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Vestimenta</label>
+            <select [(ngModel)]="newEvent.attire">
+              <option value="de-gala">De Gala</option>
+              <option value="de-coro">De Coro</option>
+              <option value="ropa-normal">Ropa Normal</option>
+            </select>
+          </div>
+        </div>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label>Fecha *</label>
+            <input type="date" [(ngModel)]="newEvent.date">
+          </div>
+          <div class="form-group">
+            <label>Ubicación del Evento</label>
+            <input type="text" [(ngModel)]="newEvent.location" placeholder="Lugar donde se realizará">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Punto de Reunión</label>
+            <input type="text" [(ngModel)]="newEvent.meetingPoint" placeholder="Donde nos reunimos">
+          </div>
+          <div class="form-group">
+            <label>Hora de Reunión</label>
+            <input type="time" [(ngModel)]="newEvent.meetingTime">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Hora de Inicio</label>
+            <input type="time" [(ngModel)]="newEvent.startTime">
+          </div>
+          <div class="form-group">
+            <label>Hora de Fin</label>
+            <input type="time" [(ngModel)]="newEvent.endTime">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Descripción</label>
+          <textarea [(ngModel)]="newEvent.description" placeholder="Detalles del evento" rows="3"></textarea>
+        </div>
+
+        <div class="cost-section">
+          <div class="form-group checkbox-group">
+            <label class="checkbox-label">
+              <input type="checkbox" [(ngModel)]="newEvent.hasTravelCost">
+              <span class="checkmark"></span>
+              ¿Tiene costo de traslado?
+            </label>
+          </div>
+          
+          <div class="form-group" *ngIf="newEvent.hasTravelCost">
+            <label>Costo Aproximado del Traslado</label>
+            <input type="text" [(ngModel)]="newEvent.travelCost" placeholder="Ej: $50 - $80 por persona">
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button class="cancel-btn" (click)="resetForm()">Cancelar</button>
+          <button class="save-btn" (click)="createEvent()">Crear Evento</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Lista de eventos -->
+    <div class="events-container">
+      <div class="events-grid">
+        <div class="event-card" *ngFor="let event of events">
+          <div class="event-header-card">
+            <div class="event-title">{{ event.title }}</div>
+            <div class="event-badges">
+              <span class="type-badge" [class]="event.type">{{ getTypeText(event.type) }}</span>
+              <span class="attire-badge" [class]="event.attire">{{ getAttireText(event.attire) }}</span>
+              <span class="status-badge" [class]="getStatusClass(event.status)">
+                {{ getStatusText(event.status) }}
+              </span>
+            </div>
+          </div>
+
+          <div class="event-details">
+            <div class="event-info">
+              <span class="info-icon">📅</span>
+              <span>{{ event.date }}</span>
+            </div>
+            <div class="event-info" *ngIf="event.location">
+              <span class="info-icon">📍</span>
+              <span>{{ event.location }}</span>
+            </div>
+            <div class="event-info" *ngIf="event.meetingPoint">
+              <span class="info-icon">🚩</span>
+              <span>Reunión: {{ event.meetingPoint }}</span>
+            </div>
+            <div class="event-times" *ngIf="event.meetingTime || event.startTime || event.endTime">
+              <div class="time-item" *ngIf="event.meetingTime">
+                <span class="time-label">🕰️ Reunión:</span>
+                <span class="time-value">{{ event.meetingTime }}</span>
+              </div>
+              <div class="time-item" *ngIf="event.startTime">
+                <span class="time-label">▶️ Inicio:</span>
+                <span class="time-value">{{ event.startTime }}</span>
+              </div>
+              <div class="time-item" *ngIf="event.endTime">
+                <span class="time-label">⏹️ Fin:</span>
+                <span class="time-value">{{ event.endTime }}</span>
+              </div>
+            </div>
+            <div class="event-cost" *ngIf="event.hasTravelCost">
+              <span class="cost-icon">💰</span>
+              <span class="cost-text">Costo traslado: {{ event.travelCost || 'Por confirmar' }}</span>
+            </div>
+            <div class="event-description" *ngIf="event.description">
+              {{ event.description }}
+            </div>
+          </div>
+
+          <div class="event-stats">
+            <div class="stat-item" *ngIf="event.status === 'abierto'">
+              <span class="stat-label">Confirmaciones:</span>
+              <span class="stat-value">{{ event.confirmations?.length || 0 }}</span>
+            </div>
+          </div>
+
+          <div class="event-actions">
+            <button class="view-btn" (click)="viewEventDetails(event.id)">
+              Ver Detalles
+            </button>
+            
+            <div class="status-actions" *ngIf="event.status !== 'finalizado' && event.status !== 'cancelado'">
+              <button 
+                class="status-btn finish-btn" 
+                *ngIf="event.status === 'abierto'"
+                (click)="changeEventStatus(event.id, 'finalizado')">
+                Finalizar
+              </button>
+              
+              <button 
+                class="status-btn cancel-btn"
+                (click)="changeEventStatus(event.id, 'cancelado')">
+                Cancelar
+              </button>
+            </div>
+
+            <button class="delete-btn" (click)="deleteEvent(event.id)">
+              🗑️
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="empty-state" *ngIf="events.length === 0">
+        <h3>No hay eventos creados</h3>
+        <p>Crea tu primer evento para comenzar</p>
+        <button class="create-first-btn" (click)="showCreateForm = true">
+          Crear Primer Evento
+        </button>
+      </div>
+    </div>
+  </main>
+</div>

@@ -18,6 +18,7 @@ export class DashboardComponent implements OnInit {
   presentAttendances: number = 0;
   participationPercentage: number = 0;
   participationAttendances: number = 0;
+  activeEvents: any[] = [];
   attendanceStats = {
     presente: 0,
     escuela: 0,
@@ -45,6 +46,11 @@ export class DashboardComponent implements OnInit {
            this.userProfile?.profiles?.includes('asistencia') || false;
   }
 
+  get canManageEvents(): boolean {
+    return this.userProfile?.profiles?.includes('administrador') || 
+           this.userProfile?.profiles?.includes('agenda') || false;
+  }
+
   constructor(
     private afAuth: AngularFireAuth,
     private firestore: AngularFirestore,
@@ -59,6 +65,7 @@ export class DashboardComponent implements OnInit {
         const userDoc = await this.firestore.collection('users').doc(user.uid).get().toPromise();
         this.userProfile = userDoc?.data();
         this.loadAttendanceData();
+        this.loadActiveEvents();
       } else {
         this.router.navigate(['/']);
       }
@@ -134,5 +141,64 @@ export class DashboardComponent implements OnInit {
 
   goToTracking() {
     this.router.navigate(['/attendance-tracking']);
+  }
+
+  loadActiveEvents() {
+    this.firestore.collection('events').valueChanges({ idField: 'id' }).subscribe((events: any[]) => {
+      const activeEvents = events
+        .filter(event => event.status === 'abierto')
+        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+      
+      this.activeEvents = activeEvents.map(event => {
+        const userConfirmation = event.confirmations?.find((c: any) => c.userId === this.user.uid);
+        return {
+          ...event,
+          userConfirmation: userConfirmation?.response || null
+        };
+      });
+    });
+  }
+
+  getConfirmationText(confirmation: string | null): string {
+    if (!confirmation) return 'Sin confirmar';
+    switch (confirmation) {
+      case 'asistire': return 'Asistiré';
+      case 'no-asistire': return 'No asistiré';
+      case 'tal-vez': return 'Tal vez';
+      default: return confirmation;
+    }
+  }
+
+  getConfirmationClass(confirmation: string | null): string {
+    if (!confirmation) return 'confirmation-pending';
+    switch (confirmation) {
+      case 'asistire': return 'confirmation-yes';
+      case 'no-asistire': return 'confirmation-no';
+      case 'tal-vez': return 'confirmation-maybe';
+      default: return 'confirmation-pending';
+    }
+  }
+
+  getTypeText(type: string): string {
+    switch (type) {
+      case 'callejoneada': return 'Callejoneada';
+      case 'evento': return 'Evento';
+      case 'participacion': return 'Participación';
+      case 'contrato': return 'Contrato';
+      default: return type;
+    }
+  }
+
+  getAttireText(attire: string): string {
+    switch (attire) {
+      case 'de-gala': return 'De Gala';
+      case 'de-coro': return 'De Coro';
+      case 'ropa-normal': return 'Ropa Normal';
+      default: return attire;
+    }
+  }
+
+  viewEventDetails(eventId: string) {
+    this.router.navigate(['/event-details', eventId], { queryParams: { returnUrl: '/dashboard' } });
   }
 }

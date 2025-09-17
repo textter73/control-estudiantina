@@ -1,0 +1,169 @@
+<div class="event-details-container" *ngIf="event">
+  <header class="event-details-header">
+    <div class="header-content">
+      <button class="back-btn" (click)="goBack()">
+        ← Volver
+      </button>
+      <h1>{{ event.title }}</h1>
+    </div>
+  </header>
+
+  <main class="event-details-main">
+    <!-- Información del evento -->
+    <div class="event-info-card">
+      <div class="event-info-header">
+        <h2>Información del Evento</h2>
+        <div class="event-badges">
+          <span class="type-badge" [class]="event.type">{{ getTypeText(event.type) }}</span>
+          <span class="attire-badge" [class]="event.attire">{{ getAttireText(event.attire) }}</span>
+          <span class="status-badge" [class]="'status-' + event.status">{{ getStatusText(event.status) }}</span>
+        </div>
+      </div>
+
+      <div class="event-details-grid">
+        <div class="detail-item">
+          <span class="detail-icon">📅</span>
+          <div class="detail-content">
+            <span class="detail-label">Fecha</span>
+            <span class="detail-value">{{ event.date }}</span>
+          </div>
+        </div>
+
+        <div class="detail-item" *ngIf="event.location">
+          <span class="detail-icon">📍</span>
+          <div class="detail-content">
+            <span class="detail-label">Ubicación del Evento</span>
+            <span class="detail-value">{{ event.location }}</span>
+          </div>
+        </div>
+
+        <div class="detail-item" *ngIf="event.meetingPoint">
+          <span class="detail-icon">🚩</span>
+          <div class="detail-content">
+            <span class="detail-label">Punto de Reunión</span>
+            <span class="detail-value">{{ event.meetingPoint }}</span>
+          </div>
+        </div>
+
+        <div class="detail-item full-width" *ngIf="event.meetingTime || event.startTime || event.endTime">
+          <span class="detail-icon">🕰️</span>
+          <div class="detail-content">
+            <span class="detail-label">Horarios</span>
+            <div class="schedule-times">
+              <div class="schedule-item" *ngIf="event.meetingTime">
+                <span class="schedule-label">Reunión:</span>
+                <span class="schedule-time">{{ event.meetingTime }}</span>
+              </div>
+              <div class="schedule-item" *ngIf="event.startTime">
+                <span class="schedule-label">Inicio:</span>
+                <span class="schedule-time">{{ event.startTime }}</span>
+              </div>
+              <div class="schedule-item" *ngIf="event.endTime">
+                <span class="schedule-label">Fin:</span>
+                <span class="schedule-time">{{ event.endTime }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="detail-item" *ngIf="event.hasTravelCost">
+          <span class="detail-icon">💰</span>
+          <div class="detail-content">
+            <span class="detail-label">Costo de Traslado</span>
+            <span class="detail-value cost-highlight">{{ event.travelCost || 'Por confirmar' }}</span>
+          </div>
+        </div>
+
+        <div class="detail-item full-width" *ngIf="event.description">
+          <span class="detail-icon">📝</span>
+          <div class="detail-content">
+            <span class="detail-label">Descripción</span>
+            <span class="detail-value">{{ event.description }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+
+    <!-- Confirmación -->
+    <div class="confirmation-card" *ngIf="event.status === 'abierto'">
+      <h3>Confirmación de Asistencia</h3>
+      <p>Por favor, confirma tu asistencia al evento:</p>
+
+      <div class="my-response" *ngIf="userConfirmation">
+        <h4>Tu confirmación actual:</h4>
+        <span class="response-badge" [class]="getResponseClass(userConfirmation.response)">
+          {{ getResponseText(userConfirmation.response) }}
+        </span>
+      </div>
+
+      <div class="response-buttons">
+        <button 
+          class="response-btn yes-btn" 
+          [class.active]="userConfirmation?.response === 'asistire'"
+          (click)="submitConfirmation('asistire')">
+          ✅ Asistiré
+        </button>
+        <button 
+          class="response-btn maybe-btn" 
+          [class.active]="userConfirmation?.response === 'tal-vez'"
+          (click)="submitConfirmation('tal-vez')">
+          🤔 Tal vez
+        </button>
+        <button 
+          class="response-btn no-btn" 
+          [class.active]="userConfirmation?.response === 'no-asistire'"
+          (click)="submitConfirmation('no-asistire')">
+          ❌ No asistiré
+        </button>
+      </div>
+
+      <div class="stats-summary">
+        <h4>Resumen de Confirmaciones</h4>
+        <div class="stats-grid">
+          <div class="stat-item">
+            <span class="stat-number">{{ getConfirmationStats().asistire }}</span>
+            <span class="stat-label">Asistiré</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-number">{{ getConfirmationStats().talVez }}</span>
+            <span class="stat-label">Tal vez</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-number">{{ getConfirmationStats().noAsistire }}</span>
+            <span class="stat-label">No asistiré</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-number">{{ getConfirmationStats().total }}</span>
+            <span class="stat-label">Total</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Estado finalizado o cancelado -->
+    <div class="status-message" *ngIf="event.status === 'finalizado' || event.status === 'cancelado'">
+      <div class="status-icon">
+        {{ event.status === 'finalizado' ? '✅' : '❌' }}
+      </div>
+      <h3>{{ event.status === 'finalizado' ? 'Evento Finalizado' : 'Evento Cancelado' }}</h3>
+      <p>{{ event.status === 'finalizado' ? 'Este evento ya ha concluido.' : 'Este evento ha sido cancelado.' }}</p>
+    </div>
+
+    <!-- Lista de respuestas (solo para administradores/agenda) -->
+    <div class="responses-list" *ngIf="userProfile?.profiles?.includes('administrador') || userProfile?.profiles?.includes('agenda')">
+      <h3>Respuestas de Integrantes</h3>
+      
+      <div class="tab-content" *ngIf="event.status === 'abierto'">
+        <h4>Confirmaciones</h4>
+        <div class="response-item" *ngFor="let c of event.confirmations">
+          <span class="user-name">{{ c.userName }}</span>
+          <span class="response-badge" [class]="getResponseClass(c.response)">
+            {{ getResponseText(c.response) }}
+          </span>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>

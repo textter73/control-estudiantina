@@ -619,6 +619,33 @@
   margin-top: 0.2rem;
 }
 
+.companions-info {
+  margin-top: 0.5rem;
+}
+
+.companions-text {
+  font-size: 0.8rem;
+  background: #e8f5e8;
+  color: #1b5e20;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  display: inline-block;
+}
+
+.total-people-info {
+  margin-top: 0.5rem;
+}
+
+.total-people-text {
+  font-size: 0.8rem;
+  background: #f0f8ff;
+  color: #0f6b68;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  display: inline-block;
+  font-weight: 600;
+}
+
 @media (max-width: 768px) {
   .header-content {
     flex-direction: column;

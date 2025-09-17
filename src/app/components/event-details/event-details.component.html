@@ -104,25 +104,51 @@
         <span class="response-badge" [class]="getResponseClass(userConfirmation.response)">
           {{ getResponseText(userConfirmation.response) }}
         </span>
+        <div class="companions-info" *ngIf="event.requiresTransport && userConfirmation.companions !== undefined">
+          <p><strong>Acompañantes:</strong> {{ userConfirmation.companions || 0 }}</p>
+        </div>
         <p class="final-note">Tu confirmación ha sido registrada y no puede ser modificada.</p>
       </div>
 
-      <div class="response-buttons" *ngIf="!userConfirmation">
+      <div class="response-section" *ngIf="!userConfirmation">
         <p class="instruction-text">Selecciona tu confirmación de asistencia:</p>
+        
+        <div class="response-buttons">
+          <button 
+            class="response-btn yes-btn" 
+            (click)="selectResponse('asistire')">
+            ✅ Asistiré
+          </button>
+          <button 
+            class="response-btn maybe-btn" 
+            (click)="selectResponse('tal-vez')">
+            🤔 Tal vez
+          </button>
+          <button 
+            class="response-btn no-btn" 
+            (click)="selectResponse('no-asistire')">
+            ❌ No asistiré
+          </button>
+        </div>
+
+        <div class="companions-section" *ngIf="selectedResponse && event.requiresTransport">
+          <h4>🚌 ¿Cuántas personas te acompañarán?</h4>
+          <div class="companions-input">
+            <label for="companions">Número de acompañantes:</label>
+            <select [(ngModel)]="companions" name="companions" class="companions-select">
+              <option value="0">Solo yo</option>
+              <option value="1">1 acompañante</option>
+              <option value="2">2 acompañantes</option>
+            </select>
+          </div>
+        </div>
+
         <button 
-          class="response-btn yes-btn" 
-          (click)="submitConfirmation('asistire')">
-          ✅ Asistiré
-        </button>
-        <button 
-          class="response-btn maybe-btn" 
-          (click)="submitConfirmation('tal-vez')">
-          🤔 Tal vez
-        </button>
-        <button 
-          class="response-btn no-btn" 
-          (click)="submitConfirmation('no-asistire')">
-          ❌ No asistiré
+          class="confirm-btn" 
+          *ngIf="selectedResponse"
+          (click)="submitConfirmation()"
+          [disabled]="event.requiresTransport && companions === null">
+          Confirmar Asistencia
         </button>
       </div>
 
@@ -145,6 +171,14 @@
             <span class="stat-number">{{ getConfirmationStats().total }}</span>
             <span class="stat-label">Total</span>
           </div>
+          <div class="stat-item" *ngIf="event.requiresTransport">
+            <span class="stat-number">{{ getConfirmationStats().totalCompanions }}</span>
+            <span class="stat-label">Acompañantes</span>
+          </div>
+          <div class="stat-item" *ngIf="event.requiresTransport">
+            <span class="stat-number">{{ getConfirmationStats().totalPeople }}</span>
+            <span class="stat-label">Total personas</span>
+          </div>
         </div>
       </div>
     </div>
@@ -165,10 +199,20 @@
       <div class="tab-content" *ngIf="event.status === 'abierto'">
         <h4>Confirmaciones</h4>
         <div class="response-item" *ngFor="let c of event.confirmations">
-          <span class="user-name">{{ c.userName }}</span>
-          <span class="response-badge" [class]="getResponseClass(c.response)">
-            {{ getResponseText(c.response) }}
-          </span>
+          <div class="response-main">
+            <span class="user-name">{{ c.userName }}</span>
+            <span class="response-badge" [class]="getResponseClass(c.response)">
+              {{ getResponseText(c.response) }}
+            </span>
+          </div>
+          <div class="companions-count" *ngIf="event.requiresTransport && c.companions !== undefined">
+            <span class="companions-text">🚌 {{ c.companions }} acompañantes</span>
+          </div>
+        </div>
+        
+        <div class="transport-summary" *ngIf="event.requiresTransport">
+          <h5>Resumen de Transporte</h5>
+          <p><strong>Total de personas:</strong> {{ getTotalPeople() }}</p>
         </div>
       </div>
     </div>

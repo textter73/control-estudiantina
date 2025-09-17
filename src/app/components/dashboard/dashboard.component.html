@@ -79,6 +79,12 @@
                 {{ getConfirmationText(event.userConfirmation) }}
               </span>
             </div>
+            <div class="companions-info" *ngIf="event.requiresTransport && event.userConfirmation?.companions !== undefined">
+              <span class="companions-text">🚌 {{ event.userConfirmation.companions }} acompañantes</span>
+            </div>
+            <div class="total-people-info" *ngIf="event.requiresTransport">
+              <span class="total-people-text">👥 {{ getTotalPeopleForEvent(event) }} personas total</span>
+            </div>
             <button class="view-event-btn" (click)="viewEventDetails(event.id)">
               Ver Detalles
             </button>

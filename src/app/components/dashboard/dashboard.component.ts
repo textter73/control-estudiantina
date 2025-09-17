@@ -153,25 +153,27 @@ export class DashboardComponent implements OnInit {
         const userConfirmation = event.confirmations?.find((c: any) => c.userId === this.user.uid);
         return {
           ...event,
-          userConfirmation: userConfirmation?.response || null
+          userConfirmation: userConfirmation || null
         };
       });
     });
   }
 
-  getConfirmationText(confirmation: string | null): string {
-    if (!confirmation) return 'Sin confirmar';
-    switch (confirmation) {
+  getConfirmationText(confirmation: any): string {
+    const response = confirmation?.response || confirmation;
+    if (!response) return 'Sin confirmar';
+    switch (response) {
       case 'asistire': return 'Asistiré';
       case 'no-asistire': return 'No asistiré';
       case 'tal-vez': return 'Tal vez';
-      default: return confirmation;
+      default: return response;
     }
   }
 
-  getConfirmationClass(confirmation: string | null): string {
-    if (!confirmation) return 'confirmation-pending';
-    switch (confirmation) {
+  getConfirmationClass(confirmation: any): string {
+    const response = confirmation?.response || confirmation;
+    if (!response) return 'confirmation-pending';
+    switch (response) {
       case 'asistire': return 'confirmation-yes';
       case 'no-asistire': return 'confirmation-no';
       case 'tal-vez': return 'confirmation-maybe';
@@ -200,5 +202,15 @@ export class DashboardComponent implements OnInit {
 
   viewEventDetails(eventId: string) {
     this.router.navigate(['/event-details', eventId], { queryParams: { returnUrl: '/dashboard' } });
+  }
+
+  getTotalPeopleForEvent(event: any): number {
+    if (!event.confirmations) return 0;
+    
+    return event.confirmations
+      .filter((c: any) => c.response === 'asistire')
+      .reduce((total: number, c: any) => {
+        return total + 1 + (parseInt(c.companions) || 0);
+      }, 0);
   }
 }

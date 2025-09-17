@@ -16,6 +16,8 @@ export class EventDetailsComponent implements OnInit {
   eventId: string = '';
   users: any[] = [];
   userConfirmation: any = null;
+  selectedResponse: string = '';
+  companions: number = 0;
 
   constructor(
     private route: ActivatedRoute,
@@ -66,13 +68,24 @@ export class EventDetailsComponent implements OnInit {
 
 
 
-  async submitConfirmation(response: string) {
-    const confirmation = {
+  selectResponse(response: string) {
+    this.selectedResponse = response;
+    if (!this.event.requiresTransport) {
+      this.submitConfirmation();
+    }
+  }
+
+  async submitConfirmation() {
+    const confirmation: any = {
       userId: this.user.uid,
       userName: this.userProfile?.name || this.user.email,
-      response: response,
+      response: this.selectedResponse,
       timestamp: new Date()
     };
+
+    if (this.event.requiresTransport) {
+      confirmation.companions = parseInt(this.companions.toString()) || 0;
+    }
 
     const confirmations = this.event.confirmations || [];
     const existingIndex = confirmations.findIndex((c: any) => c.userId === this.user.uid);
@@ -146,11 +159,31 @@ export class EventDetailsComponent implements OnInit {
 
   getConfirmationStats() {
     const confirmations = this.event?.confirmations || [];
+    const asistireConfirmations = confirmations.filter((c: any) => c.response === 'asistire');
+    
+    const totalCompanions = asistireConfirmations.reduce((total: number, c: any) => {
+      return total + (parseInt(c.companions) || 0);
+    }, 0);
+    
+    const totalPeople = asistireConfirmations.length + totalCompanions;
+    
     return {
-      asistire: confirmations.filter((c: any) => c.response === 'asistire').length,
+      asistire: asistireConfirmations.length,
       noAsistire: confirmations.filter((c: any) => c.response === 'no-asistire').length,
       talVez: confirmations.filter((c: any) => c.response === 'tal-vez').length,
-      total: confirmations.length
+      total: confirmations.length,
+      totalCompanions: totalCompanions,
+      totalPeople: totalPeople
     };
+  }
+
+  getTotalPeople(): number {
+    if (!this.event?.confirmations) return 0;
+    
+    return this.event.confirmations
+      .filter((c: any) => c.response === 'asistire')
+      .reduce((total: number, c: any) => {
+        return total + 1 + (parseInt(c.companions) || 0);
+      }, 0);
   }
 }

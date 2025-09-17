@@ -1,0 +1,96 @@
+<div class="summary-container">
+  <header class="summary-header">
+    <div class="header-content">
+      <button class="back-btn" routerLink="/dashboard">
+        ← Volver al Dashboard
+      </button>
+      <h4>Resumen General de Asistencia</h4>
+    </div>
+  </header>
+
+  <main class="summary-main">
+    <div class="search-container">
+      <div class="search-box">
+        <input 
+          type="text" 
+          placeholder="Buscar integrante por nombre..."
+          [(ngModel)]="searchTerm"
+          (input)="onSearchChange()"
+          class="search-input">
+        <span class="search-icon">🔍</span>
+      </div>
+    </div>
+
+    <div class="summary-table-container">
+      <div class="table-responsive">
+        <table class="summary-table">
+          <thead>
+            <tr>
+              <th>Integrante</th>
+              <th>Total Eventos</th>
+              <th>Participación</th>
+              <th>Asist. Efectiva</th>
+              <th>Misas Dom.</th>
+              <th>Presente</th>
+              <th>Escuela</th>
+              <th>Enfermedad</th>
+              <th>Faltas</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let user of filteredSummaryData" class="user-row">
+              <td class="user-info">
+                <div class="user-name">{{ user.name }}</div>
+              </td>
+              <td class="text-center">{{ user.totalEvents }}</td>
+              <td class="text-center">
+                <span class="percentage-badge" [class]="getStatusClass(user.participacion)">
+                  {{ user.participacion }}%
+                </span>
+              </td>
+              <td class="text-center">
+                <span class="percentage-badge" [class]="getStatusClass(user.asistenciaEfectiva)">
+                  {{ user.asistenciaEfectiva }}%
+                </span>
+              </td>
+              <td class="text-center">
+                <div class="misa-info">
+                  <span class="misa-count">{{ user.misasAsistidas }}/{{ user.misasDominicales }}</span>
+                  <span class="misa-percentage" [class]="getStatusClass(user.misasPercentage)">
+                    ({{ user.misasPercentage }}%)
+                  </span>
+                </div>
+              </td>
+              <td class="text-center status-presente">{{ user.presente }}</td>
+              <td class="text-center status-escuela">{{ user.escuela }}</td>
+              <td class="text-center status-enfermedad">{{ user.enfermedad }}</td>
+              <td class="text-center status-falta">{{ user.falta }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="legend-container">
+      <h3>Leyenda de Rendimiento</h3>
+      <div class="legend-items">
+        <div class="legend-item">
+          <span class="legend-badge excellent">90-100%</span>
+          <span>Excelente</span>
+        </div>
+        <div class="legend-item">
+          <span class="legend-badge good">75-89%</span>
+          <span>Bueno</span>
+        </div>
+        <div class="legend-item">
+          <span class="legend-badge regular">60-74%</span>
+          <span>Regular</span>
+        </div>
+        <div class="legend-item">
+          <span class="legend-badge poor">0-59%</span>
+          <span>Necesita Mejorar</span>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>

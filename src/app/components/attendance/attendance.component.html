@@ -1,0 +1,63 @@
+<div class="attendance-container">
+  <header class="attendance-header">
+    <div class="header-top">
+      <button class="back-btn" routerLink="/dashboard">
+        ← Volver al Dashboard
+      </button>
+    </div>
+    <h1>Control de Asistencia</h1>
+    <p>Registra la asistencia de los integrantes</p>
+  </header>
+
+  <main class="attendance-main">
+    <div class="attendance-form">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="attendanceType">Tipo de Asistencia</label>
+          <select id="attendanceType" [(ngModel)]="attendanceType" name="attendanceType">
+            <option value="">Seleccionar tipo</option>
+            <option *ngFor="let type of attendanceTypes" [value]="type">{{ type }}</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label for="attendanceDate">Fecha</label>
+          <input type="date" id="attendanceDate" [(ngModel)]="attendanceDate" name="attendanceDate">
+        </div>
+      </div>
+    </div>
+
+    <div class="attendance-table">
+      <table>
+        <thead>
+          <tr>
+            <th>Integrante</th>
+            <th>Estado</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let user of users">
+            <td>{{ user.name }}</td>
+            <td>
+              <div class="status-buttons">
+                <button 
+                  *ngFor="let status of statusOptions"
+                  class="status-btn"
+                  [class.active]="getUserStatus(user.uid) === status"
+                  (click)="updateAttendanceStatus(user.uid, status)">
+                  {{ status }}
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="save-section">
+      <button class="save-btn" (click)="saveAttendance()">
+        Guardar Asistencia
+      </button>
+    </div>
+  </main>
+</div>

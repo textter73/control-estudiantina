@@ -1,0 +1,53 @@
+<div class="admin-container">
+  <header class="admin-header">
+    <div class="header-top">
+      <button class="back-btn" routerLink="/dashboard">
+        ← Volver al Dashboard
+      </button>
+    </div>
+    <h1>Administración de Usuarios</h1>
+    <p>Gestiona los perfiles de los integrantes del sistema</p>
+  </header>
+
+  <main class="admin-main">
+    <div class="users-table">
+      <table>
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Email</th>
+            <th>Perfiles Asignados</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let user of users">
+            <td>{{ user.name }}</td>
+            <td>{{ user.email }}</td>
+            <td>
+              <div class="profiles-list">
+                <span class="profile-tag" *ngFor="let profile of user.profiles">
+                  {{ profile }}
+                </span>
+              </div>
+            </td>
+            <td>
+              <div class="action-buttons">
+                <button 
+                  class="assign-btn" 
+                  (click)="assignProfile(user.uid, user.name)">
+                  Asignar Perfil
+                </button>
+                <button 
+                  class="remove-btn" 
+                  (click)="removeProfile(user.uid, user.name, user.profiles)">
+                  Quitar Perfil
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+</div>

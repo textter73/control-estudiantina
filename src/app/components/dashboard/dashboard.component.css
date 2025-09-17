@@ -1,0 +1,434 @@
+.dashboard-container {
+  min-height: 100vh;
+  background-color: #f5f7fa;
+}
+
+.dashboard-header {
+  background: linear-gradient(135deg, #189d98 0%, #0f6b68 100%);
+  color: white;
+  padding: 1rem 0;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.header-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logo-section {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.logo {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(255,255,255,0.3);
+}
+
+.logo-section h1 {
+  margin: 0;
+  font-size: 1.8rem;
+  color: white;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.logout-btn {
+  background: rgba(255,255,255,0.2);
+  color: white;
+  border: 1px solid rgba(255,255,255,0.3);
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.logout-btn:hover {
+  background: rgba(255,255,255,0.3);
+}
+
+.dashboard-main {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+.admin-menu {
+  background: white;
+  border-radius: 15px;
+  padding: 2rem;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.admin-menu h3 {
+  color: #333;
+  margin-bottom: 1.5rem;
+  font-size: 1.3rem;
+}
+
+.admin-btn {
+  background: linear-gradient(135deg, #189d98 0%, #0f6b68 100%);
+  color: white;
+  border: none;
+  padding: 1rem 2rem;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.admin-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(24, 157, 152, 0.3);
+}
+
+.admin-icon {
+  font-size: 1.2rem;
+}
+
+.attendance-menu {
+  background: white;
+  border-radius: 15px;
+  padding: 2rem;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.attendance-menu h3 {
+  color: #333;
+  margin-bottom: 1.5rem;
+  font-size: 1.3rem;
+}
+
+.attendance-buttons {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.attendance-btn, .summary-btn {
+  background: linear-gradient(135deg, #189d98 0%, #0f6b68 100%);
+  color: white;
+  border: none;
+  padding: 1rem 2rem;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
+  min-width: 180px;
+}
+
+.attendance-btn:hover, .summary-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(24, 157, 152, 0.3);
+}
+
+.attendance-icon, .summary-icon {
+  font-size: 1.2rem;
+}
+
+.attendance-chart {
+  background: white;
+  border-radius: 15px;
+  padding: 2rem;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+  margin-bottom: 2rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.attendance-chart:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+}
+
+.attendance-chart h3 {
+  color: #333;
+  margin-bottom: 1.5rem;
+  font-size: 1.3rem;
+}
+
+.charts-container {
+  display: flex;
+  justify-content: space-around;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+.donut-chart {
+  position: relative;
+  display: inline-block;
+}
+
+.donut-chart svg {
+  transform: rotate(-90deg);
+}
+
+.chart-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.percentage {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #189d98;
+  line-height: 1;
+}
+
+.label {
+  font-size: 0.9rem;
+  color: #666;
+  margin-top: 0.2rem;
+}
+
+.attendance-summary {
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid #e1e5e9;
+}
+
+.attendance-summary h4 {
+  color: #333;
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+  text-align: center;
+}
+
+.summary-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.summary-item {
+  display: flex;
+  align-items: center;
+  padding: 0.8rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.summary-item:hover {
+  transform: translateX(5px);
+}
+
+.summary-icon {
+  font-size: 1.2rem;
+  margin-right: 0.8rem;
+  width: 24px;
+  text-align: center;
+}
+
+.summary-label {
+  flex: 1;
+  color: #333;
+}
+
+.summary-count {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  text-align: right;
+}
+
+.count-fraction {
+  font-weight: bold;
+  color: #189d98;
+  background: white;
+  padding: 0.2rem 0.6rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+}
+
+.count-percentage {
+  font-size: 0.8rem;
+  color: #666;
+  margin-top: 0.2rem;
+  font-weight: 500;
+}
+
+.misa-chart {
+  background: white;
+  border-radius: 15px;
+  padding: 2rem;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+  margin-bottom: 2rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.misa-chart:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+}
+
+.misa-chart h3 {
+  color: #333;
+  margin-bottom: 1.5rem;
+  font-size: 1.3rem;
+}
+
+.misa-donut {
+  position: relative;
+  display: inline-block;
+  margin-bottom: 2rem;
+}
+
+.misa-donut svg {
+  transform: rotate(-90deg);
+}
+
+.misa-donut .chart-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.misa-donut .percentage {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #189d98;
+  line-height: 1;
+}
+
+.misa-donut .label {
+  font-size: 0.9rem;
+  color: #666;
+  margin-top: 0.2rem;
+}
+
+.misa-stats {
+  display: flex;
+  justify-content: space-around;
+  gap: 1rem;
+}
+
+.misa-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.misa-stat .stat-number {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #189d98;
+}
+
+.misa-stat .stat-label {
+  font-size: 0.85rem;
+  color: #666;
+  margin-top: 0.2rem;
+}
+
+@media (max-width: 768px) {
+  .header-content {
+    flex-direction: column;
+    gap: 1rem;
+    text-align: center;
+  }
+  
+  .logo-section {
+    justify-content: center;
+  }
+  
+  .logo {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .logo-section h1 {
+    font-size: 1.5rem;
+  }
+  
+  .user-info {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .dashboard-main {
+    padding: 0.5rem;
+  }
+  
+  .admin-menu, .attendance-menu {
+    margin-bottom: 1rem;
+    padding: 1rem;
+  }
+  
+  .attendance-chart {
+    padding: 1rem;
+  }
+  
+  .charts-container {
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+  }
+  
+  .donut-chart svg {
+    width: 120px;
+    height: 120px;
+  }
+  
+  .percentage {
+    font-size: 1.5rem;
+  }
+  
+  .misa-chart {
+    padding: 1rem;
+  }
+  
+  .misa-donut svg {
+    width: 150px;
+    height: 150px;
+  }
+  
+  .misa-donut .percentage {
+    font-size: 1.5rem;
+  }
+  
+  .misa-stats {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+}

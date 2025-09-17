@@ -1,0 +1,64 @@
+<div class="register-container">
+  <div class="register-card">
+    <div class="register-header">
+      <img src="assets/estonantzin.jpeg" alt="Logo Estudiantina" class="logo">
+      <h2>Estudiantina Tonantzin Guadalupe</h2>
+      <p>Crea tu cuenta</p>
+    </div>
+    
+    <form class="register-form" (ngSubmit)="onSubmit()">
+      <div class="form-group">
+        <label for="name">Nombre completo</label>
+        <input 
+          type="text" 
+          id="name" 
+          [(ngModel)]="name"
+          name="name"
+          placeholder="Tu nombre completo"
+          required>
+      </div>
+
+      <div class="form-group">
+        <label for="email">Correo electrónico</label>
+        <input 
+          type="email" 
+          id="email" 
+          [(ngModel)]="email"
+          name="email"
+          placeholder="usuario@ejemplo.com"
+          required>
+      </div>
+      
+      <div class="form-group">
+        <label for="password">Contraseña</label>
+        <div class="password-input">
+          <input 
+            [type]="showPassword ? 'text' : 'password'" 
+            id="password" 
+            [(ngModel)]="password"
+            name="password"
+            placeholder="••••••••"
+            required>
+          <button 
+            type="button" 
+            class="toggle-password"
+            (click)="togglePassword()">
+            {{ showPassword ? '👁️' : '👁️🗨️' }}
+          </button>
+        </div>
+      </div>
+      
+      <div class="error-message" *ngIf="errorMessage">
+        {{ errorMessage }}
+      </div>
+      
+      <button type="submit" class="register-btn" [disabled]="loading">
+        {{ loading ? 'Registrando...' : 'Registrarse' }}
+      </button>
+      
+      <div class="register-footer">
+        <a routerLink="/" class="login-link">¿Ya tienes cuenta? Inicia sesión</a>
+      </div>
+    </form>
+  </div>
+</div>

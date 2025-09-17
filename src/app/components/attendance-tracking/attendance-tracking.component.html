@@ -1,0 +1,97 @@
+<div class="tracking-container">
+  <header class="tracking-header">
+    <div class="header-content">
+      <button class="back-btn" routerLink="/dashboard">
+        ← Volver al Dashboard
+      </button>
+      <h4>Seguimiento de Asistencia</h4>
+    </div>
+  </header>
+
+  <main class="tracking-main">
+    <div class="calendar-container">
+      <div class="calendar-header">
+        <button class="nav-btn" (click)="previousMonth()">‹</button>
+        <h4>{{ monthNames[currentMonth] }} {{ currentYear }}</h4>
+        <button class="nav-btn" (click)="nextMonth()">›</button>
+      </div>
+
+      <div class="calendar-grid">
+        <div class="day-header">Dom</div>
+        <div class="day-header">Lun</div>
+        <div class="day-header">Mar</div>
+        <div class="day-header">Mié</div>
+        <div class="day-header">Jue</div>
+        <div class="day-header">Vie</div>
+        <div class="day-header">Sáb</div>
+
+        <div 
+          *ngFor="let day of calendarDays" 
+          class="calendar-day"
+          [class.other-month]="!day.isCurrentMonth"
+          [class.today]="day.isToday"
+          [class.has-attendance]="day.attendance"
+          [class.clickable]="day.attendance"
+          (click)="onDateClick(day)">
+          
+          <span class="day-number">{{ day.day }}</span>
+          
+          <div class="attendance-indicator" *ngIf="day.attendance">
+            <span class="status-icon" [class]="getStatusClass(day.attendance[0].status)">
+              {{ getStatusIcon(day.attendance[0].status) }}
+            </span>
+            <span class="event-type">{{ day.attendance[0].type }}</span>
+            <span class="multiple-events" *ngIf="day.attendance.length > 1">+{{ day.attendance.length - 1 }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="legend">
+        <h3>Leyenda</h3>
+        <div class="legend-items">
+          <div class="legend-item">
+            <span class="legend-icon status-presente">✅</span>
+            <span>Presente</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-icon status-escuela">🏫</span>
+            <span>Escuela</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-icon status-enfermedad">🩺</span>
+            <span>Enfermedad</span>
+          </div>
+          <div class="legend-item">
+            <span class="legend-icon status-falta">❌</span>
+            <span>Falta</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Modal -->
+  <div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>{{ selectedDate?.day }} de {{ monthNames[currentMonth] }}</h3>
+        <button class="close-btn" (click)="closeModal()">×</button>
+      </div>
+      <div class="modal-body" *ngIf="selectedDate?.attendance">
+        <div class="events-list">
+          <div class="event-item" *ngFor="let event of selectedDate.attendance">
+            <div class="event-header">
+              <strong>{{ getEventTypeText(event.type) }}</strong>
+            </div>
+            <div class="attendance-status">
+              <span class="status-icon" [class]="getStatusClass(event.status)">
+                {{ getStatusIcon(event.status) }}
+              </span>
+              <span class="status-text">{{ getStatusText(event.status) }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

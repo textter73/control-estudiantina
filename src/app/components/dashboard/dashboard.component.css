@@ -346,6 +346,46 @@
   color: #666;
 }
 
+/* Acciones Minimalistas */
+.actions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.action {
+  background: white;
+  border: 1px solid rgba(24, 157, 152, 0.08);
+  border-radius: 8px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  color: inherit;
+  box-shadow: 0 1px 3px rgba(24, 157, 152, 0.03);
+}
+
+.action:hover {
+  border-color: rgba(24, 157, 152, 0.2);
+  box-shadow: 0 2px 8px rgba(24, 157, 152, 0.08);
+  transform: translateY(-1px);
+}
+
+.action-icon {
+  font-size: 1.2rem;
+}
+
+.action-text {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #0f6b68;
+}
+
 @media (max-width: 768px) {
   .event-item {
     flex-direction: column;

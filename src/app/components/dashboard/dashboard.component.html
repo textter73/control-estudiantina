@@ -13,34 +13,82 @@
   </header>
 
   <main class="dashboard-main">
-    <div class="admin-menu" *ngIf="isAdmin">
-      <h3>Panel de Administración</h3>
-      <button class="admin-btn" routerLink="/admin">
-        <span class="admin-icon">⚙️</span>
-        Gestionar Usuarios
+    <!-- Acciones -->
+    <div class="actions">
+      <button class="action" routerLink="/attendance-tracking">
+        <span class="action-icon">📊</span>
+        <span class="action-text">Mi asistencia</span>
+      </button>
+      
+      <button class="action" routerLink="/admin" *ngIf="isAdmin">
+        <span class="action-icon">⚙️</span>
+        <span class="action-text">Usuarios</span>
+      </button>
+      
+      <button class="action" routerLink="/attendance" *ngIf="canManageAttendance">
+        <span class="action-icon">✓</span>
+        <span class="action-text">Asistencia</span>
+      </button>
+      
+      <button class="action" routerLink="/attendance-summary" *ngIf="canManageAttendance">
+        <span class="action-icon">📋</span>
+        <span class="action-text">Resumen</span>
+      </button>
+      
+      <button class="action" routerLink="/event-management" *ngIf="canManageEvents">
+        <span class="action-icon">🎉</span>
+        <span class="action-text">Eventos</span>
       </button>
     </div>
 
-    <div class="attendance-menu" *ngIf="canManageAttendance">
-      <h3>Control de Asistencia</h3>
-      <div class="attendance-buttons">
-        <button class="attendance-btn" routerLink="/attendance">
-          <span class="attendance-icon">📅</span>
-          Pasar Asistencia
-        </button>
-        <button class="summary-btn" routerLink="/attendance-summary">
-          <span class="summary-icon">📊</span>
-          Resumen General
-        </button>
+    <!-- Agenda de Eventos -->
+    <div class="events-agenda">
+      <h3>Próximos Eventos</h3>
+      <div class="events-list" *ngIf="activeEvents.length > 0">
+        <div class="event-item" *ngFor="let event of activeEvents">
+          <div class="event-main-info">
+            <div class="event-header">
+              <h4 class="event-title">{{ event.title }}</h4>
+              <div class="event-badges">
+                <span class="type-badge" [class]="event.type">{{ getTypeText(event.type) }}</span>
+                <span class="attire-badge" [class]="event.attire">{{ getAttireText(event.attire) }}</span>
+              </div>
+            </div>
+            
+            <div class="event-details">
+              <div class="event-date">
+                <span class="date-icon">📅</span>
+                <span>{{ event.date }}</span>
+              </div>
+              <div class="event-location" *ngIf="event.location">
+                <span class="location-icon">📍</span>
+                <span>{{ event.location }}</span>
+              </div>
+              <div class="event-times" *ngIf="event.meetingTime || event.startTime">
+                <span class="time-icon">🕰️</span>
+                <span *ngIf="event.meetingTime">Reunión: {{ event.meetingTime }}</span>
+                <span *ngIf="event.startTime"> | Inicio: {{ event.startTime }}</span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="event-confirmation">
+            <div class="confirmation-status">
+              <span class="confirmation-label">Tu confirmación:</span>
+              <span class="confirmation-badge" [class]="getConfirmationClass(event.userConfirmation)">
+                {{ getConfirmationText(event.userConfirmation) }}
+              </span>
+            </div>
+            <button class="view-event-btn" (click)="viewEventDetails(event.id)">
+              Ver Detalles
+            </button>
+          </div>
+        </div>
       </div>
-    </div>
-
-    <div class="event-menu" *ngIf="canManageEvents">
-      <h3>Gestión de Eventos</h3>
-      <button class="event-btn" routerLink="/event-management">
-        <span class="event-icon">🎉</span>
-        Gestionar Eventos
-      </button>
+      
+      <div class="no-events" *ngIf="activeEvents.length === 0">
+        <p>No hay eventos próximos</p>
+      </div>
     </div>
 
     <div class="attendance-chart" (click)="goToTracking()">
@@ -92,7 +140,6 @@
       <div class="attendance-summary">
         <h4>Resumen de Asistencia</h4>
         <div class="summary-list">
-
           <div class="summary-item">
             <span class="summary-icon">✅</span>
             <span class="summary-label">Presente</span>
@@ -126,56 +173,6 @@
             </div>
           </div>
         </div>
-      </div>
-    </div>
-
-    <!-- Agenda de Eventos -->
-    <div class="events-agenda">
-      <h3>Próximos Eventos</h3>
-      <div class="events-list" *ngIf="activeEvents.length > 0">
-        <div class="event-item" *ngFor="let event of activeEvents">
-          <div class="event-main-info">
-            <div class="event-header">
-              <h4 class="event-title">{{ event.title }}</h4>
-              <div class="event-badges">
-                <span class="type-badge" [class]="event.type">{{ getTypeText(event.type) }}</span>
-                <span class="attire-badge" [class]="event.attire">{{ getAttireText(event.attire) }}</span>
-              </div>
-            </div>
-            
-            <div class="event-details">
-              <div class="event-date">
-                <span class="date-icon">📅</span>
-                <span>{{ event.date }}</span>
-              </div>
-              <div class="event-location" *ngIf="event.location">
-                <span class="location-icon">📍</span>
-                <span>{{ event.location }}</span>
-              </div>
-              <div class="event-times" *ngIf="event.meetingTime || event.startTime">
-                <span class="time-icon">🕰️</span>
-                <span *ngIf="event.meetingTime">Reunión: {{ event.meetingTime }}</span>
-                <span *ngIf="event.startTime"> | Inicio: {{ event.startTime }}</span>
-              </div>
-            </div>
-          </div>
-          
-          <div class="event-confirmation">
-            <div class="confirmation-status">
-              <span class="confirmation-label">Tu confirmación:</span>
-              <span class="confirmation-badge" [class]="getConfirmationClass(event.userConfirmation)">
-                {{ getConfirmationText(event.userConfirmation) }}
-              </span>
-            </div>
-            <button class="view-event-btn" (click)="viewEventDetails(event.id)">
-              Ver Detalles
-            </button>
-          </div>
-        </div>
-      </div>
-      
-      <div class="no-events" *ngIf="activeEvents.length === 0">
-        <p>No hay eventos próximos</p>
       </div>
     </div>
 

@@ -30,21 +30,62 @@
       </div>
       
       <div class="form-group">
-        <label for="password">Contraseña</label>
-        <div class="password-input">
+        <label for="password">Contraseña (6 números)</label>
+        <div class="pin-input">
           <input 
-            [type]="showPassword ? 'text' : 'password'" 
-            id="password" 
-            [(ngModel)]="password"
-            name="password"
-            placeholder="••••••••"
-            required>
-          <button 
-            type="button" 
-            class="toggle-password"
-            (click)="togglePassword()">
-            {{ showPassword ? '👁️' : '👁️🗨️' }}
-          </button>
+            type="text" 
+            class="pin-digit"
+            [(ngModel)]="pin1"
+            name="pin1"
+            maxlength="1"
+            pattern="[0-9]"
+            (input)="onPinInput($event, 1)"
+            (keydown)="onPinKeydown($event, 1)">
+          <input 
+            type="text" 
+            class="pin-digit"
+            [(ngModel)]="pin2"
+            name="pin2"
+            maxlength="1"
+            pattern="[0-9]"
+            (input)="onPinInput($event, 2)"
+            (keydown)="onPinKeydown($event, 2)">
+          <input 
+            type="text" 
+            class="pin-digit"
+            [(ngModel)]="pin3"
+            name="pin3"
+            maxlength="1"
+            pattern="[0-9]"
+            (input)="onPinInput($event, 3)"
+            (keydown)="onPinKeydown($event, 3)">
+          <input 
+            type="text" 
+            class="pin-digit"
+            [(ngModel)]="pin4"
+            name="pin4"
+            maxlength="1"
+            pattern="[0-9]"
+            (input)="onPinInput($event, 4)"
+            (keydown)="onPinKeydown($event, 4)">
+          <input 
+            type="text" 
+            class="pin-digit"
+            [(ngModel)]="pin5"
+            name="pin5"
+            maxlength="1"
+            pattern="[0-9]"
+            (input)="onPinInput($event, 5)"
+            (keydown)="onPinKeydown($event, 5)">
+          <input 
+            type="text" 
+            class="pin-digit"
+            [(ngModel)]="pin6"
+            name="pin6"
+            maxlength="1"
+            pattern="[0-9]"
+            (input)="onPinInput($event, 6)"
+            (keydown)="onPinKeydown($event, 6)">
         </div>
       </div>
       

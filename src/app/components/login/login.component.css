@@ -98,31 +98,29 @@
   box-shadow: 0 0 0 3px rgba(24, 157, 152, 0.1);
 }
 
-.password-input {
-  position: relative;
+.pin-input {
   display: flex;
-  align-items: center;
+  gap: 0.5rem;
+  justify-content: center;
 }
 
-.password-input input {
-  padding-right: 50px;
+.pin-digit {
+  width: 50px !important;
+  height: 50px;
+  text-align: center;
+  font-size: 1.5rem;
+  font-weight: 600;
+  border: 2px solid #e1e5e9 !important;
+  border-radius: 10px;
+  padding: 0 !important;
 }
 
-.toggle-password {
-  position: absolute;
-  right: 12px;
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: 18px;
-  padding: 4px;
-  border-radius: 4px;
-  transition: background-color 0.2s;
+.pin-digit:focus {
+  border-color: #189d98 !important;
+  box-shadow: 0 0 0 3px rgba(24, 157, 152, 0.1) !important;
 }
 
-.toggle-password:hover {
-  background-color: #f5f5f5;
-}
+
 
 .login-btn {
   background: linear-gradient(135deg, #189d98 0%, #0f6b68 100%);

@@ -13,6 +13,44 @@
   </header>
 
   <main class="dashboard-main">
+
+    <!-- Mi Tarjeta Bancaria -->
+    <div *ngIf="userAccount">
+      <div class="user-card">
+        <div class="card-design">
+          <div class="card-header">
+            <div class="card-brand">
+              <span class="card-type">ESTUDIANTINA</span>
+              <span class="card-subtitle">TONANTZIN GUADALUPE</span>
+            </div>
+            <div class="card-label">
+              <span class="card-text">CARD</span>
+            </div>
+          </div>
+          
+          <div class="card-number">
+            {{ userAccount.cardNumber | slice:0:4 }} {{ userAccount.cardNumber | slice:4:8 }} {{ userAccount.cardNumber | slice:8:12 }} {{ userAccount.cardNumber | slice:-4 }}
+          </div>
+          
+          <div class="card-info">
+            <div class="account-holder">
+              <span class="label">TITULAR</span>
+              <span class="value">{{ userAccount.userName }}</span>
+            </div>
+            <div class="account-number">
+              <span class="label">CUENTA</span>
+              <span class="value">{{ userAccount.accountNumber }}</span>
+            </div>
+          </div>
+          
+          <div class="card-balance">
+            <span class="balance-label">SALDO DISPONIBLE</span>
+            <span class="balance-amount">${{ userAccount.balance.toFixed(2) }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <br><br>
     <!-- Acciones -->
     <div class="actions">
       <button class="action" routerLink="/attendance-tracking">
@@ -54,44 +92,6 @@
         <span class="action-icon">🏦</span>
         <span class="action-text">Finanzas</span>
       </button>
-    </div>
-
-    <!-- Mi Tarjeta Bancaria -->
-    <div class="user-card-section" *ngIf="userAccount">
-      <h3>💳 Mi Tarjeta</h3>
-      <div class="user-card">
-        <div class="card-design">
-          <div class="card-header">
-            <div class="card-brand">
-              <span class="card-type">ESTUDIANTINA</span>
-              <span class="card-subtitle">TONANTZIN GUADALUPE</span>
-            </div>
-            <div class="card-label">
-              <span class="card-text">CARD</span>
-            </div>
-          </div>
-          
-          <div class="card-number">
-            {{ userAccount.cardNumber | slice:0:4 }} {{ userAccount.cardNumber | slice:4:8 }} {{ userAccount.cardNumber | slice:8:12 }} {{ userAccount.cardNumber | slice:-4 }}
-          </div>
-          
-          <div class="card-info">
-            <div class="account-holder">
-              <span class="label">TITULAR</span>
-              <span class="value">{{ userAccount.userName }}</span>
-            </div>
-            <div class="account-number">
-              <span class="label">CUENTA</span>
-              <span class="value">{{ userAccount.accountNumber }}</span>
-            </div>
-          </div>
-          
-          <div class="card-balance">
-            <span class="balance-label">SALDO DISPONIBLE</span>
-            <span class="balance-amount">${{ userAccount.balance.toFixed(2) }}</span>
-          </div>
-        </div>
-      </div>
     </div>
 
     <!-- Agenda de Eventos -->

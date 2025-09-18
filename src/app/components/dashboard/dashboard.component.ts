@@ -23,6 +23,12 @@ export class DashboardComponent implements OnInit {
   userAccount: any = null;
   showTransportModal = false;
   selectedTransportConfig: any = null;
+  showMovementsModal = false;
+  cardMovements: any[] = [];
+  filteredMovements: any[] = [];
+  movementFilter: string = 'all';
+  users: any[] = [];
+  usersMap: { [key: string]: string } = {};
   attendanceStats = {
     presente: 0,
     escuela: 0,
@@ -83,6 +89,7 @@ export class DashboardComponent implements OnInit {
         this.loadTransportRequests();
         this.loadTicketSales();
         this.loadUserAccount();
+        this.loadUsers();
       } else {
         this.router.navigate(['/']);
       }
@@ -430,5 +437,89 @@ export class DashboardComponent implements OnInit {
     ).valueChanges({ idField: 'id' }).subscribe((accounts: any[]) => {
       this.userAccount = accounts.length > 0 ? accounts[0] : null;
     });
+  }
+
+  loadUsers() {
+    this.firestore.collection('users').valueChanges({ idField: 'id' }).subscribe((users: any[]) => {
+      this.users = users;
+      // Crear un mapa de ID -> nombre para búsqueda rápida
+      this.usersMap = {};
+      users.forEach(user => {
+        this.usersMap[user.id] = user.name || user.email || 'Usuario desconocido';
+      });
+    });
+  }
+
+  getUserName(userId: string): string {
+    return this.usersMap[userId] || 'Usuario desconocido';
+  }
+
+  viewCardMovements() {
+    if (!this.userAccount) return;
+    
+    this.loadCardMovements();
+    this.showMovementsModal = true;
+  }
+
+  loadCardMovements() {
+    if (!this.userAccount) return;
+    
+    // Consulta sin orderBy para evitar el error del índice
+    this.firestore.collection('financial-transactions', ref => 
+      ref.where('accountId', '==', this.userAccount.id)
+    ).valueChanges({ idField: 'id' }).subscribe((movements: any[]) => {
+      // Ordenamos en el cliente para evitar el error del índice
+      this.cardMovements = movements.sort((a, b) => {
+        const timestampA = a.createdAt?.toDate() || new Date(0);
+        const timestampB = b.createdAt?.toDate() || new Date(0);
+        return timestampB.getTime() - timestampA.getTime(); // Orden descendente
+      });
+      this.filterMovements();
+    });
+  }
+
+  filterMovements() {
+    if (this.movementFilter === 'all') {
+      this.filteredMovements = this.cardMovements;
+    } else {
+      this.filteredMovements = this.cardMovements.filter(movement => 
+        movement.type === this.movementFilter
+      );
+    }
+  }
+
+  onMovementFilterChange() {
+    this.filterMovements();
+  }
+
+  closeMovementsModal() {
+    this.showMovementsModal = false;
+    this.cardMovements = [];
+    this.filteredMovements = [];
+    this.movementFilter = 'all';
+  }
+
+  getMovementIcon(type: string): string {
+    switch (type) {
+      case 'deposit': return '💰';
+      case 'withdrawal': return '💸';
+      default: return '💳';
+    }
+  }
+
+  getMovementTypeText(type: string): string {
+    switch (type) {
+      case 'deposit': return 'Depósito';
+      case 'withdrawal': return 'Retiro';
+      default: return type;
+    }
+  }
+
+  getMovementClass(type: string): string {
+    switch (type) {
+      case 'deposit': return 'movement-deposit';
+      case 'withdrawal': return 'movement-withdrawal';
+      default: return '';
+    }
   }
 }

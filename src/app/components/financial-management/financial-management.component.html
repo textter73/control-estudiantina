@@ -147,7 +147,17 @@
               [(ngModel)]="transactionAmount" 
               min="0.01" 
               step="0.01"
-              placeholder="0.00">
+              [max]="transactionType === 'withdrawal' ? selectedAccount?.balance : null"
+              placeholder="0.00"
+              (input)="validateTransactionAmount()">
+            <div class="balance-info" *ngIf="transactionType === 'withdrawal' && selectedAccount">
+              <small class="balance-text">
+                💰 Saldo disponible: <strong>${{ selectedAccount.balance.toFixed(2) }}</strong>
+              </small>
+              <small class="warning-text" *ngIf="transactionAmount > selectedAccount.balance">
+                ⚠️ El monto excede el saldo disponible
+              </small>
+            </div>
           </div>
           
           <div class="form-group">

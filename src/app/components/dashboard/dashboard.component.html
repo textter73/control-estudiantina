@@ -17,7 +17,7 @@
     <!-- Mi Tarjeta Bancaria -->
     <div *ngIf="userAccount">
       <div class="user-card">
-        <div class="card-design">
+        <div class="card-design clickable-card" (click)="viewCardMovements()">
           <div class="card-header">
             <div class="card-brand">
               <span class="card-type">ESTUDIANTINA</span>
@@ -366,6 +366,72 @@
       
       <div class="modal-footer">
         <button class="close-btn-footer" (click)="closeTransportModal()">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Movimientos de Tarjeta -->
+  <div class="movements-modal" *ngIf="showMovementsModal" (click)="closeMovementsModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h4>💳 Historial de Movimientos</h4>
+        <button class="close-btn" (click)="closeMovementsModal()">✕</button>
+      </div>
+      
+      <div class="modal-body">
+        <div class="account-summary">
+          <div class="account-info">
+            <span class="account-name">{{ userAccount?.userName }}</span>
+            <span class="account-number">{{ userAccount?.accountNumber }}</span>
+          </div>
+          <div class="current-balance">
+            <span class="balance-amount">${{ userAccount?.balance?.toFixed(2) }}</span>
+          </div>
+        </div>
+
+        <div class="filter-section">
+          <label for="movementFilter">Filtrar por tipo:</label>
+          <select id="movementFilter" [(ngModel)]="movementFilter" (change)="onMovementFilterChange()">
+            <option value="all">Todos los movimientos</option>
+            <option value="deposit">Solo depósitos</option>
+            <option value="withdrawal">Solo retiros</option>
+          </select>
+        </div>
+
+        <div class="movements-list" *ngIf="filteredMovements.length > 0">
+          <div class="movement-item" *ngFor="let movement of filteredMovements" [class]="getMovementClass(movement.type)">
+            <div class="movement-content">
+              <div class="movement-info">
+                <span class="movement-concept">{{ movement.concept }}</span>
+                <span class="movement-date">{{ movement.createdAt?.toDate() | date:'dd/MM/yyyy HH:mm' }}</span>
+                <span class="movement-user" *ngIf="movement.createdBy">Por: {{ getUserName(movement.createdBy) }}</span>
+              </div>
+              <span class="movement-amount" [class]="movement.type">
+                {{ movement.type === 'deposit' ? '+' : '-' }}${{ movement.amount.toFixed(2) }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="no-movements" *ngIf="filteredMovements.length === 0 && cardMovements.length > 0">
+          <div class="empty-state">
+            <div class="empty-icon">🔍</div>
+            <h4>No hay movimientos de este tipo</h4>
+            <p>Cambia el filtro para ver otros movimientos</p>
+          </div>
+        </div>
+
+        <div class="no-movements" *ngIf="cardMovements.length === 0">
+          <div class="empty-state">
+            <div class="empty-icon">💳</div>
+            <h4>Sin movimientos</h4>
+            <p>Aún no tienes transacciones en tu cuenta</p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="modal-footer">
+        <button class="close-btn-footer" (click)="closeMovementsModal()">Cerrar</button>
       </div>
     </div>
   </div>

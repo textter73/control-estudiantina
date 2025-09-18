@@ -132,13 +132,38 @@ export class FinancialManagementComponent implements OnInit {
     this.selectedAccount = null;
   }
 
+  validateTransactionAmount() {
+    if (this.transactionType === 'withdrawal' && this.selectedAccount) {
+      // Limitar el monto al saldo disponible si es mayor
+      if (this.transactionAmount > this.selectedAccount.balance) {
+        // No modificamos el valor automáticamente, solo mostramos la advertencia
+        // El usuario debe corregir manualmente el monto
+      }
+    }
+  }
+
   async processTransaction() {
     if (!this.selectedAccount || this.transactionAmount <= 0 || !this.transactionConcept) {
-      Swal.fire('Error', 'Complete todos los campos', 'error');
+      Swal.fire('Error', 'Complete todos los campos correctamente', 'error');
       return;
     }
 
+    // Validación específica para retiros
     if (this.transactionType === 'withdrawal') {
+      if (this.transactionAmount > this.selectedAccount.balance) {
+        Swal.fire({
+          title: 'Error de Validación',
+          html: `
+            <p>❌ <strong>No se puede procesar el retiro</strong></p>
+            <p>Monto solicitado: <strong>$${this.transactionAmount.toFixed(2)}</strong></p>
+            <p>Saldo disponible: <strong>$${this.selectedAccount.balance.toFixed(2)}</strong></p>
+            <p>Por favor, ingrese un monto menor o igual al saldo disponible.</p>
+          `,
+          icon: 'error',
+          confirmButtonText: 'Entendido'
+        });
+        return;
+      }
       await this.processWithdrawal();
     } else {
       await this.processDeposit();
@@ -181,33 +206,53 @@ export class FinancialManagementComponent implements OnInit {
   }
 
   async processWithdrawal() {
-    if (this.selectedAccount.balance < this.transactionAmount) {
-      Swal.fire('Error', 'Saldo insuficiente', 'error');
+    // Validación más robusta del saldo
+    if (!this.selectedAccount || !this.selectedAccount.balance) {
+      Swal.fire('Error', 'No se pudo obtener el saldo de la cuenta', 'error');
       return;
     }
 
-    // Solicitar contraseña del usuario
-    const { value: password } = await Swal.fire({
+    if (this.transactionAmount <= 0) {
+      Swal.fire('Error', 'El monto debe ser mayor a cero', 'error');
+      return;
+    }
+
+    if (this.transactionAmount > this.selectedAccount.balance) {
+      Swal.fire({
+        title: 'Saldo Insuficiente',
+        html: `
+          <p>No se puede retirar <strong>$${this.transactionAmount.toFixed(2)}</strong></p>
+          <p>Saldo disponible: <strong>$${this.selectedAccount.balance.toFixed(2)}</strong></p>
+          <p>Faltante: <strong>$${(this.transactionAmount - this.selectedAccount.balance).toFixed(2)}</strong></p>
+        `,
+        icon: 'error',
+        confirmButtonText: 'Entendido'
+      });
+      return;
+    }
+
+    // Confirmar retiro sin contraseña
+    const result = await Swal.fire({
       title: 'Confirmar Retiro',
-      text: `Ingrese la contraseña de ${this.selectedAccount.userName}`,
-      input: 'password',
-      inputPlaceholder: 'Contraseña',
+      html: `
+        <p>¿Está seguro de retirar <strong>$${this.transactionAmount.toFixed(2)}</strong> de la cuenta de <strong>${this.selectedAccount.userName}</strong>?</p>
+        <p>Saldo actual: <strong>$${this.selectedAccount.balance.toFixed(2)}</strong></p>
+        <p>Saldo después del retiro: <strong>$${(this.selectedAccount.balance - this.transactionAmount).toFixed(2)}</strong></p>
+      `,
+      icon: 'warning',
       showCancelButton: true,
-      confirmButtonText: 'Confirmar Retiro',
-      cancelButtonText: 'Cancelar'
+      confirmButtonText: 'Sí, confirmar retiro',
+      cancelButtonText: 'Cancelar',
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6'
     });
 
-    if (!password) return;
+    if (!result.isConfirmed) return;
 
-    // Verificar contraseña
     try {
-      const userDoc = await this.firestore.collection('users').doc(this.selectedAccount.userId).get().toPromise();
-      const userData = userDoc?.data();
-      
-      // Aquí deberías verificar la contraseña hasheada, por simplicidad usamos comparación directa
-      // En producción, usar bcrypt o similar
-      if ((userData as any)?.password !== password) {
-        Swal.fire('Error', 'Contraseña incorrecta', 'error');
+      // Verificar saldo una vez más antes de procesar (por seguridad)
+      if (this.transactionAmount > this.selectedAccount.balance) {
+        Swal.fire('Error', 'El saldo de la cuenta ha cambiado. Por favor, actualice la página e intente nuevamente.', 'error');
         return;
       }
 
@@ -223,7 +268,7 @@ export class FinancialManagementComponent implements OnInit {
         balanceAfter: newBalance,
         createdAt: new Date(),
         createdBy: this.user.uid,
-        authorizedBy: this.selectedAccount.userId
+        authorizedBy: this.user.uid // El administrador autoriza el retiro
       };
 
       const batch = this.firestore.firestore.batch();

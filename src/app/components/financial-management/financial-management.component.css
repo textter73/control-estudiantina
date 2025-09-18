@@ -148,9 +148,79 @@
   box-shadow: 0 8px 32px rgba(0,0,0,0.1);
 }
 
+.accounts-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
 .accounts-section h3 {
   color: #2c3e50;
-  margin-bottom: 1.5rem;
+  margin: 0;
+}
+
+.search-container {
+  flex: 1;
+  max-width: 400px;
+  min-width: 250px;
+}
+
+.search-box {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.search-icon {
+  position: absolute;
+  left: 1rem;
+  color: #6c757d;
+  z-index: 2;
+}
+
+.search-input {
+  width: 100%;
+  padding: 0.75rem 1rem 0.75rem 2.5rem;
+  border: 2px solid #e9ecef;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  background: #f8f9fa;
+  transition: all 0.3s ease;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #189d98;
+  background: white;
+  box-shadow: 0 0 0 3px rgba(24, 157, 152, 0.1);
+}
+
+.search-input::placeholder {
+  color: #6c757d;
+}
+
+.clear-search {
+  position: absolute;
+  right: 0.5rem;
+  background: #6c757d;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  transition: all 0.3s ease;
+}
+
+.clear-search:hover {
+  background: #189d98;
 }
 
 .accounts-grid {
@@ -172,35 +242,80 @@
   box-shadow: 0 12px 40px rgba(0,0,0,0.15);
 }
 
+.user-card {
+  max-width: 400px;
+  margin: 0 auto;
+}
+
 .card-design {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #000;
   color: white;
-  padding: 2rem;
+  padding: 2.5rem;
+  border-radius: 20px;
   position: relative;
   overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.6);
 }
 
 .card-design::before {
   content: '';
   position: absolute;
-  top: -50%;
-  right: -50%;
-  width: 100%;
-  height: 100%;
-  background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 280px;
+  height: 280px;
+  background-image: url('/assets/estonantzin.jpeg');
+  background-size: cover;
+  background-position: center;
+  opacity: 0.2;
+  filter: grayscale(30%);
+  z-index: 1;
 }
 
 .card-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2rem;
+  align-items: flex-start;
+  width: 100%;
+  margin-bottom: 1.5rem;
+  position: relative;
+  z-index: 5;
+}
+
+.card-brand {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
 }
 
 .card-type {
-  font-size: 0.9rem;
-  font-weight: 600;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: #ffd700;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+}
+
+.card-subtitle {
+  font-size: 0.7rem;
+  font-weight: 500;
   letter-spacing: 1px;
+  color: rgba(255,255,255,0.8);
+  text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+}
+
+.card-label {
+  display: flex;
+  align-items: flex-end;
+}
+
+.card-text {
+  font-size: 1.2rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: #ffd700;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.5);
 }
 
 .card-status {
@@ -209,20 +324,27 @@
   font-size: 0.8rem;
   font-weight: 600;
   background: rgba(255,255,255,0.2);
+  text-transform: uppercase;
 }
 
 .card-number {
   font-family: 'Courier New', monospace;
-  font-size: 1.5rem;
-  font-weight: 600;
-  letter-spacing: 2px;
-  margin-bottom: 1.5rem;
+  font-size: 1.8rem;
+  font-weight: 500;
+  letter-spacing: 3px;
+  margin-bottom: 1.2rem;
+  opacity: 1;
+  position: relative;
+  z-index: 5;
 }
 
 .card-info {
   display: flex;
   justify-content: space-between;
   margin-bottom: 1.5rem;
+  opacity: 0.8;
+  position: relative;
+  z-index: 5;
 }
 
 .account-holder,
@@ -247,6 +369,8 @@
   text-align: center;
   padding-top: 1rem;
   border-top: 1px solid rgba(255,255,255,0.2);
+  position: relative;
+  z-index: 5;
 }
 
 .balance-label {
@@ -257,8 +381,9 @@
 }
 
 .balance-amount {
-  font-size: 2rem;
-  font-weight: 700;
+  font-size: 2.5rem;
+  font-weight: 300;
+  color: #ffd700;
 }
 
 .card-actions {
@@ -496,6 +621,17 @@
   .accounts-section {
     padding: 1rem;
     margin-bottom: 1rem;
+  }
+  
+  .accounts-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+  
+  .search-container {
+    max-width: none;
+    min-width: auto;
   }
   
   .user-card {

@@ -15,6 +15,8 @@ export class FinancialManagementComponent implements OnInit {
   userProfile: any = null;
   users: any[] = [];
   accounts: any[] = [];
+  filteredAccounts: any[] = [];
+  searchTerm: string = '';
   selectedUser: any = null;
   selectedAccount: any = null;
   showTransactionModal = false;
@@ -61,7 +63,26 @@ export class FinancialManagementComponent implements OnInit {
   loadAccounts() {
     this.firestore.collection('financial-accounts').valueChanges({ idField: 'id' }).subscribe((accounts: any[]) => {
       this.accounts = accounts;
+      this.filteredAccounts = accounts;
+      this.filterAccounts();
     });
+  }
+
+  filterAccounts() {
+    if (!this.searchTerm || this.searchTerm.trim() === '') {
+      this.filteredAccounts = this.accounts;
+    } else {
+      const searchTermLower = this.searchTerm.toLowerCase();
+      this.filteredAccounts = this.accounts.filter(account => 
+        account.userName?.toLowerCase().includes(searchTermLower) ||
+        account.accountNumber?.toLowerCase().includes(searchTermLower) ||
+        account.cardNumber?.toLowerCase().includes(searchTermLower)
+      );
+    }
+  }
+
+  onSearchChange() {
+    this.filterAccounts();
   }
 
   async createAccount(userId: string) {

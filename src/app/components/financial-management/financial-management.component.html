@@ -37,33 +37,60 @@
 
     <!-- Cuentas existentes -->
     <div class="accounts-section">
-      <h3>💳 Cuentas Activas</h3>
+      <div class="accounts-header">
+        <h3>💳 Cuentas Activas</h3>
+        <div class="search-container">
+          <div class="search-box">
+            <span class="search-icon">🔍</span>
+            <input 
+              type="text" 
+              placeholder="Buscar por nombre del titular..." 
+              [(ngModel)]="searchTerm"
+              (input)="onSearchChange()"
+              class="search-input">
+            <button 
+              *ngIf="searchTerm" 
+              class="clear-search"
+              (click)="searchTerm = ''; onSearchChange()">
+              ✕
+            </button>
+          </div>
+        </div>
+      </div>
+      
       <div class="accounts-grid">
-        <div class="account-card" *ngFor="let account of accounts">
-          <div class="card-design">
-            <div class="card-header">
-              <span class="card-type">ESTUDIANTINA CARD</span>
-              <span class="card-status" [class]="account.status">{{ account.status }}</span>
-            </div>
-            
-            <div class="card-number">
-              {{ account.cardNumber | slice:0:4 }} **** **** {{ account.cardNumber | slice:-4 }}
-            </div>
-            
-            <div class="card-info">
-              <div class="account-holder">
-                <span class="label">TITULAR</span>
-                <span class="value">{{ account.userName }}</span>
+        <div class="account-card" *ngFor="let account of filteredAccounts">
+          <div class="user-card">
+            <div class="card-design">
+              <div class="card-header">
+                <div class="card-brand">
+                  <span class="card-type">ESTUDIANTINA</span>
+                  <span class="card-subtitle">TONANTZIN GUADALUPE</span>
+                </div>
+                <div class="card-label">
+                  <span class="card-text">CARD</span>
+                </div>
               </div>
-              <div class="account-number">
-                <span class="label">CUENTA</span>
-                <span class="value">{{ account.accountNumber }}</span>
+              
+              <div class="card-number">
+                {{ account.cardNumber | slice:0:4 }} {{ account.cardNumber | slice:4:8 }} {{ account.cardNumber | slice:8:12 }} {{ account.cardNumber | slice:-4 }}
               </div>
-            </div>
-            
-            <div class="card-balance">
-              <span class="balance-label">SALDO DISPONIBLE</span>
-              <span class="balance-amount">${{ account.balance.toFixed(2) }}</span>
+              
+              <div class="card-info">
+                <div class="account-holder">
+                  <span class="label">TITULAR</span>
+                  <span class="value">{{ account.userName }}</span>
+                </div>
+                <div class="account-number">
+                  <span class="label">CUENTA</span>
+                  <span class="value">{{ account.accountNumber }}</span>
+                </div>
+              </div>
+              
+              <div class="card-balance">
+                <span class="balance-label">SALDO DISPONIBLE</span>
+                <span class="balance-amount">${{ account.balance.toFixed(2) }}</span>
+              </div>
             </div>
           </div>
           
@@ -75,6 +102,14 @@
               💸 Retirar
             </button>
           </div>
+        </div>
+      </div>
+      
+      <div class="no-accounts" *ngIf="filteredAccounts.length === 0 && accounts.length > 0">
+        <div class="empty-state">
+          <div class="empty-icon">🔍</div>
+          <h3>No se encontraron cuentas</h3>
+          <p>No hay cuentas que coincidan con tu búsqueda</p>
         </div>
       </div>
       

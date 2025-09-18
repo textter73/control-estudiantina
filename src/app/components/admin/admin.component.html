@@ -10,44 +10,43 @@
   </header>
 
   <main class="admin-main">
-    <div class="users-table">
-      <table>
-        <thead>
-          <tr>
-            <th>Nombre</th>
-            <th>Email</th>
-            <th>Perfiles Asignados</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let user of users">
-            <td>{{ user.name }}</td>
-            <td>{{ user.email }}</td>
-            <td>
-              <div class="profiles-list">
-                <span class="profile-tag" *ngFor="let profile of user.profiles">
-                  {{ profile }}
-                </span>
-              </div>
-            </td>
-            <td>
-              <div class="action-buttons">
-                <button 
-                  class="assign-btn" 
-                  (click)="assignProfile(user.uid, user.name)">
-                  Asignar Perfil
-                </button>
-                <button 
-                  class="remove-btn" 
-                  (click)="removeProfile(user.uid, user.name, user.profiles)">
-                  Quitar Perfil
-                </button>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+    
+
+    <!-- Vista de tarjetas para móvil -->
+    <div class="users-cards mobile-view">
+      <div class="user-card" *ngFor="let user of users">
+        <div class="card-header">
+          <h3>{{ user.name }}</h3>
+          <p class="user-email">{{ user.email }}</p>
+        </div>
+        
+        <div class="card-body">
+          <div class="profiles-section">
+            <label class="section-label">Perfiles asignados:</label>
+            <div class="profiles-list">
+              <span class="profile-tag" *ngFor="let profile of user.profiles">
+                {{ profile }}
+              </span>
+              <span *ngIf="user.profiles?.length === 0" class="no-profiles">
+                Sin perfiles asignados
+              </span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="card-actions">
+          <button 
+            class="assign-btn" 
+            (click)="assignProfile(user.uid, user.name)">
+            Asignar Perfil
+          </button>
+          <button 
+            class="remove-btn" 
+            (click)="removeProfile(user.uid, user.name, user.profiles)">
+            Quitar Perfil
+          </button>
+        </div>
+      </div>
     </div>
   </main>
 </div>

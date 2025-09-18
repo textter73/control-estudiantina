@@ -1275,7 +1275,7 @@
 .user-card .card-number {
   font-family: 'Courier New', monospace;
   font-size: 1.8rem;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: 3px;
   margin-bottom: 1.2rem;
   opacity: 1;
@@ -1283,6 +1283,7 @@
   z-index: 5;
   text-align: center;
   color: #ffffff;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.9), 0 1px 2px rgba(0,0,0,0.6);
   text-shadow: 0 2px 4px rgba(0,0,0,0.8);
 }
 
@@ -1358,6 +1359,8 @@
   .user-card .card-number {
     font-size: 1.2rem;
     letter-spacing: 2px;
+    font-weight: 700;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.9), 0 1px 2px rgba(0,0,0,0.6);
   }
   
   .user-card .balance-amount {

@@ -19,6 +19,7 @@ import { AngularFirestoreModule } from '@angular/fire/compat/firestore';
 import { firebaseConfig } from '../environments/firebase.config';
 import { TransportManagementComponent } from './components/transport-management/transport-management.component';
 import { TicketSalesComponent } from './components/ticket-sales/ticket-sales.component';
+import { FinancialManagementComponent } from './components/financial-management/financial-management.component';
 
 @NgModule({
   declarations: [
@@ -33,7 +34,8 @@ import { TicketSalesComponent } from './components/ticket-sales/ticket-sales.com
     EventManagementComponent,
     EventDetailsComponent,
     TransportManagementComponent,
-    TicketSalesComponent
+    TicketSalesComponent,
+    FinancialManagementComponent
   ],
   imports: [
     BrowserModule,

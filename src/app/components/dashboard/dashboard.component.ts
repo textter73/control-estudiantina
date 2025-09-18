@@ -20,6 +20,7 @@ export class DashboardComponent implements OnInit {
   activeEvents: any[] = [];
   transportRequests: any[] = [];
   ticketSales: any[] = [];
+  userAccount: any = null;
   showTransportModal = false;
   selectedTransportConfig: any = null;
   attendanceStats = {
@@ -81,6 +82,7 @@ export class DashboardComponent implements OnInit {
         this.loadActiveEvents();
         this.loadTransportRequests();
         this.loadTicketSales();
+        this.loadUserAccount();
       } else {
         this.router.navigate(['/']);
       }
@@ -418,5 +420,15 @@ export class DashboardComponent implements OnInit {
       case 'sin-boletos': return 'payment-none';
       default: return '';
     }
+  }
+
+  loadUserAccount() {
+    if (!this.user) return;
+    
+    this.firestore.collection('financial-accounts', ref => 
+      ref.where('userId', '==', this.user.uid)
+    ).valueChanges({ idField: 'id' }).subscribe((accounts: any[]) => {
+      this.userAccount = accounts.length > 0 ? accounts[0] : null;
+    });
   }
 }

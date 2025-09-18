@@ -1,0 +1,137 @@
+<div class="financial-container">
+  <header class="financial-header" style="background: linear-gradient(135deg, #189d98 0%, #0f6b68 100%); color: white; padding: 1rem 0; box-shadow: 0 4px 20px rgba(0,0,0,0.1);">
+    <div class="header-content">
+      <div class="logo-section">
+        <img src="assets/estonantzin.jpeg" alt="Logo Estudiantina" class="logo">
+        <h4>Estudiantina Tonantzin Guadalupe</h4>
+      </div>
+      <div class="user-info">
+        <button class="back-btn" (click)="goBack()">
+          ← Dashboard
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="financial-main">
+    <div class="page-title">
+      <h2>🏦 Gestión Financiera</h2>
+      <p>Sistema bancario para integrantes</p>
+    </div>
+
+    <!-- Usuarios sin cuenta -->
+    <div class="users-without-account" *ngIf="getUsersWithoutAccount().length > 0">
+      <h3>👥 Crear Cuentas</h3>
+      <div class="users-grid">
+        <div class="user-card" *ngFor="let user of getUsersWithoutAccount()">
+          <div class="user-info">
+            <span class="user-name">{{ user.name }}</span>
+            <span class="user-email">{{ user.email }}</span>
+          </div>
+          <button class="create-account-btn" (click)="createAccount(user.id)">
+            ➕ Crear Cuenta
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cuentas existentes -->
+    <div class="accounts-section">
+      <h3>💳 Cuentas Activas</h3>
+      <div class="accounts-grid">
+        <div class="account-card" *ngFor="let account of accounts">
+          <div class="card-design">
+            <div class="card-header">
+              <span class="card-type">ESTUDIANTINA CARD</span>
+              <span class="card-status" [class]="account.status">{{ account.status }}</span>
+            </div>
+            
+            <div class="card-number">
+              {{ account.cardNumber | slice:0:4 }} **** **** {{ account.cardNumber | slice:-4 }}
+            </div>
+            
+            <div class="card-info">
+              <div class="account-holder">
+                <span class="label">TITULAR</span>
+                <span class="value">{{ account.userName }}</span>
+              </div>
+              <div class="account-number">
+                <span class="label">CUENTA</span>
+                <span class="value">{{ account.accountNumber }}</span>
+              </div>
+            </div>
+            
+            <div class="card-balance">
+              <span class="balance-label">SALDO DISPONIBLE</span>
+              <span class="balance-amount">${{ account.balance.toFixed(2) }}</span>
+            </div>
+          </div>
+          
+          <div class="card-actions">
+            <button class="action-btn deposit" (click)="openTransactionModal(account, 'deposit')">
+              💰 Depositar
+            </button>
+            <button class="action-btn withdraw" (click)="openTransactionModal(account, 'withdrawal')">
+              💸 Retirar
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      <div class="no-accounts" *ngIf="accounts.length === 0">
+        <div class="empty-state">
+          <div class="empty-icon">💳</div>
+          <h3>No hay cuentas creadas</h3>
+          <p>Crea cuentas para los integrantes para comenzar</p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Modal de Transacción -->
+  <div class="transaction-modal" *ngIf="showTransactionModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>{{ transactionType === 'deposit' ? '💰 Realizar Depósito' : '💸 Realizar Retiro' }}</h3>
+        <button class="close-btn" (click)="closeTransactionModal()">✕</button>
+      </div>
+      
+      <div class="modal-body">
+        <div class="account-info">
+          <h4>{{ selectedAccount?.userName }}</h4>
+          <p>Cuenta: {{ selectedAccount?.accountNumber }}</p>
+          <p>Saldo actual: ${{ selectedAccount?.balance.toFixed(2) }}</p>
+        </div>
+        
+        <div class="transaction-form">
+          <div class="form-group">
+            <label for="amount">Monto:</label>
+            <input 
+              type="number" 
+              id="amount" 
+              [(ngModel)]="transactionAmount" 
+              min="0.01" 
+              step="0.01"
+              placeholder="0.00">
+          </div>
+          
+          <div class="form-group">
+            <label for="concept">Concepto:</label>
+            <input 
+              type="text" 
+              id="concept" 
+              [(ngModel)]="transactionConcept" 
+              placeholder="Descripción del movimiento">
+          </div>
+        </div>
+      </div>
+      
+      <div class="modal-footer">
+        <button class="cancel-btn" (click)="closeTransactionModal()">Cancelar</button>
+        <button class="confirm-btn" (click)="processTransaction()">
+          {{ transactionType === 'deposit' ? 'Depositar' : 'Retirar' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

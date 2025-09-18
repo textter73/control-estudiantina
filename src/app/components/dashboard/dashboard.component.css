@@ -1175,7 +1175,8 @@
 }
 
 .user-card {
-  max-width: 400px;
+  width: 80%;
+  max-width: none;
   margin: 0 auto;
 }
 
@@ -1274,17 +1275,21 @@
 .user-card .card-number {
   font-family: 'Courier New', monospace;
   font-size: 1.8rem;
-  font-weight: 500;
+  font-weight: 600;
   letter-spacing: 3px;
   margin-bottom: 1.2rem;
   opacity: 1;
   position: relative;
   z-index: 5;
+  text-align: center;
+  color: #ffffff;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.8);
 }
 
 .user-card .card-info {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
+  gap: 3rem;
   margin-bottom: 1.5rem;
   opacity: 0.8;
   position: relative;
@@ -1296,17 +1301,24 @@
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
+  text-align: center;
 }
 
 .user-card .label {
-  font-size: 0.7rem;
-  opacity: 0.8;
-  letter-spacing: 1px;
+  font-size: 0.8rem;
+  opacity: 0.95;
+  letter-spacing: 1.5px;
+  font-weight: 700;
+  color: #ffd700;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.7);
 }
 
 .user-card .value {
-  font-size: 0.9rem;
-  font-weight: 600;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #ffffff;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+  letter-spacing: 0.5px;
 }
 
 .user-card .card-balance {
@@ -1335,6 +1347,10 @@
     padding: 1rem;
   }
   
+  .user-card {
+    width: 85%;
+  }
+  
   .user-card .card-design {
     padding: 1.5rem;
   }
@@ -1351,6 +1367,7 @@
   .user-card .card-info {
     flex-direction: column;
     gap: 1rem;
+    align-items: center;
   }
 }
 

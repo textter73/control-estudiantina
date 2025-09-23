@@ -94,10 +94,9 @@
           Finalizar Transporte
         </button>
         <button 
-          class="action-btn cancel-btn" 
-          *ngIf="request.status !== 'completado' && request.status !== 'cancelado'"
-          (click)="updateRequestStatus(request.id, 'cancelado')">
-          Cancelar
+          class="action-btn exit-btn" 
+          (click)="goBack()">
+          ← Salir
         </button>
       </div>
     </div>
@@ -128,10 +127,7 @@
             <input type="number" [(ngModel)]="totalCost" min="0" step="0.01">
           </div>
           <div class="global-price" *ngIf="getTotalTicketPrice() > 0">
-            <div class="global-price-info">
-              <span class="global-price-label">🎫 Precio promedio por boleto:</span>
-              <span class="global-price-value">${{ getTotalTicketPrice() }}</span>
-            </div>
+            <span class="global-price-label">🎫 Precio promedio: ${{ getTotalTicketPrice() }}</span>
           </div>
         </div>
         
@@ -163,14 +159,9 @@
                 </div>
               </div>
               
-              <div class="ticket-price" *ngIf="vehicle.occupiedSeats > 0">
-                <div class="price-info">
-                  <span class="price-label">🎫 Precio por boleto:</span>
-                  <span class="price-value">${{ getVehicleTicketPrice(vehicle) }}</span>
-                </div>
-                <div class="total-vehicle" *ngIf="vehicle.vehicleCost > 0">
-                  <span class="total-label">Total vehículo: ${{ vehicle.vehicleCost }}</span>
-                </div>
+              <div class="ticket-price" *ngIf="vehicle.occupiedSeats > 0 && vehicle.vehicleCost > 0">
+                <span class="price-label">🎫 ${{ getVehicleTicketPrice(vehicle) }} por boleto</span>
+                <span class="total-label">Total: ${{ vehicle.vehicleCost }}</span>
               </div>
               <div class="seats-grid">
                 <div 
@@ -204,9 +195,13 @@
       </div>
       
       <div class="modal-footer">
-        <button class="save-btn" (click)="saveTransportConfig()">💾 Guardar Configuración</button>
-        <button class="finalize-btn" *ngIf="selectedRequest?.status === 'guardado'" (click)="finalizeTransportFromModal()">✓ Finalizar Transporte</button>
-        <button class="cancel-btn" (click)="closeTransportModal()">Cancelar</button>
+        <div class="secondary-actions">
+          <button class="cancel-btn" (click)="closeTransportModal()">Cancelar</button>
+        </div>
+        <div class="primary-actions">
+          <button class="save-btn" (click)="saveTransportConfig()">💾 Guardar Configuración</button>
+          <button class="finalize-btn" *ngIf="selectedRequest?.status === 'guardado'" (click)="finalizeTransportFromModal()">✓ Finalizar Transporte</button>
+        </div>
       </div>
     </div>
   </div>

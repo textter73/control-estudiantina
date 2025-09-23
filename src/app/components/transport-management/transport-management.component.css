@@ -217,6 +217,16 @@
   background: #c82333;
 }
 
+.exit-btn {
+  background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+  color: white;
+}
+
+.exit-btn:hover {
+  background: linear-gradient(135deg, #5a6268 0%, #343a40 100%);
+  transform: translateY(-1px);
+}
+
 .no-requests {
   text-align: center;
   padding: 3rem;
@@ -332,8 +342,8 @@
   border-radius: 12px;
   width: 95%;
   max-width: 1400px;
-  max-height: 95vh;
-  overflow: hidden;
+  max-height: none;
+  overflow: visible;
   display: flex;
   flex-direction: column;
 }
@@ -359,7 +369,7 @@
 
 .modal-body {
   padding: 1.5rem;
-  overflow-y: auto;
+  overflow: visible;
   flex: 1;
 }
 
@@ -394,8 +404,6 @@
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 1rem;
   margin-bottom: 1.5rem;
-  max-height: 60vh;
-  overflow-y: auto;
 }
 
 .vehicle-card {
@@ -404,7 +412,7 @@
   padding: 1rem;
   background: white;
   min-width: 280px;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .vehicle-header {
@@ -478,33 +486,21 @@
   border-radius: 6px;
   margin-bottom: 1rem;
   border-left: 4px solid #28a745;
-}
-
-.price-info {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
 }
 
 .price-label {
-  font-weight: 500;
+  font-weight: 600;
   color: #155724;
 }
 
-.price-value {
-  font-weight: 700;
-  color: #28a745;
-  font-size: 1.1rem;
-}
-
-.total-vehicle {
-  text-align: center;
-}
-
 .total-label {
-  font-size: 0.85rem;
+  font-weight: 500;
   color: #6c757d;
+  font-size: 0.85rem;
 }
 
 .global-price {
@@ -513,23 +509,13 @@
   border-radius: 6px;
   margin-top: 1rem;
   border-left: 4px solid #17a2b8;
-}
-
-.global-price-info {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  text-align: center;
 }
 
 .global-price-label {
   font-weight: 600;
   color: #0c5460;
-}
-
-.global-price-value {
-  font-weight: 700;
-  color: #17a2b8;
-  font-size: 1.2rem;
+  font-size: 1rem;
 }
 
 .occupancy {
@@ -542,9 +528,10 @@
 
 .seats-grid {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(5, minmax(40px, 1fr));
   gap: 0.25rem;
   overflow-x: auto;
+  overflow-y: visible;
   min-width: 250px;
   padding-bottom: 0.5rem;
 }
@@ -627,33 +614,84 @@
 
 .modal-footer {
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
+  align-items: center;
   gap: 1rem;
-  padding: 1.5rem;
+  padding: 1.5rem 2rem;
   border-top: 1px solid #e0e0e0;
+  background: #f8f9fa;
+  border-radius: 0 0 16px 16px;
+}
+
+.modal-footer .primary-actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.modal-footer .secondary-actions {
+  display: flex;
+  gap: 0.75rem;
 }
 
 .save-btn {
-  background: #28a745;
+  background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
   color: white;
   border: none;
   padding: 0.75rem 1.5rem;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
   font-weight: 600;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(40, 167, 69, 0.3);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .save-btn:hover {
-  background: #218838;
+  background: linear-gradient(135deg, #218838 0%, #1e7e34 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(40, 167, 69, 0.4);
+}
+
+.finalize-btn {
+  background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 123, 255, 0.3);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.finalize-btn:hover {
+  background: linear-gradient(135deg, #0056b3 0%, #004085 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 123, 255, 0.4);
 }
 
 .cancel-btn {
   background: #6c757d;
   color: white;
   border: none;
-  padding: 0.75rem 1.5rem;
-  border-radius: 6px;
+  padding: 0.75rem 1.25rem;
+  border-radius: 8px;
   cursor: pointer;
+  font-weight: 500;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+}
+
+.cancel-btn:hover {
+  background: #5a6268;
+  transform: translateY(-1px);
 }
 
 @media (max-width: 768px) {
@@ -674,6 +712,111 @@
   }
   
   .request-actions {
+    flex-direction: column;
+    gap: 0.75rem;
+    align-items: stretch;
+  }
+  
+  .action-btn {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    font-size: 0.9rem;
+    text-align: center;
     justify-content: center;
+  }
+  
+  .modal-footer {
+    flex-direction: column-reverse;
+    gap: 1rem;
+    padding: 1rem;
+  }
+  
+  .modal-footer .primary-actions,
+  .modal-footer .secondary-actions {
+    width: 100%;
+    flex-direction: column;
+  }
+  
+  .save-btn,
+  .finalize-btn,
+  .cancel-btn {
+    width: 100%;
+    justify-content: center;
+    padding: 0.7rem 1rem;
+    font-size: 0.9rem;
+  }
+  
+  .modal-content {
+    max-height: 95vh;
+    overflow-y: auto;
+  }
+}
+
+@media (max-width: 480px) {
+  .modal-footer {
+    padding: 0.75rem;
+    gap: 0.75rem;
+  }
+  
+  .save-btn,
+  .finalize-btn,
+  .cancel-btn {
+    padding: 0.6rem 0.8rem;
+    font-size: 0.85rem;
+    border-radius: 6px;
+  }
+  
+  .seats-grid {
+    grid-template-columns: repeat(4, minmax(35px, 1fr));
+    overflow-x: auto;
+    overflow-y: visible;
+    min-width: 200px;
+  }
+  
+  .vehicle-card {
+    min-width: 260px;
+  }
+}
+
+@media (max-width: 480px) {
+  .request-actions {
+    gap: 0.5rem;
+  }
+  
+  .action-btn {
+    padding: 0.6rem 0.8rem;
+    font-size: 0.85rem;
+    border-radius: 8px;
+  }
+  
+  .assign-btn {
+    background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+    order: 1;
+  }
+  
+  .manage-btn {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    order: 2;
+  }
+  
+  .finalize-btn {
+    background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);
+    order: 3;
+  }
+  
+  .cancel-btn {
+    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+    order: 4;
+    margin-top: 0.5rem;
+    border-top: 1px solid #e9ecef;
+    padding-top: 1rem;
+  }
+  
+  .exit-btn {
+    background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+    order: 5;
+    margin-top: 0.5rem;
+    border-top: 1px solid #e9ecef;
+    padding-top: 1rem;
   }
 }

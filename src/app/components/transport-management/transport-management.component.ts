@@ -280,20 +280,41 @@ export class TransportManagementComponent implements OnInit {
   }
 
   selectSeat(vehicleIndex: number, seatIndex: number) {
-    if (this.selectedPassenger) {
-      const vehicle = this.vehicles[vehicleIndex];
-      const seat = vehicle.seats[seatIndex];
-      
-      if (!seat.occupied) {
-        seat.occupied = true;
-        seat.passengerName = this.selectedPassenger.name;
-        seat.passenger = this.selectedPassenger;
-        vehicle.occupiedSeats++;
-        
-        this.unassignedPassengers = this.unassignedPassengers.filter(p => p !== this.selectedPassenger);
-        this.selectedPassenger = null;
+    const vehicle = this.vehicles[vehicleIndex];
+    const seat = vehicle.seats[seatIndex];
+    
+    // Si el asiento está ocupado, liberarlo
+    if (seat.occupied) {
+      // Devolver el pasajero a la lista de no asignados
+      if (seat.passenger) {
+        this.unassignedPassengers.push(seat.passenger);
       }
+      
+      // Liberar el asiento
+      seat.occupied = false;
+      seat.passengerName = '';
+      seat.passenger = null;
+      vehicle.occupiedSeats--;
+      
+      // Limpiar selecciones
+      this.selectedSeat = null;
+      this.selectedPassenger = null;
+      
+      return;
+    }
+    
+    // Si hay un pasajero seleccionado y el asiento está libre, asignar
+    if (this.selectedPassenger && !seat.occupied) {
+      seat.occupied = true;
+      seat.passengerName = this.selectedPassenger.name;
+      seat.passenger = this.selectedPassenger;
+      vehicle.occupiedSeats++;
+      
+      this.unassignedPassengers = this.unassignedPassengers.filter(p => p !== this.selectedPassenger);
+      this.selectedPassenger = null;
+      this.selectedSeat = null;
     } else {
+      // Solo seleccionar el asiento si está libre
       this.selectedSeat = { vehicleIndex, seatIndex };
     }
   }

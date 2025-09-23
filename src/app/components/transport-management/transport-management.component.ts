@@ -198,6 +198,79 @@ export class TransportManagementComponent implements OnInit {
     this.selectedRequest = null;
   }
 
+  async copyToClipboard(request: any) {
+    // Obtener la información del evento y asistentes
+    const event = this.getEvent(request.eventId);
+    if (!event) return;
+
+    const attendees = this.getEventAttendeesList(request.eventId);
+    const attendeesStats = this.getEventAttendees(request.eventId);
+    
+    // Crear el mensaje con formato bonito para WhatsApp
+    let message = `🎶 *${event.title}* 🎶\n\n`;
+    message += `📅 *Fecha:* ${event.date}\n`;
+    message += `📍 *Lugar:* ${event.location}\n`;
+    message += `🚌 *Transporte:* ${request.route}\n`;
+    
+    if (request.meetingPoint) {
+      message += `🚩 *Punto de reunión:* ${request.meetingPoint}\n`;
+    }
+    if (request.meetingTime) {
+      message += `🕐 *Hora:* ${request.meetingTime}\n`;
+    }
+    
+    message += `\n👥 *Lista de Asistentes:*\n`;
+    message += `━━━━━━━━━━━━━━━━━━━━\n`;
+    
+    attendees.forEach((attendee: any, index: number) => {
+      message += `${index + 1}. ${attendee.userName}`;
+      if (attendee.companions > 0) {
+        message += ` _(+${attendee.companions} acompañante${attendee.companions > 1 ? 's' : ''})_`;
+      }
+      message += `\n`;
+    });
+    
+    message += `━━━━━━━━━━━━━━━━━━━━\n`;
+    message += `📊 *Resumen:*\n`;
+    message += `• Integrantes: ${attendeesStats.attendees}\n`;
+    message += `• Acompañantes: ${attendeesStats.companions}\n`;
+    message += `• *Total: ${attendeesStats.total} personas* 🎯\n\n`;
+    message += `¡Nos vemos en el evento! 🎵✨`;
+
+    try {
+      await navigator.clipboard.writeText(message);
+      
+      // Mostrar mensaje de éxito
+      Swal.fire({
+        icon: 'success',
+        title: '¡Copiado!',
+        text: 'El mensaje se ha copiado al portapapeles. Ahora puedes pegarlo en WhatsApp.',
+        timer: 2000,
+        showConfirmButton: false,
+        toast: true,
+        position: 'top-end'
+      });
+    } catch (err) {
+      // Fallback para navegadores que no soporten clipboard API
+      const textArea = document.createElement('textarea');
+      textArea.value = message;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      
+      Swal.fire({
+        icon: 'success',
+        title: '¡Copiado!',
+        text: 'El mensaje se ha copiado al portapapeles.',
+        timer: 2000,
+        showConfirmButton: false,
+        toast: true,
+        position: 'top-end'
+      });
+    }
+  }
+
   loadPassengers(eventId: string) {
     const attendees = this.getEventAttendeesList(eventId);
     this.unassignedPassengers = [];

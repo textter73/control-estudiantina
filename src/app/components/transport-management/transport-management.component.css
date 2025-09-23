@@ -299,6 +299,39 @@
   font-size: 0.9rem;
 }
 
+.attendees-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.attendees-header h5 {
+  margin: 0;
+  color: #333;
+  font-size: 0.9rem;
+}
+
+.copy-btn {
+  background: #25d366;
+  color: white;
+  border: none;
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.copy-btn:hover {
+  background: #20c157;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(37, 211, 102, 0.3);
+}
+
 .attendee-item {
   display: flex;
   justify-content: space-between;
@@ -787,6 +820,19 @@
     padding: 0.6rem 0.8rem;
     font-size: 0.85rem;
     border-radius: 8px;
+  }
+  
+  .attendees-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  
+  .copy-btn {
+    width: 100%;
+    justify-content: center;
+    padding: 0.6rem;
+    font-size: 0.85rem;
   }
   
   .assign-btn {

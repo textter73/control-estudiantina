@@ -1,0 +1,552 @@
+<div class="payment-requests-container">
+  <main class="payment-main">
+    <div class="page-header">
+      <div class="header-info">
+        <button class="back-btn" (click)="goBack()">
+          <span class="btn-icon">←</span>
+          <span class="btn-text">Dashboard</span>
+        </button>
+        <div class="title-section">
+          <h1>Solicitudes de Pago</h1>
+          <p>Gestiona las solicitudes de pago para los integrantes del grupo</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button class="create-btn modern" (click)="openCreateModal()">
+          <span class="btn-icon">+</span>
+          <span class="btn-text">Nueva Solicitud</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Resumen de Totales -->
+    <div class="summary-section" *ngIf="paymentRequests.length > 0">
+      <div class="summary-card">
+        <div class="summary-item">
+          <div class="summary-icon">👥</div>
+          <div class="summary-data">
+            <span class="summary-number">{{ getPendingCount() }}</span>
+            <span class="summary-label">Integrantes Pendientes</span>
+          </div>
+        </div>
+        <div class="summary-item">
+          <div class="summary-icon">💰</div>
+          <div class="summary-data">
+            <span class="summary-number">${{ getPendingTotal().toFixed(2) }}</span>
+            <span class="summary-label">Total Pendiente</span>
+          </div>
+        </div>
+        <div class="summary-item">
+          <div class="summary-icon">✅</div>
+          <div class="summary-data">
+            <span class="summary-number">{{ getCompletedCount() }}</span>
+            <span class="summary-label">Pagos Completados</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Lista Detallada de Solicitudes -->
+    <div class="requests-list" *ngIf="paymentRequests.length > 0">
+      <div class="request-card" *ngFor="let request of paymentRequests">
+        <div class="request-header">
+          <div class="request-title">
+            <h4 class="concept">{{ request.concept }}</h4>
+            <span class="status-badge" [class]="getStatusClass(request.status)">
+              {{ getStatusText(request.status) }}
+            </span>
+          </div>
+          <div class="request-amount">
+            <span class="amount">${{ request.amount }}</span>
+          </div>
+        </div>
+        
+        <div class="request-summary">
+          <div class="summary-grid">
+            <div class="summary-item stats-item">
+              <span class="summary-icon">⏳</span>
+              <div class="summary-content">
+                <span class="summary-label">Pendientes</span>
+                <span class="summary-value">{{ getRequestStats(request.concept).pending }} integrantes</span>
+              </div>
+            </div>
+            
+            <div class="summary-item stats-item">
+              <span class="summary-icon">✅</span>
+              <div class="summary-content">
+                <span class="summary-label">Pagado</span>
+                <span class="summary-value">{{ getRequestStats(request.concept).completed }} integrantes</span>
+              </div>
+            </div>
+            
+            <div class="summary-item">
+              <span class="summary-icon">📊</span>
+              <div class="summary-content">
+                <span class="summary-label">Cuotas Completadas</span>
+                <div class="progress-container">
+                  <div class="progress-bar">
+                    <div class="progress-fill" [style.width.%]="getRequestStats(request.concept).completedPercentage"></div>
+                  </div>
+                  <span class="progress-text">{{ getRequestStats(request.concept).completedPercentage }}%</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="summary-item">
+              <span class="summary-icon">💰</span>
+              <div class="summary-content">
+                <span class="summary-label">Dinero Recaudado</span>
+                <div class="progress-container">
+                  <div class="progress-bar">
+                    <div class="progress-fill amount-progress" [style.width.%]="getRequestStats(request.concept).amountPercentage"></div>
+                  </div>
+                  <span class="progress-text">${{ getRequestStats(request.concept).totalPaid }} / ${{ getRequestStats(request.concept).totalDue }}</span>
+                </div>
+              </div>
+            </div>
+            
+            <div class="summary-item">
+              <span class="summary-icon">�</span>
+              <div class="summary-content">
+                <span class="summary-label">Fecha límite</span>
+                <span class="summary-value">{{ request.dueDate?.toDate() | date:'dd/MM/yyyy' }}</span>
+              </div>
+            </div>
+            
+            <div class="summary-item" *ngIf="request.description">
+              <span class="summary-icon">💬</span>
+              <div class="summary-content">
+                <span class="summary-label">Descripción</span>
+                <span class="summary-value">{{ request.description }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="request-footer">
+          <button class="details-btn" (click)="viewRequestDetails(request)">
+            <span class="btn-icon">👁️</span>
+            <span class="btn-text">Ver Detalles</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Modal de Nueva Solicitud de Cuotas -->
+  <div class="payment-modal" *ngIf="showCreateModal">
+    <div class="modal-content large">
+      <div class="modal-header">
+        <h3>💰 Nueva Solicitud de Cuotas</h3>
+        <button class="close-btn" (click)="closeCreateModal()">✕</button>
+      </div>
+      
+      <!-- Paso 1: Información General -->
+      <div class="modal-body" *ngIf="!showQuotaStep">
+        <div class="step-indicator">
+          <span class="step active">1</span>
+          <span class="step-label">Información General</span>
+        </div>
+
+        <form class="payment-form">
+          <div class="form-group">
+            <label for="concept">Concepto *</label>
+            <input 
+              type="text" 
+              id="concept"
+              [(ngModel)]="newRequest.concept"
+              name="concept"
+              placeholder="Ej: Cuota mensual, Evento especial, etc."
+              class="form-input"
+              required>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="defaultAmount">Monto base (referencia)</label>
+              <input 
+                type="number" 
+                id="defaultAmount"
+                [(ngModel)]="newRequest.defaultAmount"
+                name="defaultAmount"
+                min="1"
+                step="0.01"
+                placeholder="0.00"
+                class="form-input">
+              <small class="help-text">Este monto se aplicará por defecto, pero podrás personalizarlo por persona</small>
+            </div>
+            <div class="form-group">
+              <label for="dueDate">Fecha límite *</label>
+              <input 
+                type="date" 
+                id="dueDate"
+                [(ngModel)]="newRequest.dueDate"
+                name="dueDate"
+                class="form-input"
+                required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="description">Descripción (opcional)</label>
+            <textarea 
+              id="description"
+              [(ngModel)]="newRequest.description"
+              name="description"
+              placeholder="Información adicional sobre el pago..."
+              class="form-textarea"
+              rows="3"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label>Seleccionar integrantes *</label>
+            <div class="search-section">
+              <input 
+                type="text" 
+                placeholder="🔍 Buscar por nombre o email..."
+                class="search-input"
+                [(ngModel)]="userSearchTerm"
+                name="userSearch"
+                (input)="filterUsers()">
+            </div>
+            <div class="selection-controls">
+              <button type="button" class="select-all-btn" (click)="selectAllUsers()">
+                ✓ Seleccionar todos
+              </button>
+              <button type="button" class="clear-all-btn" (click)="clearAllUsers()" *ngIf="newRequest.individualQuotas.length > 0">
+                ✗ Limpiar selección
+              </button>
+            </div>
+            <div class="users-selection">
+              <div class="user-item" 
+                   *ngFor="let user of filteredUsers"
+                   [class.selected]="isUserSelected(user.id)"
+                   (click)="toggleUserSelection(user.id)">
+                <div class="user-info">
+                  <span class="user-name">{{ user.name || user.email }}</span>
+                  <span class="user-email" *ngIf="user.name">{{ user.email }}</span>
+                </div>
+                <span class="selection-indicator">
+                  {{ isUserSelected(user.id) ? '✓' : '' }}
+                </span>
+              </div>
+              <div class="no-users-found" *ngIf="filteredUsers.length === 0 && userSearchTerm.trim()">
+                <span>🔍 No se encontraron usuarios con "{{ userSearchTerm }}"</span>
+              </div>
+            </div>
+            <div class="selection-summary" *ngIf="newRequest.individualQuotas.length > 0">
+              {{ newRequest.individualQuotas.length }} persona(s) seleccionada(s)
+            </div>
+          </div>
+        </form>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" (click)="closeCreateModal()">
+            Cancelar
+          </button>
+          <button type="button" class="btn-primary" (click)="proceedToQuotaStep()">
+            Continuar ➤
+          </button>
+        </div>
+      </div>
+
+      <!-- Paso 2: Configuración de Cuotas Individuales -->
+      <div class="modal-body" *ngIf="showQuotaStep">
+        <div class="step-indicator">
+          <span class="step completed">1</span>
+          <span class="step active">2</span>
+          <span class="step-label">Cuotas Individuales</span>
+        </div>
+
+        <div class="quota-configuration">
+          <div class="quota-header">
+            <h4>{{ newRequest.concept }}</h4>
+            <div class="quota-tools">
+              <button type="button" class="tool-btn" (click)="applyDefaultAmountToAll()" *ngIf="newRequest.defaultAmount > 0">
+                📋 Aplicar ${{ newRequest.defaultAmount }} a todos
+              </button>
+              <span class="total-summary">
+                Total: ${{ getTotalAmount().toFixed(2) }}
+              </span>
+            </div>
+          </div>
+
+          <div class="quota-list">
+            <div class="quota-item" *ngFor="let quota of newRequest.individualQuotas; trackBy: trackByUserId">
+              <div class="user-avatar">
+                {{ (quota.userInfo?.name || quota.userInfo?.email)?.charAt(0).toUpperCase() }}
+              </div>
+              <div class="user-details">
+                <span class="user-name">{{ quota.userInfo?.name || quota.userInfo?.email }}</span>
+                <span class="user-email" *ngIf="quota.userInfo?.name">{{ quota.userInfo?.email }}</span>
+              </div>
+              <div class="amount-input">
+                <span class="currency">$</span>
+                <input 
+                  type="number" 
+                  [(ngModel)]="quota.amount"
+                  (input)="updateQuotaAmount(quota.userId, quota.amount)"
+                  min="0.01"
+                  step="0.01"
+                  class="quota-amount">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" (click)="backToUserSelection()">
+            ← Atrás
+          </button>
+          <button type="button" class="btn-primary" (click)="createPaymentRequest()">
+            Crear Cuotas
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Detalles de Solicitud -->
+  <div class="payment-modal details-modal" *ngIf="showDetailsModal">
+    <div class="modal-content large">
+      <div class="modal-header">
+        <div class="header-info">
+          <h3>📋 Detalles de Solicitud</h3>
+          <p *ngIf="selectedRequest">{{ selectedRequest.concept }}</p>
+        </div>
+        <button class="close-btn" (click)="closeDetailsModal()">✕</button>
+      </div>
+      
+      <div class="modal-body details-body" *ngIf="selectedRequest">
+        <!-- Información General -->
+        <div class="request-info-card">
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="info-label">Concepto:</span>
+              <span class="info-value">{{ selectedRequest.concept }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Total a Recaudar:</span>
+              <span class="info-value">${{ getTotalAmountForRequest(selectedRequest.concept) }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Total Pendiente:</span>
+              <span class="info-value">${{ getPendingAmountForRequest(selectedRequest.concept) }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Fecha Límite:</span>
+              <span class="info-value">{{ selectedRequest.dueDate?.toDate() | date:'dd/MM/yyyy' }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Creado por:</span>
+              <span class="info-value">{{ selectedRequest.createdByName }}</span>
+            </div>
+            <div class="info-item" *ngIf="selectedRequest.description">
+              <span class="info-label">Descripción:</span>
+              <span class="info-value">{{ selectedRequest.description }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pagos Pendientes -->
+        <div class="payments-section" *ngIf="pendingPayments.length > 0">
+          <div class="section-header">
+            <h4>⏳ Pagos Pendientes ({{ pendingPayments.length }})</h4>
+          </div>
+          <div class="payments-list">
+            <div class="payment-item pending-partial" *ngFor="let payment of pendingPayments">
+              <div class="payment-info">
+                <div class="payment-user">
+                  <div class="user-avatar">{{ getUserName(payment.userId).charAt(0).toUpperCase() }}</div>
+                  <div class="user-details">
+                    <span class="user-name">{{ getUserName(payment.userId) }}</span>
+                    <div class="payment-amounts">
+                      <span class="payment-progress">
+                        ${{ payment.totalPaid || 0 }} / ${{ payment.amount }}
+                      </span>
+                      <span class="remaining-amount">Pendiente: ${{ payment.remaining || payment.amount }}</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="payment-progress-info">
+                  <div class="progress-bar-container">
+                    <div class="progress-bar-mini">
+                      <div class="progress-fill-mini" 
+                           [style.width.%]="((payment.totalPaid || 0) / payment.amount) * 100">
+                      </div>
+                    </div>
+                    <span class="progress-percentage">
+                      {{ (((payment.totalPaid || 0) / payment.amount) * 100).toFixed(0) }}%
+                    </span>
+                  </div>
+                  <div class="payment-history" *ngIf="getPaymentsByUser(payment.userId, payment.concept).length > 0">
+                    <span class="history-label">Últimos pagos:</span>
+                    <div class="payment-entries">
+                      <span class="payment-entry" 
+                            *ngFor="let partialPayment of getPaymentsByUser(payment.userId, payment.concept).slice(0, 3)">
+                        ${{ partialPayment.amount }} 
+                        ({{ partialPayment.createdAt?.toDate() | date:'dd/MM' }})
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="payment-actions">
+                <button 
+                  class="add-payment-btn"
+                  (click)="openAddPaymentModal(payment)">
+                  <span class="btn-icon">💰</span>
+                  <span class="btn-text">Agregar Pago</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pagos Completados -->
+        <div class="payments-section" *ngIf="completedPayments.length > 0">
+          <div class="section-header">
+            <h4>✅ Pagos Completados ({{ completedPayments.length }})</h4>
+          </div>
+          <div class="payments-list">
+            <div class="payment-item completed-detailed" *ngFor="let payment of completedPayments">
+              <div class="payment-info">
+                <div class="payment-user">
+                  <div class="user-avatar completed">{{ getUserName(payment.userId).charAt(0).toUpperCase() }}</div>
+                  <div class="user-details">
+                    <span class="user-name">{{ getUserName(payment.userId) }}</span>
+                    <span class="payment-amount">${{ payment.amount }} (Total)</span>
+                    <span class="completion-note">Cuota completada</span>
+                  </div>
+                </div>
+                <div class="payment-history-completed">
+                  <span class="history-label">Historial de pagos:</span>
+                  <div class="payment-entries-detailed">
+                    <div class="payment-entry-detailed" 
+                         *ngFor="let partialPayment of getPaymentsByUser(payment.userId, payment.concept)">
+                      <div class="payment-info-mini">
+                        <span class="payment-amount-mini">${{ partialPayment.amount }}</span>
+                        <span class="payment-date-mini">
+                          {{ partialPayment.createdAt?.toDate() | date:'dd/MM/yyyy HH:mm' }}
+                        </span>
+                      </div>
+                      <span class="payment-description" *ngIf="partialPayment.description">
+                        {{ partialPayment.description }}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="payment-status">
+                <span class="status-icon">✅</span>
+                <span class="status-text">Completado</span>
+                <span class="completion-date">
+                  {{ getLastPaymentDate(payment.userId, payment.concept) | date:'dd/MM/yyyy' }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Estado cuando no hay pagos -->
+        <div class="no-payments" *ngIf="pendingPayments.length === 0 && completedPayments.length === 0">
+          <div class="empty-icon">💸</div>
+          <h4>No hay registros de pago</h4>
+          <p>Aún no se han registrado pagos para esta solicitud</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal para Agregar Pago Parcial -->
+  <div class="payment-modal add-payment-modal" *ngIf="showAddPaymentModal">
+    <div class="modal-content medium">
+      <div class="modal-header">
+        <div class="header-info">
+          <h3>💰 Registrar Pago</h3>
+          <p *ngIf="selectedPayment">
+            {{ getUserName(selectedPayment.userId) }} - {{ selectedPayment.concept }}
+          </p>
+        </div>
+        <button class="close-btn" (click)="closeAddPaymentModal()">✕</button>
+      </div>
+      
+      <div class="modal-body add-payment-body" *ngIf="selectedPayment">
+        <!-- Información de la cuota -->
+        <div class="quota-info-card">
+          <div class="quota-details">
+            <div class="quota-item">
+              <span class="quota-label">Cuota Total:</span>
+              <span class="quota-value">${{ selectedPayment.amount || 0 }}</span>
+            </div>
+            <div class="quota-item">
+              <span class="quota-label">Pagado:</span>
+              <span class="quota-value">${{ selectedPayment.totalPaid || 0 }}</span>
+            </div>
+            <div class="quota-item">
+              <span class="quota-label">Pendiente:</span>
+              <span class="quota-value pending">${{ selectedPayment.remaining || (selectedPayment.amount || 0) }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Formulario de pago -->
+        <form class="add-payment-form">
+          <div class="form-group">
+            <label for="paymentAmount">Monto del Pago *</label>
+            <input 
+              type="number" 
+              id="paymentAmount"
+              [(ngModel)]="newPartialPayment.amount"
+              name="paymentAmount"
+              [max]="getMaxPaymentAmount()"
+              min="0.01"
+              step="0.01"
+              placeholder="0.00"
+              class="payment-amount-input">
+            <small class="form-help">
+              Máximo: ${{ getMaxPaymentAmount() }}
+            </small>
+          </div>
+
+          <div class="form-group">
+            <label for="paymentDescription">Descripción (opcional)</label>
+            <input 
+              type="text" 
+              id="paymentDescription"
+              [(ngModel)]="newPartialPayment.description"
+              name="paymentDescription"
+              placeholder="Ej: Pago parcial, Abono, etc."
+              class="payment-description-input">
+          </div>
+        </form>
+
+        <!-- Historial de pagos anteriores -->
+        <div class="previous-payments" *ngIf="getPaymentsByUser(selectedPayment.userId, selectedPayment.concept).length > 0">
+          <h5>Pagos Anteriores:</h5>
+          <div class="payments-history-mini">
+            <div class="payment-history-item" 
+                 *ngFor="let payment of getPaymentsByUser(selectedPayment.userId, selectedPayment.concept)">
+              <span class="payment-amount-history">${{ payment.amount }}</span>
+              <span class="payment-date-history">
+                {{ payment.createdAt?.toDate() | date:'dd/MM/yyyy HH:mm' }}
+              </span>
+              <span class="payment-desc-history" *ngIf="payment.description">
+                - {{ payment.description }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary" (click)="closeAddPaymentModal()">
+          Cancelar
+        </button>
+        <button type="button" class="btn-primary" (click)="addPartialPayment()">
+          Registrar Pago
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

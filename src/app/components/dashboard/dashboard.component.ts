@@ -3,6 +3,7 @@ import { AngularFireAuth } from '@angular/fire/compat/auth';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-dashboard',
@@ -21,6 +22,8 @@ export class DashboardComponent implements OnInit {
   transportRequests: any[] = [];
   ticketSales: any[] = [];
   userAccount: any = null;
+  pendingPayments: any[] = [];
+  myPartialPayments: any[] = [];
   showTransportModal = false;
   selectedTransportConfig: any = null;
   showMovementsModal = false;
@@ -71,6 +74,11 @@ export class DashboardComponent implements OnInit {
            this.userProfile?.profiles?.includes('finanzas') || false;
   }
 
+  get canManagePayments(): boolean {
+    return this.userProfile?.profiles?.includes('administrador') || 
+           this.userProfile?.profiles?.includes('finanzas') || false;
+  }
+
   constructor(
     private afAuth: AngularFireAuth,
     private firestore: AngularFirestore,
@@ -90,6 +98,8 @@ export class DashboardComponent implements OnInit {
         this.loadTicketSales();
         this.loadUserAccount();
         this.loadUsers();
+        this.loadPendingPayments();
+        this.loadMyPartialPayments();
       } else {
         this.router.navigate(['/']);
       }
@@ -522,4 +532,143 @@ export class DashboardComponent implements OnInit {
       default: return '';
     }
   }
+
+  loadPendingPayments() {
+    if (!this.user) return;
+    
+    // Consulta simple - solo filtrar por userId primero
+    this.firestore.collection('payment-notifications', ref => 
+      ref.where('userId', '==', this.user.uid)
+    ).valueChanges({ idField: 'id' }).subscribe((allPayments: any[]) => {
+      // Filtrar por status 'pending' en el cliente y ordenar por fecha
+      this.pendingPayments = allPayments
+        .filter(payment => payment.status === 'pending')
+        .sort((a, b) => {
+          const dateA = a.dueDate?.toDate() || new Date();
+          const dateB = b.dueDate?.toDate() || new Date();
+          return dateA.getTime() - dateB.getTime();
+        });
+    });
+  }
+
+  async markAsPaid(payment: any) {
+    try {
+      const result = await Swal.fire({
+        title: '¿Confirmar pago?',
+        text: `¿Has realizado el pago de $${payment.amount} para "${payment.concept}"?`,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Sí, ya pagué',
+        cancelButtonText: 'Cancelar',
+        confirmButtonColor: '#28a745'
+      });
+
+      if (result.isConfirmed) {
+        // Actualizar el estado de la notificación
+        await this.firestore.collection('payment-notifications').doc(payment.id).update({
+          status: 'paid',
+          paidAt: new Date(),
+          read: true
+        });
+
+        // Crear registro de pago en una colección separada
+        await this.firestore.collection('payment-confirmations').add({
+          paymentRequestId: payment.paymentRequestId,
+          notificationId: payment.id,
+          userId: this.user.uid,
+          userName: this.userProfile?.name || this.user.email,
+          concept: payment.concept,
+          amount: payment.amount,
+          paidAt: new Date(),
+          confirmedBy: this.user.uid
+        });
+
+        Swal.fire({
+          icon: 'success',
+          title: '¡Pago registrado!',
+          text: 'Tu confirmación de pago ha sido registrada exitosamente.',
+          timer: 3000,
+          showConfirmButton: false
+        });
+      }
+    } catch (error) {
+      console.error('Error marking payment as paid:', error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'No se pudo registrar el pago. Inténtalo de nuevo.'
+      });
+    }
+  }
+
+  loadMyPartialPayments() {
+    if (!this.user) return;
+    
+    // Cargar mis pagos parciales realizados
+    this.firestore.collection('partial-payments', ref => 
+      ref.where('userId', '==', this.user.uid)
+    ).valueChanges({ idField: 'id' }).subscribe((payments: any[]) => {
+      // Ordenar por fecha de creación (más recientes primero)
+      this.myPartialPayments = payments.sort((a, b) => {
+        const dateA = a.createdAt?.toDate() || new Date(0);
+        const dateB = b.createdAt?.toDate() || new Date(0);
+        return dateB.getTime() - dateA.getTime();
+      });
+    });
+  }
+
+  getTotalPaidByConcept(concept: string): number {
+    return this.myPartialPayments
+      .filter(p => p.concept === concept)
+      .reduce((sum, p) => sum + (p.amount || 0), 0);
+  }
+
+  getPaymentsByConcept(concept: string): any[] {
+    return this.myPartialPayments
+      .filter(p => p.concept === concept)
+      .sort((a, b) => {
+        const dateA = a.createdAt?.toDate() || new Date(0);
+        const dateB = b.createdAt?.toDate() || new Date(0);
+        return dateB.getTime() - dateA.getTime();
+      });
+  }
+
+  getUniqueConcepts(): string[] {
+    // Solo mostrar conceptos de cuotas que aún están pendientes
+    const pendingConcepts = this.pendingPayments.map(p => p.concept);
+    const uniquePendingConcepts = [...new Set(pendingConcepts)];
+    
+    // Filtrar solo los conceptos que tienen cuotas pendientes
+    return uniquePendingConcepts.filter(concept => 
+      this.hasPartialPaymentsForConcept(concept)
+    );
+  }
+
+  hasPartialPaymentsForConcept(concept: string): boolean {
+    return this.myPartialPayments.some(p => p.concept === concept);
+  }
+
+  isQuotaCompleted(concept: string): boolean {
+    // Buscar si hay una cuota pendiente para este concepto
+    return !this.pendingPayments.some(p => p.concept === concept);
+  }
+
+  getTotalQuotaForConcept(concept: string): number {
+    // Obtener el monto total de la cuota desde las notificaciones pendientes
+    const pendingPayment = this.pendingPayments.find(p => p.concept === concept);
+    return pendingPayment ? pendingPayment.amount : 0;
+  }
+
+  getRemainingAmountForConcept(concept: string): number {
+    const totalQuota = this.getTotalQuotaForConcept(concept);
+    const totalPaid = this.getTotalPaidByConcept(concept);
+    return Math.max(0, totalQuota - totalPaid);
+  }
+
+  getPaymentProgressPercentage(concept: string): number {
+    const totalQuota = this.getTotalQuotaForConcept(concept);
+    const totalPaid = this.getTotalPaidByConcept(concept);
+    return totalQuota > 0 ? Math.round((totalPaid / totalQuota) * 100) : 0;
+  }
+
 }

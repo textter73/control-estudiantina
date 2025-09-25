@@ -1,0 +1,234 @@
+<div class="payment-requests-container">
+  <header class="page-header">
+    <div class="header-content">
+      <div class="title-section">
+        <h2 class="page-title">💰 Solicitudes de Pago</h2>
+        <p class="page-subtitle">Gestiona las cuotas individuales del grupo</p>
+      </div>
+      <button class="create-btn modern" (click)="openCreateModal()">
+        <span class="btn-icon">➕</span>
+        <span class="btn-text">Nueva Solicitud</span>
+      </button>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="empty-state" *ngIf="paymentRequests.length === 0">
+      <div class="empty-icon">📋</div>
+      <h3>No hay solicitudes de pago</h3>
+      <p>Crea tu primera solicitud de cuotas para comenzar</p>
+      <button class="create-btn-empty" (click)="openCreateModal()">
+        Crear Primera Solicitud
+      </button>
+    </div>
+
+    <!-- Lista Compacta de Solicitudes -->
+    <div class="requests-list" *ngIf="paymentRequests.length > 0">
+      <div class="request-row" *ngFor="let request of paymentRequests">
+        <div class="request-main">
+          <div class="request-info">
+            <h4 class="concept">{{ request.concept }}</h4>
+            <div class="meta-info">
+              <span class="recipient">👤 {{ request.recipientName || request.recipientEmail }}</span>
+              <span class="due-date">📅 {{ request.dueDate?.toDate() | date:'dd/MM/yyyy' }}</span>
+            </div>
+          </div>
+          <div class="request-amount">
+            <span class="amount">${{ request.amount }}</span>
+          </div>
+          <div class="request-status">
+            <span class="status-badge compact" [class]="getStatusClass(request.status)">
+              {{ getStatusText(request.status) }}
+            </span>
+          </div>
+        </div>
+        
+        <div class="request-actions" *ngIf="request.status === 'pending'">
+          <button class="action-btn-compact success" 
+                  (click)="markAsCompleted(request.id)" 
+                  title="Marcar como pagada">
+            ✅
+          </button>
+          <button class="action-btn-compact cancel" 
+                  (click)="cancelRequest(request.id)" 
+                  title="Cancelar">
+            ❌
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Modal de Nueva Solicitud de Cuotas -->
+  <div class="payment-modal" *ngIf="showCreateModal">
+    <div class="modal-content large">
+      <div class="modal-header">
+        <h3>💰 Nueva Solicitud de Cuotas</h3>
+        <button class="close-btn" (click)="closeCreateModal()">✕</button>
+      </div>
+      
+      <!-- Paso 1: Información General -->
+      <div class="modal-body" *ngIf="!showQuotaStep">
+        <div class="step-indicator">
+          <span class="step active">1</span>
+          <span class="step-label">Información General</span>
+        </div>
+
+        <form class="payment-form">
+          <div class="form-group">
+            <label for="concept">Concepto *</label>
+            <input 
+              type="text" 
+              id="concept"
+              [(ngModel)]="newRequest.concept"
+              name="concept"
+              placeholder="Ej: Cuota mensual, Evento especial, etc."
+              class="form-input"
+              required>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="defaultAmount">Monto base (referencia)</label>
+              <input 
+                type="number" 
+                id="defaultAmount"
+                [(ngModel)]="newRequest.defaultAmount"
+                name="defaultAmount"
+                min="1"
+                step="0.01"
+                placeholder="0.00"
+                class="form-input">
+              <small class="help-text">Este monto se aplicará por defecto, pero podrás personalizarlo por persona</small>
+            </div>
+            <div class="form-group">
+              <label for="dueDate">Fecha límite *</label>
+              <input 
+                type="date" 
+                id="dueDate"
+                [(ngModel)]="newRequest.dueDate"
+                name="dueDate"
+                class="form-input"
+                required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="description">Descripción (opcional)</label>
+            <textarea 
+              id="description"
+              [(ngModel)]="newRequest.description"
+              name="description"
+              placeholder="Información adicional sobre el pago..."
+              class="form-textarea"
+              rows="3"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label>Seleccionar integrantes *</label>
+            <div class="search-section">
+              <input 
+                type="text" 
+                placeholder="🔍 Buscar por nombre o email..."
+                class="search-input"
+                [(ngModel)]="userSearchTerm"
+                name="userSearch"
+                (input)="filterUsers()">
+            </div>
+            <div class="selection-controls">
+              <button type="button" class="select-all-btn" (click)="selectAllUsers()">
+                ✓ Seleccionar todos
+              </button>
+              <button type="button" class="clear-all-btn" (click)="clearAllUsers()" *ngIf="newRequest.individualQuotas.length > 0">
+                ✗ Limpiar selección
+              </button>
+            </div>
+            <div class="users-selection">
+              <div class="user-item" 
+                   *ngFor="let user of filteredUsers"
+                   [class.selected]="isUserSelected(user.id)"
+                   (click)="toggleUserSelection(user.id)">
+                <div class="user-info">
+                  <span class="user-name">{{ user.name || user.email }}</span>
+                  <span class="user-email" *ngIf="user.name">{{ user.email }}</span>
+                </div>
+                <span class="selection-indicator">
+                  {{ isUserSelected(user.id) ? '✓' : '' }}
+                </span>
+              </div>
+              <div class="no-users-found" *ngIf="filteredUsers.length === 0 && userSearchTerm.trim()">
+                <span>🔍 No se encontraron usuarios con "{{ userSearchTerm }}"</span>
+              </div>
+            </div>
+            <div class="selection-summary" *ngIf="newRequest.individualQuotas.length > 0">
+              {{ newRequest.individualQuotas.length }} persona(s) seleccionada(s)
+            </div>
+          </div>
+        </form>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" (click)="closeCreateModal()">
+            Cancelar
+          </button>
+          <button type="button" class="btn-primary" (click)="proceedToQuotaStep()">
+            Continuar ➤
+          </button>
+        </div>
+      </div>
+
+      <!-- Paso 2: Configuración de Cuotas Individuales -->
+      <div class="modal-body" *ngIf="showQuotaStep">
+        <div class="step-indicator">
+          <span class="step completed">1</span>
+          <span class="step active">2</span>
+          <span class="step-label">Cuotas Individuales</span>
+        </div>
+
+        <div class="quota-configuration">
+          <div class="quota-header">
+            <h4>{{ newRequest.concept }}</h4>
+            <div class="quota-tools">
+              <button type="button" class="tool-btn" (click)="applyDefaultAmountToAll()" *ngIf="newRequest.defaultAmount > 0">
+                📋 Aplicar ${{ newRequest.defaultAmount }} a todos
+              </button>
+              <span class="total-summary">
+                Total: ${{ getTotalAmount().toFixed(2) }}
+              </span>
+            </div>
+          </div>
+
+          <div class="quota-list">
+            <div class="quota-item" *ngFor="let quota of newRequest.individualQuotas; trackBy: trackByUserId">
+              <div class="user-avatar">
+                {{ (quota.userInfo?.name || quota.userInfo?.email)?.charAt(0).toUpperCase() }}
+              </div>
+              <div class="user-details">
+                <span class="user-name">{{ quota.userInfo?.name || quota.userInfo?.email }}</span>
+                <span class="user-email" *ngIf="quota.userInfo?.name">{{ quota.userInfo?.email }}</span>
+              </div>
+              <div class="amount-input">
+                <span class="currency">$</span>
+                <input 
+                  type="number" 
+                  [(ngModel)]="quota.amount"
+                  (input)="updateQuotaAmount(quota.userId, quota.amount)"
+                  min="0.01"
+                  step="0.01"
+                  class="quota-amount">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" (click)="backToUserSelection()">
+            ← Atrás
+          </button>
+          <button type="button" class="btn-primary" (click)="createPaymentRequest()">
+            Crear Cuotas
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

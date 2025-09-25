@@ -16,6 +16,7 @@ import { EventDetailsComponent } from './components/event-details/event-details.
 import { TransportManagementComponent } from './components/transport-management/transport-management.component';
 import { TicketSalesComponent } from './components/ticket-sales/ticket-sales.component';
 import { FinancialManagementComponent } from './components/financial-management/financial-management.component';
+import { PaymentRequestsComponent } from './components/payment-requests/payment-requests.component';
 
 const routes: Routes = [
   { path: '', component: LoginComponent },
@@ -30,6 +31,7 @@ const routes: Routes = [
   { path: 'transport-management', component: TransportManagementComponent, canActivate: [AuthGuard] },
   { path: 'ticket-sales', component: TicketSalesComponent, canActivate: [AuthGuard] },
   { path: 'financial-management', component: FinancialManagementComponent, canActivate: [AuthGuard] },
+  { path: 'payment-requests', component: PaymentRequestsComponent, canActivate: [AuthGuard] },
   { path: '**', redirectTo: '' }
 ];
 

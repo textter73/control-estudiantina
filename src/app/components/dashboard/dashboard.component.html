@@ -92,6 +92,72 @@
         <span class="action-icon">🏦</span>
         <span class="action-text">Finanzas</span>
       </button>
+      
+      <button class="action" routerLink="/payment-requests" *ngIf="canManagePayments">
+        <span class="action-icon">💰</span>
+        <span class="action-text">Solicitudes de Pago</span>
+      </button>
+    </div>
+
+    <!-- Solicitudes de Pago Pendientes -->
+    <div class="payment-notifications" *ngIf="pendingPayments.length > 0">
+      <h3>💰 Solicitudes de Pago Pendientes</h3>
+      <div class="payments-list">
+        <div class="payment-notification" *ngFor="let payment of pendingPayments">
+          <div class="payment-header">
+            <h4>{{ payment.concept }}</h4>
+            <span class="amount">${{ payment.amount }}</span>
+          </div>
+          <div class="payment-details">
+            <div class="detail-row">
+              <span class="detail-icon">📅</span>
+              <span>Vence: {{ payment.dueDate?.toDate() | date:'dd/MM/yyyy' }}</span>
+            </div>
+            <div class="detail-row" *ngIf="payment.description">
+              <span class="detail-icon">📝</span>
+              <span>{{ payment.description }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mis Pagos Realizados -->
+    <div class="my-payments-section" *ngIf="getUniqueConcepts().length > 0">
+      <h3>💳 Pagos de Cuotas Pendientes</h3>
+      <div class="payments-summary">
+        <!-- Resumen por concepto -->
+        <div class="payments-by-concept" *ngFor="let concept of getUniqueConcepts()">
+          <div class="concept-header">
+            <h4>{{ concept }}</h4>
+            <div class="quota-progress">
+              <span class="progress-info">
+                ${{ getTotalPaidByConcept(concept).toFixed(2) }} / ${{ getTotalQuotaForConcept(concept).toFixed(2) }}
+              </span>
+              <span class="remaining-amount" *ngIf="getRemainingAmountForConcept(concept) > 0">
+                Faltan ${{ getRemainingAmountForConcept(concept).toFixed(2) }}
+              </span>
+            </div>
+          </div>
+          <div class="quota-progress-bar">
+            <div class="progress-bar-fill" [style.width.%]="getPaymentProgressPercentage(concept)"></div>
+          </div>
+          <div class="concept-payments">
+            <div class="payment-record" *ngFor="let payment of getPaymentsByConcept(concept).slice(0, 3)">
+              <div class="payment-info">
+                <span class="payment-amount">${{ payment.amount }}</span>
+                <span class="payment-date">{{ payment.createdAt?.toDate() | date:'dd/MM/yyyy HH:mm' }}</span>
+              </div>
+              <div class="payment-description" *ngIf="payment.description">
+                {{ payment.description }}
+              </div>
+            </div>
+            <div class="more-payments" *ngIf="getPaymentsByConcept(concept).length > 3">
+              <span>+{{ getPaymentsByConcept(concept).length - 3 }} pagos más</span>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Agenda de Eventos -->

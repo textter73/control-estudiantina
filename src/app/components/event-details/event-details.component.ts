@@ -104,6 +104,109 @@ export class EventDetailsComponent implements OnInit {
     }
   }
 
+  // Admin: start editing a user's confirmation
+  startEditConfirmation(conf: any) {
+    this.editingConfirmationId = conf.userId;
+    this.editSelectedResponse = conf.response;
+    this.editCompanions = parseInt(conf?.companions) || 0;
+  }
+
+  // Admin: cancel editing
+  cancelEdit() {
+    this.editingConfirmationId = null;
+    this.editSelectedResponse = '';
+    this.editCompanions = 0;
+  }
+
+  // Admin: save edited confirmation (response and companions)
+  async saveEditConfirmation(conf: any): Promise<void> {
+    if (!this.event) {
+      await Swal.fire('Error', 'Evento no cargado', 'error');
+      return;
+    }
+    const confirmations = this.event.confirmations || [];
+    const idx = confirmations.findIndex((c: any) => c && c.userId === conf.userId);
+    if (idx < 0) {
+      await Swal.fire('Error', 'Confirmación no encontrada', 'error');
+      return;
+    }
+
+    confirmations[idx] = {
+      ...confirmations[idx],
+      response: this.editSelectedResponse || confirmations[idx].response,
+      companions: this.event.requiresTransport ? (parseInt(this.editCompanions?.toString()) || 0) : undefined,
+      // keep original timestamp and userName/userId
+    };
+
+    try {
+      await this.firestore.collection('events').doc(this.eventId).update({ confirmations });
+      await Swal.fire('Éxito', 'Confirmación actualizada', 'success');
+      this.cancelEdit();
+    } catch (error) {
+      await Swal.fire('Error', 'No se pudo actualizar la confirmación', 'error');
+    }
+    return;
+  }
+
+  // Admin: delete a confirmation
+  async deleteConfirmation(conf: any) {
+    const result = await Swal.fire({
+      title: 'Eliminar confirmación',
+      text: `¿Eliminar la confirmación de ${conf.userName || 'este usuario'}?`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar'
+    });
+
+    if (result.isConfirmed) {
+      const confirmations = (this.event?.confirmations || []).filter((c: any) => c && c.userId !== conf.userId);
+      try {
+        await this.firestore.collection('events').doc(this.eventId).update({ confirmations });
+        Swal.fire('Eliminado', 'Confirmación eliminada', 'success');
+      } catch (error) {
+        Swal.fire('Error', 'No se pudo eliminar la confirmación', 'error');
+      }
+    }
+  }
+
+  // Admin: copiar respuestas y acompañantes al portapapeles en formato texto para WhatsApp
+
+  // Admin: copiar respuestas y acompañantes al portapapeles en formato texto para WhatsApp
+  async copyConfirmationsToClipboard(): Promise<void> {
+    if (!this.event || !Array.isArray(this.event.confirmations)) {
+      await Swal.fire('Error', 'No hay confirmaciones para copiar', 'error');
+      return;
+    }
+      const iconMap: { [key: string]: string } = {
+        'asistire': '✅',
+        'tal-vez': '🤔',
+        'no-asistire': '❌'
+      };
+      const lines = this.event.confirmations.map((c: any, idx: number) => {
+        if (!c) return '';
+        const name = c.userName || this.getUserName(c.userId);
+        const icon = iconMap[c.response] || '';
+        let line = `${idx + 1}. ${icon} ${name}`;
+        if (this.event && this.event.requiresTransport && c.companions && Number(c.companions) > 0) {
+          line += ` (${c.companions} acompañantes)`;
+        }
+        return line;
+      }).filter((l: string) => l && l.length > 0);
+    // Calcular totales
+    const totalIntegrantes = lines.length;
+    const totalAcompanantes = this.event.confirmations.reduce((sum: number, c: any) => sum + (c?.companions ? Number(c.companions) : 0), 0);
+    const totalPersonas = totalIntegrantes + totalAcompanantes;
+    const text = `Respuestas para el evento "${this.event.title}":\n\n` + lines.join('\n') +
+      `\n\nTotal integrantes: ${totalIntegrantes}\nTotal acompañantes: ${totalAcompanantes}\nTotal personas: ${totalPersonas}`;
+    try {
+      await navigator.clipboard.writeText(text);
+      await Swal.fire('Copiado', 'Respuestas copiadas al portapapeles', 'success');
+    } catch (err) {
+      await Swal.fire('Error', 'No se pudo copiar al portapapeles', 'error');
+    }
+  }
+
   getResponseText(response: string): string {
     switch (response) {
       case 'asistire': return 'Asistiré';
@@ -154,6 +257,11 @@ export class EventDetailsComponent implements OnInit {
     const user = this.users.find(u => u.uid === userId);
     return user?.name || 'Usuario desconocido';
   }
+
+  // Local editing state for admin actions
+  editingConfirmationId: string | null = null;
+  editSelectedResponse: string = '';
+  editCompanions: number = 0;
 
 
 

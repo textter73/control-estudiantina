@@ -193,20 +193,51 @@
     </div>
 
     <!-- Lista de respuestas (solo para administradores/agenda) -->
-    <div class="responses-list" *ngIf="userProfile?.profiles?.includes('administrador') || userProfile?.profiles?.includes('agenda')">
+    <div class="responses-list">
       <h3>Respuestas de Integrantes</h3>
-      
+      <button *ngIf="userProfile?.profiles?.includes('administrador') || userProfile?.profiles?.includes('agenda')"
+        class="admin-btn" style="margin-bottom:1rem; background:#e8f2ff; color:#0b63c6; border-color:#bcd7ff;"
+        (click)="copyConfirmationsToClipboard()">
+        📋 Copiar respuestas para WhatsApp
+      </button>
       <div class="tab-content" *ngIf="event.status === 'abierto'">
         <h4>Confirmaciones</h4>
         <div class="response-item" *ngFor="let c of event.confirmations">
-          <div class="response-main">
-            <span class="user-name">{{ c.userName }}</span>
-            <span class="response-badge" [class]="getResponseClass(c.response)">
-              {{ getResponseText(c.response) }}
-            </span>
+          <div *ngIf="editingConfirmationId !== c.userId">
+            <div class="response-main">
+              <span class="user-name">{{ c.userName }}</span>
+              <span class="response-badge" [class]="getResponseClass(c.response)">
+                {{ getResponseText(c.response) }}
+              </span>
+              <div class="admin-controls" *ngIf="userProfile?.profiles?.includes('administrador') || userProfile?.profiles?.includes('agenda')">
+                <button class="admin-btn edit-btn" (click)="startEditConfirmation(c)">✏️ Editar</button>
+                <button class="admin-btn delete-btn" (click)="deleteConfirmation(c)">🗑 Eliminar</button>
+              </div>
+            </div>
+            <div class="companions-count" *ngIf="event.requiresTransport && c.companions !== undefined">
+              <span class="companions-text">🚌 {{ c.companions }} acompañantes</span>
+            </div>
           </div>
-          <div class="companions-count" *ngIf="event.requiresTransport && c.companions !== undefined">
-            <span class="companions-text">🚌 {{ c.companions }} acompañantes</span>
+
+          <!-- Inline edit form for admins -->
+          <div *ngIf="editingConfirmationId === c.userId" class="edit-form" style="background:#f8f9fa; border-radius:10px; padding:1rem; margin-top:0.5rem;">
+            <h5 style="margin-bottom:1rem; color:#189d98; font-size:1rem;">Editar confirmación - {{ c.userName }}</h5>
+            <div class="edit-row" style="display:flex; align-items:center; gap:1rem; margin-bottom:1rem;">
+              <label style="min-width:90px; color:#555;">Respuesta:</label>
+              <select [(ngModel)]="editSelectedResponse" class="edit-select" style="padding:0.4rem 0.8rem; border-radius:8px; border:1px solid #e0e0e0;">
+                <option value="asistire">Asistiré</option>
+                <option value="tal-vez">Tal vez</option>
+                <option value="no-asistire">No asistiré</option>
+              </select>
+            </div>
+            <div class="edit-row" *ngIf="event.requiresTransport" style="display:flex; align-items:center; gap:1rem; margin-bottom:1rem;">
+              <label style="min-width:90px; color:#555;">Acompañantes:</label>
+              <input type="number" min="0" [(ngModel)]="editCompanions" class="edit-input" style="padding:0.4rem 0.8rem; border-radius:8px; border:1px solid #e0e0e0; max-width:100px;" />
+            </div>
+            <div class="admin-controls" style="display:flex; gap:0.5rem; justify-content:flex-end;">
+              <button class="admin-btn save-btn" (click)="saveEditConfirmation(c)">💾 Guardar</button>
+              <button class="admin-btn cancel-btn" (click)="cancelEdit()">Cancelar</button>
+            </div>
           </div>
         </div>
         

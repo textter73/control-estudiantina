@@ -1,0 +1,82 @@
+<div class="transport-container">
+  <header class="transport-header">
+    <div class="header-content">
+      <div class="logo-section">
+        <h2>🎵 Cancionero</h2>
+      </div>
+      <div class="user-info">
+        <button class="back-btn" (click)="goBack()">
+          ← Dashboard
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="transport-main">
+    <div class="page-title">
+      <h2>Crear Nueva Canción</h2>
+      <p>Agrega una nueva canción al cancionero</p>
+    </div>
+
+    <div class="request-card">
+      <div class="request-header">
+        <h3>Información de la Canción</h3>
+      </div>
+
+      <div class="request-details">
+        <div class="form-field">
+          <label for="status">📊 Estatus:</label>
+          <select id="status" [(ngModel)]="status">
+            <option value="">Seleccionar estatus</option>
+            <option value="Propuesta">Propuesta</option>
+            <option value="Practicando">Practicando</option>
+            <option value="Lista">Lista</option>
+            <option value="Aprendida">Aprendida</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label for="title">🎼 Título:</label>
+          <input id="title" [(ngModel)]="title" placeholder="Título de la canción" />
+        </div>
+
+        <div class="form-field">
+          <label for="category">📂 Categoría:</label>
+          <select id="category" [(ngModel)]="category">
+            <option value="">Seleccionar categoría</option>
+            <option *ngFor="let cat of categories" [value]="cat">{{ cat }}</option>
+          </select>
+        </div>
+
+
+        <div class="form-field">
+          <label for="composers">🖋️ Compositores:</label>
+          <input id="composers" [(ngModel)]="composers" placeholder="Nombre de los compositores" />
+        </div>
+
+        <div class="form-field">
+          <label for="instrumentation">🎸 Instrumentación:</label>
+          <textarea id="instrumentation" [(ngModel)]="instrumentation" placeholder="Instrumentación"></textarea>
+        </div>
+
+        <div class="form-field">
+          <label for="comments">💬 Comentarios:</label>
+          <input id="comments" [(ngModel)]="comments" placeholder="Comentarios" />
+        </div>
+
+        <div class="form-field">
+          <label for="youtubeLink">🎥 Link de YouTube:</label>
+          <input id="youtubeLink" [(ngModel)]="youtubeLink" placeholder="https://www.youtube.com/watch?v=..." type="url" />
+        </div>
+
+        <div class="form-field">
+          <label for="structure">📝 Estructura:</label>
+          <textarea id="structure" [(ngModel)]="structure" placeholder="Estructura de acordes"></textarea>
+        </div>
+      </div>
+
+      <div class="request-actions">
+        <button class="action-btn assign-btn" (click)="saveSong()">Guardar Canción</button>
+      </div>
+    </div>
+  </main>
+</div>

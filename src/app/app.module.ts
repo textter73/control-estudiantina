@@ -21,6 +21,9 @@ import { TransportManagementComponent } from './components/transport-management/
 import { TicketSalesComponent } from './components/ticket-sales/ticket-sales.component';
 import { FinancialManagementComponent } from './components/financial-management/financial-management.component';
 import { PaymentRequestsComponent } from './components/payment-requests/payment-requests.component';
+import { SongbookComponent } from './components/songbook/songbook.component';
+import { SongbookListComponent } from './components/songbook-list/songbook-list.component';
+import { SongbookService } from './services/songbook.service';
 
 @NgModule({
   declarations: [
@@ -37,7 +40,9 @@ import { PaymentRequestsComponent } from './components/payment-requests/payment-
     TransportManagementComponent,
     TicketSalesComponent,
     FinancialManagementComponent,
-    PaymentRequestsComponent
+    PaymentRequestsComponent,
+  SongbookComponent,
+  SongbookListComponent
   ],
   imports: [
     BrowserModule,
@@ -48,7 +53,7 @@ import { PaymentRequestsComponent } from './components/payment-requests/payment-
     AngularFireAuthModule,
     AngularFirestoreModule
   ],
-  providers: [],
+  providers: [SongbookService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

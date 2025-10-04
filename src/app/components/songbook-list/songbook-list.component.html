@@ -1,0 +1,149 @@
+<div>
+  <!-- Título removido para ocupar todo el ancho -->
+  <div *ngIf="loading">Cargando canciones...</div>
+  <div *ngIf="!loading && songs.length === 0">No hay canciones registradas.</div>
+  <div *ngIf="!loading && songs.length > 0">
+    <div class="transport-container">
+      <header class="transport-header">
+        <div class="header-content">
+          <div class="logo-section">
+            <h2>🎵 Cancionero</h2>
+          </div>
+          <div class="user-info">
+            <button class="back-btn" routerLink="/dashboard">
+              ← Dashboard
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <main class="transport-main">
+        <div class="search-container">
+          <div class="search-box">
+            <input 
+              type="text" 
+              class="search-input" 
+              placeholder="Buscar canciones..." 
+              [(ngModel)]="searchTerm"
+              (input)="filterSongs()">
+            <span class="search-icon">🔍</span>
+          </div>
+          <div class="category-filter">
+            <select 
+              class="category-select" 
+              [(ngModel)]="selectedCategory"
+              (change)="filterSongs()">
+              <option value="">Todas las categorías</option>
+              <option *ngFor="let category of categories" [value]="category">{{ category }}</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="songs-container">
+          <div class="loading-state" *ngIf="loading">
+            <div class="loading-spinner"></div>
+            <p>Cargando canciones...</p>
+          </div>
+          
+          <div class="empty-state" *ngIf="!loading && songs.length === 0">
+            <div class="empty-icon">🎵</div>
+            <h3>No hay canciones registradas</h3>
+            <p>Agrega tu primera canción al cancionero</p>
+          </div>
+          
+          <div class="songs-grid" *ngIf="!loading && filteredSongs.length > 0">
+            <div class="song-card" *ngFor="let song of filteredSongs; let i = index">
+              <div class="song-header">
+                <div class="song-info-inline">
+                  <div class="song-number">{{ i + 1 }}</div>
+                  <h3 class="song-title" (click)="openSongDetail(song)">{{ song.title }}</h3>
+                </div>
+                <div class="song-badges">
+                  <span class="badge category-badge">{{ song.category }}</span>
+                  <span class="badge status-badge">{{ song.status }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Modal para mostrar detalle de la canción -->
+          <div class="song-modal" *ngIf="selectedSong" (click)="closeSongDetail()">
+            <div class="modal-content" (click)="$event.stopPropagation()">
+              <div class="modal-header">
+                <h2>{{ selectedSong.title }}</h2>
+                <div class="header-actions">
+                  <button *ngIf="isAdmin" class="edit-btn" (click)="startEditing()">
+                    ✏️ Editar
+                  </button>
+                  <button class="close-btn" (click)="closeSongDetail()">×</button>
+                </div>
+              </div>
+              <div class="modal-body">
+                <div class="song-info-compact">
+                  <span class="info-badge">{{ selectedSong.category }}</span>
+                  <span class="info-badge">{{ selectedSong.status }}</span>
+                  <span class="info-badge" *ngIf="selectedSong.composers">{{ selectedSong.composers }}</span>
+                </div>
+                
+                <!-- Sección de Instrumentación -->
+                <div class="instrumentation-section" *ngIf="selectedSong.instrumentation || (isAdmin && isEditing)">
+                  <h3>Instrumentación</h3>
+                  <div class="instrumentation-content" *ngIf="!isEditing">
+                    {{ selectedSong.instrumentation }}
+                  </div>
+                  <textarea 
+                    *ngIf="isAdmin && isEditing"
+                    [(ngModel)]="editedInstrumentation"
+                    class="edit-textarea"
+                    placeholder="Describe la instrumentación..."
+                    rows="3">
+                  </textarea>
+                </div>
+                
+                <!-- Sección de Letra -->
+                <div class="lyrics-section">
+                  <h3>Letra</h3>
+                  <div class="lyrics-content" *ngIf="!isEditing">
+                    {{ selectedSong.structure || 'No hay letra disponible para esta canción.' }}
+                  </div>
+                  <textarea 
+                    *ngIf="isAdmin && isEditing"
+                    [(ngModel)]="editedStructure"
+                    class="edit-textarea lyrics-textarea"
+                    placeholder="Escribe la letra de la canción..."
+                    rows="10">
+                  </textarea>
+                </div>
+                
+                <!-- Botones de edición -->
+                <div class="edit-actions" *ngIf="isAdmin && isEditing">
+                  <button class="save-btn" (click)="saveChanges()" [disabled]="isSaving">
+                    <span *ngIf="!isSaving">💾 Guardar</span>
+                    <span *ngIf="isSaving">⏳ Guardando...</span>
+                  </button>
+                  <button class="cancel-btn" (click)="cancelEditing()">
+                    ❌ Cancelar
+                  </button>
+                </div>
+                
+                <!-- Sección de Video -->
+                <div class="video-section" *ngIf="selectedSong.youtubeLink">
+                  <h3>Video</h3>
+                  <div class="video-container">
+                    <iframe 
+                      [src]="getYouTubeEmbedUrl(selectedSong.youtubeLink)" 
+                      frameborder="0" 
+                      allowfullscreen
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                      class="youtube-iframe">
+                    </iframe>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+</div>

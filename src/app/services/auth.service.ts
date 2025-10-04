@@ -8,8 +8,8 @@ import { AngularFirestore } from '@angular/fire/compat/firestore';
 export class AuthService {
 
   constructor(
-    private afAuth: AngularFireAuth,
-    private firestore: AngularFirestore
+    public afAuth: AngularFireAuth, // Cambiado a público
+    public firestore: AngularFirestore // Cambiado a público
   ) { }
 
   async register(name: string, email: string, password: string) {

@@ -97,6 +97,15 @@
         <span class="action-icon">💰</span>
         <span class="action-text">Solicitudes de Pago</span>
       </button>
+      
+      <button class="action" routerLink="/songbook" *ngIf="isAdmin">
+        <span class="action-icon">🎵</span>
+        <span class="action-text">Nueva canción</span>
+      </button>
+      <button class="action" routerLink="/songbook-list">
+        <span class="action-icon">📖</span>
+        <span class="action-text">Ver canciones</span>
+      </button>
     </div>
 
     <!-- Solicitudes de Pago Pendientes -->

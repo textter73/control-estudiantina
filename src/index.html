@@ -5,9 +5,81 @@
   <title>Control Estudiantina</title>
   <base href="/">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow, noarchive, nosnippet, noimageindex">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <style>
+    /* Protección global contra capturas de pantalla */
+    * {
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+      -webkit-touch-callout: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    
+    /* Permitir selección solo en inputs y textareas */
+    input, textarea, [contenteditable="true"] {
+      -webkit-user-select: text;
+      -moz-user-select: text;
+      -ms-user-select: text;
+      user-select: text;
+    }
+  </style>
 </head>
 <body>
   <app-root></app-root>
+  
+  <script>
+    // Protección adicional contra herramientas de desarrollo
+    (function() {
+      // Deshabilitar clic derecho
+      document.addEventListener('contextmenu', function(e) {
+        e.preventDefault();
+        return false;
+      });
+      
+      // Deshabilitar teclas de desarrollador
+      document.addEventListener('keydown', function(e) {
+        // F12
+        if (e.key === 'F12') {
+          e.preventDefault();
+          return false;
+        }
+        
+        // Ctrl+Shift+I
+        if (e.ctrlKey && e.shiftKey && e.key === 'I') {
+          e.preventDefault();
+          return false;
+        }
+        
+        // Ctrl+U
+        if (e.ctrlKey && e.key === 'u') {
+          e.preventDefault();
+          return false;
+        }
+      });
+      
+      // Detectar herramientas de desarrollo
+      let devtools = {open: false, orientation: null};
+      const threshold = 160;
+      
+      setInterval(function() {
+        if (window.outerHeight - window.innerHeight > threshold || 
+            window.outerWidth - window.innerWidth > threshold) {
+          if (!devtools.open) {
+            devtools.open = true;
+            console.clear();
+            console.warn('⚠️ Contenido protegido - Herramientas de desarrollo detectadas');
+          }
+        } else {
+          devtools.open = false;
+        }
+      }, 500);
+    })();
+  </script>
 </body>
 </html>

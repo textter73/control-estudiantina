@@ -67,8 +67,8 @@
           </div>
 
           <!-- Modal para mostrar detalle de la canción -->
-          <div class="song-modal" *ngIf="selectedSong" (click)="closeSongDetail()">
-            <div class="modal-content" (click)="$event.stopPropagation()">
+          <div class="song-modal screenshot-protection" *ngIf="selectedSong" (click)="closeSongDetail()">
+            <div class="modal-content protected-content" (click)="$event.stopPropagation()">
               <div class="modal-header">
                 <h2>{{ selectedSong.title }}</h2>
                 <div class="header-actions">
@@ -86,9 +86,9 @@
                 </div>
                 
                 <!-- Sección de Instrumentación -->
-                <div class="instrumentation-section" *ngIf="selectedSong.instrumentation || (isAdmin && isEditing)">
+                <div class="instrumentation-section protected-content" *ngIf="selectedSong.instrumentation || (isAdmin && isEditing)">
                   <h3>Instrumentación</h3>
-                  <div class="instrumentation-content" *ngIf="!isEditing">
+                  <div class="instrumentation-content no-select" *ngIf="!isEditing">
                     {{ selectedSong.instrumentation }}
                   </div>
                   <textarea 
@@ -101,9 +101,9 @@
                 </div>
                 
                 <!-- Sección de Letra -->
-                <div class="lyrics-section">
+                <div class="lyrics-section protected-content">
                   <h3>Letra</h3>
-                  <div class="lyrics-content" *ngIf="!isEditing">
+                  <div class="lyrics-content no-select protected-text" *ngIf="!isEditing">
                     {{ selectedSong.structure || 'No hay letra disponible para esta canción.' }}
                   </div>
                   <textarea 

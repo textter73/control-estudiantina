@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, HostListener } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { SongbookService } from '../../services/songbook.service';
 import { AuthService } from '../../services/auth.service';
@@ -47,6 +47,107 @@ export class SongbookListComponent implements OnInit {
       } else {
         this.isAdmin = false;
       }
+    });
+
+    // Activar protecciones contra capturas de pantalla
+    this.enableScreenshotProtection();
+  }
+
+  // Protección contra teclas de captura de pantalla
+  @HostListener('document:keydown', ['$event'])
+  handleKeyboardEvent(event: KeyboardEvent) {
+    // Prevenir F12 (DevTools)
+    if (event.key === 'F12') {
+      event.preventDefault();
+      this.showProtectionWarning();
+      return false;
+    }
+    
+    // Prevenir Ctrl+Shift+I (DevTools)
+    if (event.ctrlKey && event.shiftKey && event.key === 'I') {
+      event.preventDefault();
+      this.showProtectionWarning();
+      return false;
+    }
+    
+    // Prevenir Ctrl+U (Ver código fuente)
+    if (event.ctrlKey && event.key === 'u') {
+      event.preventDefault();
+      this.showProtectionWarning();
+      return false;
+    }
+    
+    // Prevenir Print Screen
+    if (event.key === 'PrintScreen') {
+      event.preventDefault();
+      this.showProtectionWarning();
+      return false;
+    }
+    
+    // Prevenir Ctrl+P (Imprimir)
+    if (event.ctrlKey && event.key === 'p') {
+      event.preventDefault();
+      this.showProtectionWarning();
+      return false;
+    }
+    
+    // Prevenir Ctrl+S (Guardar)
+    if (event.ctrlKey && event.key === 's') {
+      event.preventDefault();
+      this.showProtectionWarning();
+      return false;
+    }
+
+    return true;
+  }
+
+  // Protección contra clic derecho
+  @HostListener('document:contextmenu', ['$event'])
+  onRightClick(event: MouseEvent) {
+    if (this.selectedSong) {
+      event.preventDefault();
+      this.showProtectionWarning();
+      return false;
+    }
+    return true;
+  }
+
+  // Protección contra selección de texto
+  @HostListener('document:selectstart', ['$event'])
+  onSelectStart(event: Event) {
+    if (this.selectedSong) {
+      event.preventDefault();
+      return false;
+    }
+    return true;
+  }
+
+  private enableScreenshotProtection() {
+    // Deshabilitar drag and drop
+    document.addEventListener('dragstart', (e) => {
+      if (this.selectedSong) {
+        e.preventDefault();
+        return false;
+      }
+    });
+
+    // Detectar cambio de ventana (posible captura de pantalla)
+    document.addEventListener('visibilitychange', () => {
+      if (this.selectedSong && document.hidden) {
+        // Usuario cambió de ventana, posible captura
+        console.warn('Posible intento de captura detectado');
+      }
+    });
+  }
+
+  private showProtectionWarning() {
+    Swal.fire({
+      title: '🔒 Contenido Protegido',
+      text: 'Este contenido está protegido. No se permite copiar, capturar o guardar.',
+      icon: 'warning',
+      confirmButtonColor: '#189d98',
+      confirmButtonText: 'Entendido',
+      allowOutsideClick: false
     });
   }
 

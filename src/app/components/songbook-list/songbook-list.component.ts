@@ -129,6 +129,7 @@ export class SongbookListComponent implements OnInit {
         e.preventDefault();
         return false;
       }
+      return true;
     });
 
     // Detectar cambio de ventana (posible captura de pantalla)

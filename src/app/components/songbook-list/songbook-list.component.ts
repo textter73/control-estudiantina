@@ -1,4 +1,4 @@
-import { Component, OnInit, HostListener } from '@angular/core';
+import { Component, OnInit, HostListener, OnDestroy } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { SongbookService } from '../../services/songbook.service';
 import { AuthService } from '../../services/auth.service';
@@ -9,7 +9,7 @@ import Swal from 'sweetalert2';
   templateUrl: './songbook-list.component.html',
   styleUrls: ['./songbook-list.component.css']
 })
-export class SongbookListComponent implements OnInit {
+export class SongbookListComponent implements OnInit, OnDestroy {
   songs: any[] = [];
   filteredSongs: any[] = [];
   categories: string[] = [];
@@ -22,6 +22,15 @@ export class SongbookListComponent implements OnInit {
   editedStructure = '';
   editedInstrumentation = '';
   isSaving = false;
+
+  // Variables para protección móvil
+  private touchStartTime = 0;
+  private touchCount = 0;
+  private lastTouchTime = 0;
+  private screenshotAttempts = 0;
+  private powerButtonPresses = 0;
+  private volumeDownPresses = 0;
+  private isModalOpen = false;
 
   constructor(
     private songbookService: SongbookService,
@@ -51,6 +60,14 @@ export class SongbookListComponent implements OnInit {
 
     // Activar protecciones contra capturas de pantalla
     this.enableScreenshotProtection();
+    
+    // Activar protecciones específicas para móviles
+    this.enableMobileScreenshotProtection();
+  }
+
+  ngOnDestroy() {
+    // Limpiar event listeners
+    this.removeMobileProtections();
   }
 
   // Protección contra teclas de captura de pantalla
@@ -179,18 +196,30 @@ export class SongbookListComponent implements OnInit {
 
   openSongDetail(song: any) {
     this.selectedSong = song;
+    this.isModalOpen = true;
     this.editedStructure = song.structure || '';
     this.editedInstrumentation = song.instrumentation || '';
     this.isEditing = false;
     document.body.style.overflow = 'hidden'; // Evitar scroll del fondo
+    
+    // Reset contadores de protección móvil
+    this.screenshotAttempts = 0;
+    this.powerButtonPresses = 0;
+    this.volumeDownPresses = 0;
   }
 
   closeSongDetail() {
     this.selectedSong = null;
+    this.isModalOpen = false;
     this.isEditing = false;
     this.editedStructure = '';
     this.editedInstrumentation = '';
     document.body.style.overflow = 'auto'; // Restaurar scroll
+    
+    // Reset contadores de protección móvil
+    this.screenshotAttempts = 0;
+    this.powerButtonPresses = 0;
+    this.volumeDownPresses = 0;
   }
 
   startEditing() {
@@ -307,5 +336,167 @@ export class SongbookListComponent implements OnInit {
     }
     
     return '';
+  }
+
+  // Protección específica para móviles
+  private enableMobileScreenshotProtection() {
+    // Detectar combinación de teclas de volumen + power
+    this.addMobileKeyListeners();
+    
+    // Detectar gestos de captura de pantalla
+    this.addMobileTouchListeners();
+    
+    // Protección contra app switching (Android)
+    this.addAppSwitchProtection();
+    
+    // Detectar orientation change (posible captura)
+    this.addOrientationProtection();
+  }
+
+  private addMobileKeyListeners() {
+    // Detectar Volume Down + Power (Android screenshot)
+    document.addEventListener('keydown', (e) => {
+      if (this.selectedSong) {
+        // Detectar teclas de volumen y power
+        if (e.code === 'VolumeDown' || e.key === 'VolumeDown') {
+          this.volumeDownPresses++;
+          this.checkScreenshotCombo();
+        }
+        
+        if (e.code === 'Power' || e.key === 'Power') {
+          this.powerButtonPresses++;
+          this.checkScreenshotCombo();
+        }
+        
+        // Reset después de 2 segundos
+        setTimeout(() => {
+          this.volumeDownPresses = 0;
+          this.powerButtonPresses = 0;
+        }, 2000);
+      }
+    });
+  }
+
+  private addMobileTouchListeners() {
+    // Detectar gestos de captura (3 dedos hacia abajo en iOS)
+    document.addEventListener('touchstart', (e) => {
+      if (this.selectedSong) {
+        this.touchCount = e.touches.length;
+        this.touchStartTime = Date.now();
+        
+        // Detectar 3 o más dedos (iOS screenshot gesture)
+        if (this.touchCount >= 3) {
+          this.handleSuspiciousActivity('Gesto de captura detectado');
+        }
+      }
+    });
+
+    document.addEventListener('touchend', (e) => {
+      if (this.selectedSong) {
+        const touchDuration = Date.now() - this.touchStartTime;
+        
+        // Detectar tap rápido con múltiples dedos
+        if (this.touchCount >= 2 && touchDuration < 500) {
+          this.screenshotAttempts++;
+          if (this.screenshotAttempts > 2) {
+            this.handleSuspiciousActivity('Múltiples intentos de captura detectados');
+          }
+        }
+      }
+    });
+  }
+
+  private addAppSwitchProtection() {
+    // Detectar cuando la app pierde foco (posible screenshot)
+    document.addEventListener('visibilitychange', () => {
+      if (this.selectedSong && document.hidden) {
+        // La app perdió foco, posible captura
+        this.handleSuspiciousActivity('Cambio de aplicación detectado');
+      }
+    });
+
+    // Detectar blur de ventana
+    window.addEventListener('blur', () => {
+      if (this.selectedSong) {
+        this.handleSuspiciousActivity('Ventana perdió foco');
+      }
+    });
+  }
+
+  private addOrientationProtection() {
+    // Detectar cambios de orientación rápidos (posible captura)
+    window.addEventListener('orientationchange', () => {
+      if (this.selectedSong) {
+        this.handleSuspiciousActivity('Cambio de orientación detectado');
+      }
+    });
+
+    // Detectar resize de ventana (posible screenshot tool)
+    window.addEventListener('resize', () => {
+      if (this.selectedSong) {
+        // Detectar cambios bruscos de tamaño
+        const currentTime = Date.now();
+        if (currentTime - this.lastTouchTime < 1000) {
+          this.handleSuspiciousActivity('Redimensionado de ventana detectado');
+        }
+        this.lastTouchTime = currentTime;
+      }
+    });
+  }
+
+  private checkScreenshotCombo() {
+    // Si se presionaron volumen down + power al mismo tiempo
+    if (this.volumeDownPresses > 0 && this.powerButtonPresses > 0) {
+      this.handleSuspiciousActivity('Combinación de teclas de captura detectada');
+    }
+  }
+
+  private handleSuspiciousActivity(activity: string) {
+    console.warn(`🚨 Actividad sospechosa: ${activity}`);
+    
+    // Cerrar el modal inmediatamente
+    this.closeSongDetail();
+    
+    // Mostrar alerta
+    Swal.fire({
+      title: '🚨 Actividad Detectada',
+      text: `Se detectó: ${activity}. El contenido ha sido protegido.`,
+      icon: 'warning',
+      confirmButtonColor: '#dc3545',
+      confirmButtonText: 'Entendido',
+      allowOutsideClick: false,
+      timer: 3000
+    });
+
+    // Incrementar contador de intentos
+    this.screenshotAttempts++;
+    
+    // Si hay muchos intentos, bloquear temporalmente
+    if (this.screenshotAttempts > 5) {
+      this.temporaryBlock();
+    }
+  }
+
+  private temporaryBlock() {
+    Swal.fire({
+      title: '🔒 Acceso Temporal Bloqueado',
+      text: 'Se han detectado múltiples intentos de captura. Acceso bloqueado por 30 segundos.',
+      icon: 'error',
+      confirmButtonColor: '#dc3545',
+      confirmButtonText: 'Entendido',
+      allowOutsideClick: false,
+      timer: 30000,
+      timerProgressBar: true
+    });
+
+    // Reset después de 30 segundos
+    setTimeout(() => {
+      this.screenshotAttempts = 0;
+    }, 30000);
+  }
+
+  private removeMobileProtections() {
+    // Limpiar todos los event listeners agregados
+    // (Los listeners se limpian automáticamente al destruir el componente)
   }
 }

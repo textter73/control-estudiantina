@@ -750,3 +750,70 @@
     text-align: center;
   }
 }
+
+/* Protecciones específicas para móviles */
+@media (max-width: 768px) {
+  .screenshot-protection {
+    /* Deshabilitar zoom en móviles */
+    touch-action: manipulation;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  .protected-content {
+    /* Protección contra long press en móviles */
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    
+    /* Deshabilitar zoom */
+    touch-action: manipulation;
+  }
+  
+  .protected-text {
+    /* Overlay invisible para prevenir selección */
+    position: relative;
+  }
+  
+  .protected-text::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: transparent;
+    z-index: 1000;
+    pointer-events: auto;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  
+  /* Prevenir screenshot en iOS Safari */
+  .song-modal.screenshot-protection {
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: transparent;
+    
+    /* Fuerza hardware acceleration */
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+    will-change: transform;
+  }
+  
+  /* Protección contra gestos de iOS */
+  .protected-content,
+  .protected-text {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    
+    /* Deshabilitar zoom con gestos */
+    touch-action: pan-x pan-y;
+  }
+}

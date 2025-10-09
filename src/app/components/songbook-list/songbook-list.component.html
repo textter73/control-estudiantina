@@ -88,30 +88,26 @@
                 <!-- Sección de Instrumentación -->
                 <div class="instrumentation-section protected-content" *ngIf="selectedSong.instrumentation || (isAdmin && isEditing)">
                   <h3>Instrumentación</h3>
-                  <div class="instrumentation-content no-select" *ngIf="!isEditing">
-                    {{ selectedSong.instrumentation }}
-                  </div>
+                  <pre class="instrumentation-content no-select" *ngIf="!isEditing">{{ selectedSong.instrumentation }}</pre>
                   <textarea 
                     *ngIf="isAdmin && isEditing"
                     [(ngModel)]="editedInstrumentation"
                     class="edit-textarea"
-                    placeholder="Describe la instrumentación..."
-                    rows="3">
+                    placeholder="Describe la instrumentación...&#10;Ejemplo:&#10;Guitarra: Capo 3er traste&#10;Bajo: Afinación estándar&#10;Percusión: Cajón peruano"
+                    rows="5">
                   </textarea>
                 </div>
                 
                 <!-- Sección de Letra -->
                 <div class="lyrics-section protected-content">
                   <h3>Letra</h3>
-                  <div class="lyrics-content no-select protected-text" *ngIf="!isEditing">
-                    {{ selectedSong.structure || 'No hay letra disponible para esta canción.' }}
-                  </div>
+                  <pre class="lyrics-content no-select protected-text" *ngIf="!isEditing">{{ selectedSong.structure || 'No hay letra disponible para esta canción.' }}</pre>
                   <textarea 
                     *ngIf="isAdmin && isEditing"
                     [(ngModel)]="editedStructure"
                     class="edit-textarea lyrics-textarea"
-                    placeholder="Escribe la letra de la canción..."
-                    rows="10">
+                    placeholder="Escribe la letra de la canción con acordes...&#10;Ejemplo:&#10;    C        F       G&#10;Había una vez una historia..."
+                    rows="15">
                   </textarea>
                 </div>
                 

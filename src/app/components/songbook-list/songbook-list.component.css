@@ -709,6 +709,44 @@
   -webkit-tap-highlight-color: transparent;
 }
 
+/* Estilos para preservar formato de acordes y letras */
+.lyrics-content {
+  font-family: 'Courier New', 'Monaco', 'Menlo', monospace;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  line-height: 1.6;
+  background: #f8f9fa;
+  padding: 1rem;
+  border-radius: 6px;
+  border: 1px solid #e0e0e0;
+  margin: 0;
+  font-size: 0.95rem;
+  color: #333;
+  overflow-x: auto;
+}
+
+.instrumentation-content {
+  font-family: 'Courier New', 'Monaco', 'Menlo', monospace;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  line-height: 1.5;
+  background: #f8f9fa;
+  padding: 1rem;
+  border-radius: 6px;
+  border: 1px solid #e0e0e0;
+  margin: 0;
+  font-size: 0.9rem;
+  color: #333;
+}
+
+.lyrics-textarea {
+  font-family: 'Courier New', 'Monaco', 'Menlo', monospace !important;
+  line-height: 1.6;
+  font-size: 0.95rem;
+  tab-size: 4;
+  -moz-tab-size: 4;
+}
+
 /* Deshabilitar menú contextual en contenido protegido */
 .protected-content,
 .protected-text,
@@ -716,7 +754,6 @@
   -webkit-context-menu: none;
   -moz-context-menu: none;
   -ms-context-menu: none;
-  context-menu: none;
 }
 
 /* Prevenir drag and drop */

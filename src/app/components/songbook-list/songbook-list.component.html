@@ -67,8 +67,13 @@
           </div>
 
           <!-- Modal para mostrar detalle de la canción -->
-          <div class="song-modal screenshot-protection" *ngIf="selectedSong" (click)="closeSongDetail()">
-            <div class="modal-content protected-content" (click)="$event.stopPropagation()">
+          <div class="song-modal" 
+               [class.screenshot-protection]="!isEditing" 
+               *ngIf="selectedSong" 
+               (click)="closeSongDetail()">
+            <div class="modal-content" 
+                 [class.protected-content]="!isEditing" 
+                 (click)="$event.stopPropagation()">
               <div class="modal-header">
                 <h2>{{ selectedSong.title }}</h2>
                 <div class="header-actions">
@@ -86,9 +91,13 @@
                 </div>
                 
                 <!-- Sección de Instrumentación -->
-                <div class="instrumentation-section protected-content" *ngIf="selectedSong.instrumentation || (isAdmin && isEditing)">
+                <div class="instrumentation-section" 
+                     [class.protected-content]="!isEditing" 
+                     *ngIf="selectedSong.instrumentation || (isAdmin && isEditing)">
                   <h3>Instrumentación</h3>
-                  <pre class="instrumentation-content no-select" *ngIf="!isEditing">{{ selectedSong.instrumentation }}</pre>
+                  <pre class="instrumentation-content" 
+                       [class.no-select]="!isEditing" 
+                       *ngIf="!isEditing">{{ selectedSong.instrumentation }}</pre>
                   <textarea 
                     *ngIf="isAdmin && isEditing"
                     [(ngModel)]="editedInstrumentation"
@@ -99,9 +108,13 @@
                 </div>
                 
                 <!-- Sección de Letra -->
-                <div class="lyrics-section protected-content">
+                <div class="lyrics-section" 
+                     [class.protected-content]="!isEditing">
                   <h3>Letra</h3>
-                  <pre class="lyrics-content no-select protected-text" *ngIf="!isEditing">{{ selectedSong.structure || 'No hay letra disponible para esta canción.' }}</pre>
+                  <pre class="lyrics-content" 
+                       [class.no-select]="!isEditing" 
+                       [class.protected-text]="!isEditing" 
+                       *ngIf="!isEditing">{{ selectedSong.structure || 'No hay letra disponible para esta canción.' }}</pre>
                   <textarea 
                     *ngIf="isAdmin && isEditing"
                     [(ngModel)]="editedStructure"
@@ -125,15 +138,23 @@
                 <!-- Sección de Video -->
                 <div class="video-section" *ngIf="selectedSong.youtubeLink">
                   <h3>Video</h3>
-                  <div class="video-container">
+                  <div class="video-container" 
+                       [class.active]="isWatchingVideo"
+                       (mouseenter)="onVideoInteractionStart($event)" 
+                       (mouseleave)="onVideoInteractionEnd()"
+                       (click)="onVideoInteractionStart($event)"
+                       (touchstart)="onVideoInteractionStart($event)">
                     <iframe 
                       [src]="getYouTubeEmbedUrl(selectedSong.youtubeLink)" 
                       frameborder="0" 
                       allowfullscreen
                       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                      class="youtube-iframe">
+                      class="youtube-iframe"
+                      (mouseenter)="onVideoInteractionStart($event)"
+                      (click)="onVideoInteractionStart($event)">
                     </iframe>
                   </div>
+                  <p class="video-hint">💡 Tip: Haz clic en el video para interactuar libremente con él</p>
                 </div>
               </div>
             </div>

@@ -22,6 +22,7 @@ export class SongbookListComponent implements OnInit, OnDestroy {
   editedStructure = '';
   editedInstrumentation = '';
   isSaving = false;
+  isWatchingVideo = false;
 
   // Variables para protección móvil
   private touchStartTime = 0;
@@ -73,6 +74,11 @@ export class SongbookListComponent implements OnInit, OnDestroy {
   // Protección contra teclas de captura de pantalla
   @HostListener('document:keydown', ['$event'])
   handleKeyboardEvent(event: KeyboardEvent) {
+    // No aplicar protecciones si se está editando o viendo video
+    if (this.isEditing || this.isWatchingVideo) {
+      return true;
+    }
+
     // Prevenir F12 (DevTools)
     if (event.key === 'F12') {
       event.preventDefault();
@@ -108,7 +114,7 @@ export class SongbookListComponent implements OnInit, OnDestroy {
       return false;
     }
     
-    // Prevenir Ctrl+S (Guardar)
+    // Prevenir Ctrl+S (Guardar) - excepto si está editando
     if (event.ctrlKey && event.key === 's') {
       event.preventDefault();
       this.showProtectionWarning();
@@ -121,8 +127,14 @@ export class SongbookListComponent implements OnInit, OnDestroy {
   // Protección contra clic derecho
   @HostListener('document:contextmenu', ['$event'])
   onRightClick(event: MouseEvent) {
+    // Verificar si se está editando o viendo video
+    if (this.isEditing || this.isWatchingVideo) {
+      return true;
+    }
+    
     if (this.selectedSong) {
       event.preventDefault();
+      event.stopPropagation();
       this.showProtectionWarning();
       return false;
     }
@@ -132,6 +144,11 @@ export class SongbookListComponent implements OnInit, OnDestroy {
   // Protección contra selección de texto
   @HostListener('document:selectstart', ['$event'])
   onSelectStart(event: Event) {
+    // Permitir selección si se está editando o viendo video
+    if (this.isEditing || this.isWatchingVideo) {
+      return true;
+    }
+    
     if (this.selectedSong) {
       event.preventDefault();
       return false;
@@ -142,6 +159,11 @@ export class SongbookListComponent implements OnInit, OnDestroy {
   private enableScreenshotProtection() {
     // Deshabilitar drag and drop
     document.addEventListener('dragstart', (e) => {
+      // Permitir drag si se está editando o viendo video
+      if (this.isEditing || this.isWatchingVideo) {
+        return true;
+      }
+      
       if (this.selectedSong) {
         e.preventDefault();
         return false;
@@ -151,9 +173,8 @@ export class SongbookListComponent implements OnInit, OnDestroy {
 
     // Detectar cambio de ventana (posible captura de pantalla)
     document.addEventListener('visibilitychange', () => {
-      if (this.selectedSong && document.hidden) {
+      if (this.selectedSong && document.hidden && !this.isEditing && !this.isWatchingVideo) {
         // Usuario cambió de ventana, posible captura
-        console.warn('Posible intento de captura detectado');
       }
     });
   }
@@ -409,7 +430,7 @@ export class SongbookListComponent implements OnInit, OnDestroy {
   private addAppSwitchProtection() {
     // Detectar cuando la app pierde foco (posible screenshot)
     document.addEventListener('visibilitychange', () => {
-      if (this.selectedSong && document.hidden) {
+      if (this.selectedSong && document.hidden && !this.isEditing && !this.isWatchingVideo) {
         // La app perdió foco, posible captura
         this.handleSuspiciousActivity('Cambio de aplicación detectado');
       }
@@ -417,7 +438,7 @@ export class SongbookListComponent implements OnInit, OnDestroy {
 
     // Detectar blur de ventana
     window.addEventListener('blur', () => {
-      if (this.selectedSong) {
+      if (this.selectedSong && !this.isEditing && !this.isWatchingVideo) {
         this.handleSuspiciousActivity('Ventana perdió foco');
       }
     });
@@ -426,14 +447,14 @@ export class SongbookListComponent implements OnInit, OnDestroy {
   private addOrientationProtection() {
     // Detectar cambios de orientación rápidos (posible captura)
     window.addEventListener('orientationchange', () => {
-      if (this.selectedSong) {
+      if (this.selectedSong && !this.isEditing && !this.isWatchingVideo) {
         this.handleSuspiciousActivity('Cambio de orientación detectado');
       }
     });
 
     // Detectar resize de ventana (posible screenshot tool)
     window.addEventListener('resize', () => {
-      if (this.selectedSong) {
+      if (this.selectedSong && !this.isEditing && !this.isWatchingVideo) {
         // Detectar cambios bruscos de tamaño
         const currentTime = Date.now();
         if (currentTime - this.lastTouchTime < 1000) {
@@ -452,7 +473,10 @@ export class SongbookListComponent implements OnInit, OnDestroy {
   }
 
   private handleSuspiciousActivity(activity: string) {
-    console.warn(`🚨 Actividad sospechosa: ${activity}`);
+    // Si estamos viendo video o editando, ignorar la actividad sospechosa
+    if (this.isWatchingVideo || this.isEditing) {
+      return;
+    }
     
     // Cerrar el modal inmediatamente
     this.closeSongDetail();
@@ -498,5 +522,29 @@ export class SongbookListComponent implements OnInit, OnDestroy {
   private removeMobileProtections() {
     // Limpiar todos los event listeners agregados
     // (Los listeners se limpian automáticamente al destruir el componente)
+  }
+
+  // Métodos para manejar interacción con videos
+  onVideoInteractionStart(event?: Event) {
+    // Detener inmediatamente cualquier propagación de eventos
+    if (event) {
+      event.stopPropagation();
+      event.stopImmediatePropagation();
+    }
+    
+    // Activar inmediatamente el estado de visualización de video
+    this.isWatchingVideo = true;
+  }
+
+  onVideoInteractionEnd() {
+    // Esperar un momento antes de reactivar protecciones para permitir interacciones fluidas
+    setTimeout(() => {
+      this.isWatchingVideo = false;
+    }, 3000); // 3 segundos de gracia para permitir interacciones con controles de YouTube
+  }
+
+  // Método para activar manualmente el modo video (debugging)
+  forceVideoMode(activate: boolean) {
+    this.isWatchingVideo = activate;
   }
 }

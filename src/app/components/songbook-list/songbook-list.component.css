@@ -422,6 +422,78 @@
   font-style: italic;
 }
 
+/* Estilos para video flotante */
+.video-container.floating {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  width: 350px;
+  height: 200px;
+  padding-bottom: 0;
+  z-index: 9999;
+  border-radius: 12px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+  border: 3px solid #28a745;
+  background: #000;
+  transition: all 0.3s ease;
+}
+
+.video-container.floating:hover {
+  transform: scale(1.02);
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.4);
+}
+
+.video-toggle-btn {
+  position: absolute;
+  top: -15px;
+  right: -15px;
+  background: #28a745;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  z-index: 10000;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.video-toggle-btn:hover {
+  background: #218838;
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* Responsive para video flotante */
+@media (max-width: 768px) {
+  .video-container.floating {
+    width: 280px;
+    height: 160px;
+    top: 10px;
+    right: 10px;
+  }
+  
+  .video-toggle-btn {
+    width: 25px;
+    height: 25px;
+    font-size: 12px;
+    top: -12px;
+    right: -12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .video-container.floating {
+    width: 250px;
+    height: 140px;
+  }
+}
+
 /* Responsive para modal */
 @media (max-width: 768px) {
   .song-modal {

@@ -25,6 +25,7 @@ export class SongbookListComponent implements OnInit, OnDestroy {
   editedInstrumentation = '';
   isSaving = false;
   isWatchingVideo = false;
+  isVideoFloating = false;
 
   // Variables para protección móvil
   private touchStartTime = 0;
@@ -60,6 +61,9 @@ export class SongbookListComponent implements OnInit, OnDestroy {
       this.canEditSongs = canEdit;
     });
 
+    // Listener para detectar scroll y activar video flotante
+    this.addScrollListener();
+
     // Obtener el perfil del usuario actual
     this.authService.afAuth.authState.subscribe(async (user) => {
       if (user) {
@@ -82,6 +86,8 @@ export class SongbookListComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     // Limpiar event listeners
     this.removeMobileProtections();
+    // Limpiar scroll listener
+    window.removeEventListener('scroll', this.handleScroll.bind(this));
   }
 
   // Protección contra teclas de captura de pantalla
@@ -248,6 +254,8 @@ export class SongbookListComponent implements OnInit, OnDestroy {
     this.isEditing = false;
     this.editedStructure = '';
     this.editedInstrumentation = '';
+    this.isWatchingVideo = false;
+    this.isVideoFloating = false;
     document.body.style.overflow = 'auto'; // Restaurar scroll
     
     // Reset contadores de protección móvil
@@ -559,5 +567,46 @@ export class SongbookListComponent implements OnInit, OnDestroy {
   // Método para activar manualmente el modo video (debugging)
   forceVideoMode(activate: boolean) {
     this.isWatchingVideo = activate;
+  }
+
+  // Métodos para video flotante
+  toggleVideoFloat(event: Event) {
+    event.stopPropagation();
+    this.isVideoFloating = !this.isVideoFloating;
+    
+    if (this.isVideoFloating) {
+      // Activar modo flotante
+      this.onVideoInteractionStart(event);
+    }
+  }
+
+  private addScrollListener() {
+    window.addEventListener('scroll', this.handleScroll.bind(this));
+  }
+
+  private handleScroll() {
+    if (!this.isWatchingVideo || !this.selectedSong?.youtubeLink) {
+      return;
+    }
+
+    const videoSection = document.querySelector('.video-section') as HTMLElement;
+    const modalBody = document.querySelector('.modal-body') as HTMLElement;
+    
+    if (videoSection && modalBody) {
+      const videoRect = videoSection.getBoundingClientRect();
+      const modalRect = modalBody.getBoundingClientRect();
+      
+      // Si el video está fuera de la vista y el usuario está viendo video
+      if (videoRect.bottom < 0 || videoRect.top > window.innerHeight) {
+        if (!this.isVideoFloating) {
+          this.isVideoFloating = true;
+        }
+      } else {
+        // Si el video vuelve a estar visible
+        if (this.isVideoFloating && videoRect.top >= 0 && videoRect.bottom <= window.innerHeight) {
+          this.isVideoFloating = false;
+        }
+      }
+    }
   }
 }

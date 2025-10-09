@@ -140,6 +140,7 @@
                   <h3>Video</h3>
                   <div class="video-container" 
                        [class.active]="isWatchingVideo"
+                       [class.floating]="isVideoFloating"
                        (mouseenter)="onVideoInteractionStart($event)" 
                        (mouseleave)="onVideoInteractionEnd()"
                        (click)="onVideoInteractionStart($event)"
@@ -153,6 +154,13 @@
                       (mouseenter)="onVideoInteractionStart($event)"
                       (click)="onVideoInteractionStart($event)">
                     </iframe>
+                    <!-- Botón para minimizar/maximizar video -->
+                    <button class="video-toggle-btn" 
+                            *ngIf="isWatchingVideo"
+                            (click)="toggleVideoFloat($event)"
+                            [title]="isVideoFloating ? 'Maximizar video' : 'Minimizar video'">
+                      {{ isVideoFloating ? '⬆️' : '⬇️' }}
+                    </button>
                   </div>
                   <p class="video-hint">💡 Tip: Haz clic en el video para interactuar libremente con él</p>
                 </div>

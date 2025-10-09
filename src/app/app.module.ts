@@ -25,6 +25,8 @@ import { SongbookComponent } from './components/songbook/songbook.component';
 import { SongbookListComponent } from './components/songbook-list/songbook-list.component';
 import { SongbookService } from './services/songbook.service';
 import { RoleService } from './services/role.service';
+import { DocumentoControlComponent } from './components/documento-control/documento-control.component';
+import { MisDocumentosComponent } from './components/mis-documentos/mis-documentos.component';
 
 @NgModule({
   declarations: [
@@ -43,7 +45,9 @@ import { RoleService } from './services/role.service';
     FinancialManagementComponent,
     PaymentRequestsComponent,
     SongbookComponent,
-    SongbookListComponent
+    SongbookListComponent,
+    DocumentoControlComponent,
+    MisDocumentosComponent
   ],
   imports: [
     BrowserModule,

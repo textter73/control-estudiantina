@@ -106,6 +106,16 @@
         <span class="action-icon">📖</span>
         <span class="action-text">Ver canciones</span>
       </button>
+      
+      <button class="action" routerLink="/documento-control" *ngIf="isAdmin || isDocumentador">
+        <span class="action-icon">📋</span>
+        <span class="action-text">Control Documentos</span>
+      </button>
+
+      <button class="action" routerLink="/mis-documentos">
+        <span class="action-icon">📄</span>
+        <span class="action-text">Mis Documentos</span>
+      </button>
       <!---->
     </div>
 

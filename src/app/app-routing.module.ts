@@ -20,6 +20,9 @@ import { PaymentRequestsComponent } from './components/payment-requests/payment-
 import { SongbookComponent } from './components/songbook/songbook.component';
 import { SongbookListComponent } from './components/songbook-list/songbook-list.component';
 import { SongEditorGuard } from './guards/song-editor.guard';
+import { DocumentoControlComponent } from './components/documento-control/documento-control.component';
+import { DocumentadorGuard } from './guards/documentador.guard';
+import { MisDocumentosComponent } from './components/mis-documentos/mis-documentos.component';
 
 const routes: Routes = [
   { path: '', component: LoginComponent },
@@ -37,6 +40,8 @@ const routes: Routes = [
   { path: 'payment-requests', component: PaymentRequestsComponent, canActivate: [AuthGuard] },
   { path: 'songbook', component: SongbookComponent, canActivate: [SongEditorGuard] },
   { path: 'songbook-list', component: SongbookListComponent, canActivate: [AuthGuard] },
+  { path: 'documento-control', component: DocumentoControlComponent, canActivate: [DocumentadorGuard] },
+  { path: 'mis-documentos', component: MisDocumentosComponent, canActivate: [AuthGuard] },
   { path: '**', redirectTo: '' }
 ];
 

@@ -1,0 +1,221 @@
+<div class="mis-documentos-container">
+  <!-- Header -->
+  <div class="header-section">
+    <div class="header-content">
+      <div class="header-left">
+        <button class="back-btn" (click)="goToDashboard()">
+          ← Regresar al Dashboard
+        </button>
+        <div class="logo-section">
+          <img src="assets/estonantzin.jpeg" alt="Logo Estudiantina" class="logo-img">
+          <div class="header-text">
+            <h1>📄 Mis Documentos</h1>
+            <p>Control de documentos físicos pendientes y entregados</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <!-- Loading state -->
+    <div class="loading-state" *ngIf="loading">
+      <div class="spinner"></div>
+      <p>Cargando mis documentos...</p>
+    </div>
+
+    <!-- Content when loaded -->
+    <div *ngIf="!loading">
+      <!-- Filtros -->
+      <div class="filters-section">
+        <h3>📊 Resumen de Estado</h3>
+        <div class="summary-cards">
+          <div class="summary-card pending" [class.active]="showPendientes">
+            <div class="card-header">
+              <span class="card-icon">⏳</span>
+              <span class="card-title">Pendientes de Entrega</span>
+              <button class="toggle-btn" (click)="toggleFilter('pendientes')">
+                {{ showPendientes ? '👁️' : '👁️‍🗨️' }}
+              </button>
+            </div>
+            <div class="card-number">{{ documentosPendientes.length }}</div>
+            <div class="card-description">Documentos que debo firmar físicamente</div>
+          </div>
+
+          <div class="summary-card completed" [class.active]="showEntregados">
+            <div class="card-header">
+              <span class="card-icon">✅</span>
+              <span class="card-title">Ya Entregados</span>
+              <button class="toggle-btn" (click)="toggleFilter('entregados')">
+                {{ showEntregados ? '👁️' : '👁️‍🗨️' }}
+              </button>
+            </div>
+            <div class="card-number">{{ documentosEntregados.length }}</div>
+            <div class="card-description">Documentos ya firmados y entregados</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Documentos Pendientes -->
+      <div class="documents-section" *ngIf="showPendientes && documentosPendientes.length > 0">
+        <h3>⏳ Documentos Pendientes de Entrega</h3>
+        <div class="documents-grid">
+          <div 
+            class="document-card pending"
+            [class]="getPriorityClass(documento)"
+            *ngFor="let documento of documentosPendientes">
+            
+            <div class="document-header">
+              <h4>{{ documento.titulo }}</h4>
+            </div>
+            <div class="document-meta">
+              <span class="version-badge">v{{ documento.version }}</span>
+              <span class="priority-indicator" 
+                    [ngClass]="getPriorityClass(documento)"
+                    *ngIf="getPriorityClass(documento) !== 'priority-normal'">
+                {{ getPriorityClass(documento) === 'priority-high' ? '🔴 Urgente' : '🟡 Atención' }}
+              </span>
+            </div>
+
+            <div class="document-actions">
+              <button 
+                class="action-btn view-btn"
+                (click)="viewDocument(documento)">
+                👁️ Ver Documento
+              </button>
+            </div>
+            
+            <div class="status-badge pending-badge">
+              ⏳ Pendiente de Firma
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Documentos Entregados -->
+      <div class="documents-section" *ngIf="showEntregados && documentosEntregados.length > 0">
+        <h3>✅ Documentos Ya Entregados</h3>
+        <div class="documents-grid">
+          <div 
+            class="document-card completed"
+            *ngFor="let documento of documentosEntregados">
+            
+            <div class="document-header">
+              <h4>{{ documento.titulo }}</h4>
+            </div>
+            <div class="document-meta">
+              <span class="version-badge">v{{ documento.version }}</span>
+              <span class="completed-icon">✅</span>
+            </div>
+
+            <div class="document-actions">
+              <button 
+                class="action-btn view-btn"
+                (click)="viewDocument(documento)">
+                👁️ Ver Documento
+              </button>
+            </div>
+            
+          </div>
+        </div>
+      </div>
+
+      <!-- Estado vacío -->
+      <div class="empty-state" *ngIf="!loading && documentosPendientes.length === 0 && documentosEntregados.length === 0">
+        <div class="empty-icon">📄</div>
+        <h3>No tienes documentos asignados</h3>
+        <p>No hay documentos que requieran tu firma física en este momento</p>
+      </div>
+
+      <!-- Empty states específicos -->
+      <div class="empty-section" *ngIf="showPendientes && documentosPendientes.length === 0 && documentosEntregados.length > 0">
+        <div class="empty-icon">🎉</div>
+        <h4>¡Excelente! No tienes documentos pendientes</h4>
+        <p>Has completado todas las firmas físicas requeridas</p>
+      </div>
+
+      <div class="empty-section" *ngIf="showEntregados && documentosEntregados.length === 0 && documentosPendientes.length > 0">
+        <div class="empty-icon">📝</div>
+        <h4>Aún no has entregado documentos</h4>
+        <p>Completa las firmas físicas pendientes para verlas aquí</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Ver Documento -->
+<div class="modal-overlay" *ngIf="showDocumentModal && selectedDocument" (click)="closeDocumentModal()">
+  <div class="modal-content large-modal document-format" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>📄 {{ selectedDocument.titulo }}</h3>
+      <button class="close-btn" (click)="closeDocumentModal()">✕</button>
+    </div>
+
+    <div class="modal-body">
+      <!-- Formato oficial del documento -->
+      <div class="documento-oficial">
+        <!-- Header con escudo y título -->
+        <div class="documento-header">
+          <div class="escudo-container">
+            <img src="assets/estonantzin.jpeg" alt="Escudo Estudiantina Tonantín Guadalupe" class="escudo-imagen">
+          </div>
+          <div class="titulo-oficial">
+            <h2>{{ selectedDocument.titulo }}</h2>
+            <p class="institucion">Estudiantina Tonantín Guadalupe</p>
+          </div>
+        </div>
+
+        <!-- Fecha y versión -->
+        <div class="fecha-documento">
+          <strong>Fecha:</strong> {{ selectedDocument.fechaCreacion.toDate() | date:'dd/MM/yyyy' }}
+          <br>
+          <strong>Versión:</strong> {{ selectedDocument.version }}
+          <br>
+          <strong>Estado:</strong> 
+          <span [class]="selectedDocument.estado === 'entregado' ? 'status-completed' : 'status-pending'">
+            {{ selectedDocument.estado === 'entregado' ? '✅ Entregado' : '⏳ Pendiente' }}
+          </span>
+        </div>
+
+        <!-- Contenido principal -->
+        <div class="contenido-principal">
+          <!-- Línea de identificación del usuario -->
+          <div class="usuario-identificacion">
+            <p><strong>Yo: </strong> <span class="nombre-usuario"> {{ userName }}</span>, integrante de la <strong>Estudiantina Tonantín Guadalupe</strong>, por medio del presente documento:</p>
+          </div>
+          
+          <div class="texto-documento" [innerHTML]="formatDocumentText(selectedDocument.texto)"></div>
+        </div>
+
+        <!-- Sección de firma -->
+        <div class="firma-section" *ngIf="selectedDocument.estado === 'pendiente'">
+          <div class="firma-info">
+            <h4>📝 Instrucciones para Firma Física</h4>
+            <ol>
+              <li>Entrega el documento firmado al documentador o administrador</li>
+              <li>El estado se actualizará automáticamente una vez procesado</li>
+            </ol>
+          </div>
+        </div>
+
+        <!-- Info de entrega si ya está completado -->
+        <div class="entrega-info" *ngIf="selectedDocument.estado === 'entregado'">
+          <div class="entrega-completed">
+            <h4>✅ Documento Entregado</h4>
+            <p>Este documento ha sido firmado físicamente y entregado correctamente.</p>
+            <p *ngIf="selectedDocument.fechaEntrega">
+              <strong>Fecha de entrega procesada:</strong> {{ selectedDocument.fechaEntrega.toDate() | date:'dd/MM/yyyy HH:mm' }}
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="closeDocumentModal()">
+        Cerrar
+      </button>
+    </div>
+  </div>
+</div>

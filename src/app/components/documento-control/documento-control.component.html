@@ -1,0 +1,403 @@
+<div class="dashboard-container">
+  <!-- Header -->
+  <div class="dashboard-header">
+    <div class="header-content">
+      <div class="logo-section">
+        <button 
+          class="back-btn"
+          (click)="goToDashboard()"
+          title="Regresar al Dashboard">
+          ⬅️ Dashboard
+        </button>
+        <h1>Control de Documentos</h1>
+      </div>
+      <div class="header-actions">
+        <button 
+          class="create-btn"
+          (click)="openCreateModal()"
+          *ngIf="isAdmin">
+          📄 Nuevo Documento
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <div class="container">
+      
+      <!-- Lista de documentos -->
+      <div class="documents-grid" *ngIf="!loading && documentos.length > 0">
+        <div 
+          class="document-card"
+          *ngFor="let documento of documentos"
+          [class]="getEstadoClass(documento)">
+          
+          <div class="document-header">
+            <h3>{{ documento.titulo }}</h3>
+            <span class="status-badge" [class]="getEstadoClass(documento)">
+              {{ documento.estado === 'completo' ? '✅ Completo' : '⏳ Pendiente' }}
+            </span>
+          </div>
+
+          <div class="document-info">
+            <p class="text-preview">{{ documento.texto.substring(0, 100) }}...</p>
+            <div class="progress-info">
+              <span class="progress-text">
+                Entregados: {{ getProgresoEntrega(documento) }}
+              </span>
+            </div>
+          </div>
+
+          <div class="document-actions">
+            <button 
+              class="action-btn view-btn"
+              (click)="viewDocument(documento)">
+              👁️ Ver Detalles
+            </button>
+            <button 
+              class="action-btn edit-btn"
+              (click)="openEditModal(documento)"
+              *ngIf="isAdmin">
+              ✏️ Editar
+            </button>
+            <button 
+              class="action-btn version-btn"
+              (click)="openVersionModal(documento)">
+              📋 Versiones (v{{ documento.version }})
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Estado vacío -->
+      <div class="empty-state" *ngIf="!loading && documentos.length === 0">
+        <div class="empty-icon">📄</div>
+        <h3>No hay documentos creados</h3>
+        <p>Crea tu primer documento para comenzar el control de entregas físicas</p>
+        <button 
+          class="create-btn primary"
+          (click)="openCreateModal()"
+          *ngIf="isAdmin">
+          📄 Crear Primer Documento
+        </button>
+      </div>
+
+      <!-- Loading state -->
+      <div class="loading-state" *ngIf="loading">
+        <div class="spinner"></div>
+        <p>Cargando documentos...</p>
+      </div>
+
+      <!-- Mensaje de no autorizado -->
+      <div class="unauthorized-message" *ngIf="!loading && !isAdmin">
+        <div class="unauthorized-icon">🔒</div>
+        <h3>Acceso Restringido</h3>
+        <p>Solo los administradores y documentadores pueden acceder a esta sección</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Crear Documento -->
+<div class="modal-overlay" *ngIf="showCreateModal" (click)="closeCreateModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>📄 Crear Nuevo Documento</h3>
+      <button class="close-btn" (click)="closeCreateModal()">✕</button>
+    </div>
+
+    <div class="modal-body">
+      <form>
+        <div class="form-group">
+          <label for="titulo">Título del Documento</label>
+          <input 
+            type="text" 
+            id="titulo"
+            class="form-input"
+            [(ngModel)]="nuevoDocumento.titulo"
+            name="titulo"
+            placeholder="Ej: Formato de inscripción 2025"
+            required>
+        </div>
+
+        <div class="form-group">
+          <label for="texto">Texto del Documento</label>
+          <textarea 
+            id="texto"
+            class="form-textarea"
+            [(ngModel)]="nuevoDocumento.texto"
+            name="texto"
+            placeholder="Escriba aquí el contenido completo del documento..."
+            rows="8"
+            required></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>Personas que deben entregar este documento:</label>
+          
+          <!-- Buscador de usuarios -->
+          <div class="search-container">
+            <div class="search-input-wrapper">
+              <input 
+                type="text"
+                class="search-input"
+                [(ngModel)]="searchTerm"
+                (input)="onSearchChange()"
+                placeholder="Buscar por nombre o correo...">
+              <button 
+                type="button" 
+                class="clear-search-btn" 
+                *ngIf="searchTerm"
+                (click)="clearSearch()">
+                ✕
+              </button>
+            </div>
+          </div>
+
+          <div class="selection-controls">
+            <button type="button" class="select-all-btn" (click)="selectAllUsers()">
+              ✅ Seleccionar Todos
+            </button>
+            <button type="button" class="deselect-all-btn" (click)="deselectAllUsers()">
+              ❌ Deseleccionar Todos
+            </button>
+          </div>
+          <div class="users-selection">
+            <div 
+              class="user-option" 
+              *ngFor="let user of filteredUsuarios"
+              [class.selected]="isUserSelected(user.uid)">
+              <label class="user-label">
+                <input 
+                  type="checkbox"
+                  [checked]="isUserSelected(user.uid)"
+                  (change)="onUserSelectionChange(user.uid, $any($event.target).checked)">
+                <span class="user-info">
+                  <strong>{{ user.name }}</strong>
+                  <small>{{ user.email }}</small>
+                </span>
+              </label>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="closeCreateModal()" [disabled]="isCreating">
+        Cancelar
+      </button>
+      <button class="btn-primary" (click)="createDocument()" [disabled]="isCreating">
+        <span *ngIf="!isCreating">📄 Crear Documento</span>
+        <span *ngIf="isCreating">⏳ Guardando...</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Ver Documento -->
+<div class="modal-overlay" *ngIf="showViewModal && selectedDocument" (click)="closeViewModal()">
+  <div class="modal-content large-modal document-format" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>📄 Vista del Documento</h3>
+      <button class="close-btn" (click)="closeViewModal()">✕</button>
+    </div>
+
+    <div class="modal-body">
+      <!-- Formato oficial del documento -->
+      <div class="documento-oficial">
+        <!-- Header con escudo y título -->
+        <div class="documento-header">
+          <div class="escudo-container">
+            <img src="assets/estonantzin.jpeg" alt="Escudo Estudiantina Tonantín Guadalupe" class="escudo-imagen">
+          </div>
+          <div class="titulo-oficial">
+            <h2>{{ selectedDocument.titulo }}</h2>
+            <p class="institucion">Estudiantina Tonantín Guadalupe</p>
+          </div>
+        </div>
+
+        <!-- Fecha -->
+        <div class="fecha-documento">
+          <strong>Fecha:</strong> {{ selectedDocument.fechaCreacion.toDate() | date:'dd/MM/yyyy' }}
+        </div>
+
+        <!-- Contenido principal -->
+        <div class="contenido-principal">
+          <div class="texto-documento" [innerHTML]="formatDocumentText(selectedDocument.texto)"></div>
+        </div>
+      </div>
+
+      <!-- Separador -->
+      <hr class="separador-control">
+
+      <!-- Control de entregas -->
+      <div class="entregas-section">
+        <h4>📋 Control de Entregas Físicas</h4>
+        <div class="entregas-grid">
+          <div 
+            class="entrega-item"
+            *ngFor="let personaId of selectedDocument.personasRequeridas"
+            [class.entregado]="selectedDocument.personasEntregadas.includes(personaId)">
+            
+            <div class="persona-info">
+              <span class="persona-name">{{ getUserName(personaId) }}</span>
+              <span class="entrega-status">
+                {{ selectedDocument.personasEntregadas.includes(personaId) ? '✅ Entregado' : '⏳ Pendiente' }}
+              </span>
+            </div>
+            
+            <button 
+              class="toggle-entrega-btn"
+              [class.btn-success]="!selectedDocument.personasEntregadas.includes(personaId)"
+              [class.btn-warning]="selectedDocument.personasEntregadas.includes(personaId)"
+              (click)="toggleEntrega(selectedDocument, personaId)">
+              {{ selectedDocument.personasEntregadas.includes(personaId) ? 'Desmarcar' : 'Marcar Entregado' }}
+            </button>
+          </div>
+        </div>
+
+        <div class="resumen-entregas">
+          <p><strong>Progreso: {{ getProgresoEntrega(selectedDocument) }}</strong></p>
+          <p><strong>Estado: </strong>
+            <span [class]="getEstadoClass(selectedDocument)">
+              {{ selectedDocument.estado === 'completo' ? '✅ Todos han entregado' : '⏳ Faltan entregas' }}
+            </span>
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="closeViewModal()">
+        Cerrar
+      </button>
+      <button class="btn-primary" (click)="printDocument()">
+        🖨️ Imprimir Documento
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Editar Documento -->
+<div class="modal-overlay" *ngIf="showEditModal && selectedDocument" (click)="closeEditModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>✏️ Editar Documento - Nueva Versión</h3>
+      <button class="close-btn" (click)="closeEditModal()">✕</button>
+    </div>
+
+    <div class="modal-body">
+      <div class="version-info">
+        <p><strong>Versión actual:</strong> v{{ selectedDocument.version }}</p>
+        <p><strong>Nueva versión:</strong> v{{ selectedDocument.version + 1 }}</p>
+      </div>
+
+      <form>
+        <div class="form-group">
+          <label for="editTitulo">Título del documento:</label>
+          <input 
+            type="text" 
+            id="editTitulo"
+            class="form-input"
+            [(ngModel)]="documentoParaEditar.titulo"
+            name="editTitulo"
+            placeholder="Ingrese el título del documento"
+            required>
+        </div>
+
+        <div class="form-group">
+          <label for="editTexto">Contenido del documento:</label>
+          <textarea 
+            id="editTexto"
+            class="form-textarea"
+            [(ngModel)]="documentoParaEditar.texto"
+            name="editTexto"
+            placeholder="Escriba aquí el contenido completo del documento..."
+            rows="8"
+            required></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="historialCambios">Descripción de cambios (requerido):</label>
+          <textarea 
+            id="historialCambios"
+            class="form-textarea"
+            [(ngModel)]="historialCambios"
+            name="historialCambios"
+            placeholder="Describa los cambios realizados en esta versión..."
+            rows="3"
+            required></textarea>
+        </div>
+      </form>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="closeEditModal()">
+        Cancelar
+      </button>
+      <button class="btn-primary" (click)="createNewVersion()" 
+              [disabled]="!historialCambios.trim()">
+        🔄 Crear Nueva Versión
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Historial de Versiones -->
+<div class="modal-overlay" *ngIf="showVersionModal && selectedDocument" (click)="closeVersionModal()">
+  <div class="modal-content large-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>📋 Historial de Versiones - {{ selectedDocument.titulo }}</h3>
+      <button class="close-btn" (click)="closeVersionModal()">✕</button>
+    </div>
+
+    <div class="modal-body">
+      <div class="versions-list">
+        <div 
+          class="version-item"
+          *ngFor="let version of versiones"
+          [class.current-version]="version.esVersionActual">
+          
+          <div class="version-header">
+            <h4>
+              Versión {{ version.version }}
+              <span class="version-badge" *ngIf="version.esVersionActual">ACTUAL</span>
+            </h4>
+            <div class="version-meta">
+              <p><strong>Creado:</strong> {{ version.fechaCreacion.toDate() | date:'dd/MM/yyyy HH:mm' }}</p>
+              <p><strong>Por:</strong> {{ getUserNameById(version.creadoPor) }}</p>
+              <p *ngIf="version.fechaModificacion && version.modificadoPor">
+                <strong>Modificado:</strong> {{ version.fechaModificacion.toDate() | date:'dd/MM/yyyy HH:mm' }} 
+                por {{ getUserNameById(version.modificadoPor) }}
+              </p>
+              <p *ngIf="version.historialCambios">
+                <strong>Cambios:</strong> {{ version.historialCambios }}
+              </p>
+            </div>
+          </div>
+
+          <div class="version-content">
+            <h5>{{ version.titulo }}</h5>
+            <div class="version-text">{{ version.texto }}</div>
+          </div>
+
+          <div class="version-actions" *ngIf="!version.esVersionActual && isAdmin">
+            <button 
+              class="btn-secondary small"
+              (click)="revertToVersion(version)">
+              🔄 Revertir a esta versión
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="closeVersionModal()">
+        Cerrar
+      </button>
+    </div>
+  </div>
+</div>

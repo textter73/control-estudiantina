@@ -19,6 +19,7 @@ import { FinancialManagementComponent } from './components/financial-management/
 import { PaymentRequestsComponent } from './components/payment-requests/payment-requests.component';
 import { SongbookComponent } from './components/songbook/songbook.component';
 import { SongbookListComponent } from './components/songbook-list/songbook-list.component';
+import { SongEditorGuard } from './guards/song-editor.guard';
 
 const routes: Routes = [
   { path: '', component: LoginComponent },
@@ -34,7 +35,7 @@ const routes: Routes = [
   { path: 'ticket-sales', component: TicketSalesComponent, canActivate: [AuthGuard] },
   { path: 'financial-management', component: FinancialManagementComponent, canActivate: [AuthGuard] },
   { path: 'payment-requests', component: PaymentRequestsComponent, canActivate: [AuthGuard] },
-  { path: 'songbook', component: SongbookComponent, canActivate: [AuthGuard] },
+  { path: 'songbook', component: SongbookComponent, canActivate: [SongEditorGuard] },
   { path: 'songbook-list', component: SongbookListComponent, canActivate: [AuthGuard] },
   { path: '**', redirectTo: '' }
 ];

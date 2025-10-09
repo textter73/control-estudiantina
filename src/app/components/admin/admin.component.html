@@ -10,7 +10,16 @@
   </header>
 
   <main class="admin-main">
-    
+    <!-- Información sobre perfiles disponibles -->
+    <div class="profiles-info">
+      <h3>📋 Perfiles Disponibles</h3>
+      <div class="profiles-grid">
+        <div class="profile-info-card" *ngFor="let profile of availableProfiles">
+          <span class="profile-name" [class]="'profile-' + profile">{{ profile }}</span>
+          <span class="profile-description">{{ profileDescriptions[profile] }}</span>
+        </div>
+      </div>
+    </div>
 
     <!-- Vista de tarjetas para móvil -->
     <div class="users-cards mobile-view">

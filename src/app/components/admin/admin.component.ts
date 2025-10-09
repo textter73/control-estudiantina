@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { AuthService } from '../../services/auth.service';
+import { RoleService } from '../../services/role.service';
 import Swal from 'sweetalert2';
 
 @Component({
@@ -10,15 +11,26 @@ import Swal from 'sweetalert2';
 })
 export class AdminComponent implements OnInit {
   users: any[] = [];
-  availableProfiles = ['administrador', 'finanzas', 'asistencia', 'agenda', 'transporte'];
+  availableProfiles = ['administrador', 'finanzas', 'asistencia', 'agenda', 'transporte', 'editor-canciones'];
+  profileDescriptions: { [key: string]: string } = {};
 
   constructor(
     private firestore: AngularFirestore,
-    private authService: AuthService
+    private authService: AuthService,
+    private roleService: RoleService
   ) {}
 
   ngOnInit() {
     this.loadUsers();
+    this.profileDescriptions = {
+      'integrante': 'Acceso básico - puede ver contenido',
+      'administrador': 'Acceso completo al sistema',
+      'finanzas': 'Gestión financiera y pagos',
+      'asistencia': 'Control de asistencia',
+      'agenda': 'Gestión de eventos',
+      'transporte': 'Gestión de transporte',
+      'editor-canciones': 'Puede editar letras e instrumentación de canciones'
+    };
   }
 
   async loadUsers() {

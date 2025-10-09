@@ -2,6 +2,7 @@ import { Component, OnInit, HostListener, OnDestroy } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { SongbookService } from '../../services/songbook.service';
 import { AuthService } from '../../services/auth.service';
+import { RoleService } from '../../services/role.service';
 import Swal from 'sweetalert2';
 
 @Component({
@@ -16,6 +17,7 @@ export class SongbookListComponent implements OnInit, OnDestroy {
   selectedSong: any = null;
   loading = true;
   isAdmin = false;
+  canEditSongs = false;
   searchTerm = '';
   selectedCategory = '';
   isEditing = false;
@@ -36,15 +38,26 @@ export class SongbookListComponent implements OnInit, OnDestroy {
   constructor(
     private songbookService: SongbookService,
     private authService: AuthService,
-    private sanitizer: DomSanitizer
+    private sanitizer: DomSanitizer,
+    private roleService: RoleService
   ) {}
 
   ngOnInit() {
+    // Cargar canciones
     this.songbookService.getSongs().subscribe((res: any) => {
       this.songs = res.map((doc: any) => ({ id: doc.payload.doc.id, ...doc.payload.doc.data() }));
       this.filteredSongs = [...this.songs];
       this.extractCategories();
       this.loading = false;
+    });
+
+    // Verificar permisos del usuario
+    this.roleService.isAdmin().subscribe(isAdmin => {
+      this.isAdmin = isAdmin;
+    });
+
+    this.roleService.canEditSongs().subscribe(canEdit => {
+      this.canEditSongs = canEdit;
     });
 
     // Obtener el perfil del usuario actual

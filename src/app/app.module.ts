@@ -24,6 +24,7 @@ import { PaymentRequestsComponent } from './components/payment-requests/payment-
 import { SongbookComponent } from './components/songbook/songbook.component';
 import { SongbookListComponent } from './components/songbook-list/songbook-list.component';
 import { SongbookService } from './services/songbook.service';
+import { RoleService } from './services/role.service';
 
 @NgModule({
   declarations: [
@@ -41,8 +42,8 @@ import { SongbookService } from './services/songbook.service';
     TicketSalesComponent,
     FinancialManagementComponent,
     PaymentRequestsComponent,
-  SongbookComponent,
-  SongbookListComponent
+    SongbookComponent,
+    SongbookListComponent
   ],
   imports: [
     BrowserModule,

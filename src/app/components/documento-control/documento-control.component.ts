@@ -51,6 +51,10 @@ export class DocumentoControlComponent implements OnInit {
   searchTerm: string = '';
   filteredUsuarios: any[] = [];
 
+  // Buscador de usuarios para edición
+  searchTermEdit: string = '';
+  filteredUsuariosEdit: any[] = [];
+
   // Control de versiones
   showVersionModal = false;
   showEditModal = false;
@@ -284,6 +288,32 @@ export class DocumentoControlComponent implements OnInit {
     this.nuevoDocumento.personasRequeridas = [];
   }
 
+  // Métodos para selección de usuarios en modal de edición
+  isUserSelectedForEdit(userId: string): boolean {
+    return this.documentoParaEditar.personasRequeridas?.includes(userId) || false;
+  }
+
+  toggleUserSelectionEdit(userId: string) {
+    if (!this.documentoParaEditar.personasRequeridas) {
+      this.documentoParaEditar.personasRequeridas = [];
+    }
+
+    const index = this.documentoParaEditar.personasRequeridas.indexOf(userId);
+    if (index > -1) {
+      this.documentoParaEditar.personasRequeridas.splice(index, 1);
+    } else {
+      this.documentoParaEditar.personasRequeridas.push(userId);
+    }
+  }
+
+  selectAllUsersEdit() {
+    this.documentoParaEditar.personasRequeridas = this.filteredUsuariosEdit.map(user => user.uid);
+  }
+
+  deselectAllUsersEdit() {
+    this.documentoParaEditar.personasRequeridas = [];
+  }
+
   // Método para filtrar usuarios basado en el término de búsqueda
   filterUsers() {
     if (!this.searchTerm.trim()) {
@@ -291,6 +321,19 @@ export class DocumentoControlComponent implements OnInit {
     } else {
       const term = this.searchTerm.toLowerCase();
       this.filteredUsuarios = this.usuarios.filter(user => 
+        user.name.toLowerCase().includes(term) || 
+        user.email.toLowerCase().includes(term)
+      );
+    }
+  }
+
+  // Métodos para filtrar usuarios en el modal de edición
+  filterUsersEdit() {
+    if (!this.searchTermEdit.trim()) {
+      this.filteredUsuariosEdit = [...this.usuarios];
+    } else {
+      const term = this.searchTermEdit.toLowerCase();
+      this.filteredUsuariosEdit = this.usuarios.filter(user => 
         user.name.toLowerCase().includes(term) || 
         user.email.toLowerCase().includes(term)
       );
@@ -417,7 +460,7 @@ export class DocumentoControlComponent implements OnInit {
           <img src="assets/estonantzin.jpeg" alt="Escudo Estudiantina" class="escudo-imagen">
           <div class="titulo-oficial">
             <h2>${this.selectedDocument.titulo}</h2>
-            <p class="institucion">Estudiantina Tonantín Guadalupe</p>
+            <p class="institucion">Estudiantina Tonantzín Guadalupe</p>
           </div>
         </div>
         
@@ -465,6 +508,11 @@ export class DocumentoControlComponent implements OnInit {
       personasRequeridas: [...documento.personasRequeridas]
     };
     this.historialCambios = '';
+    
+    // Inicializar la búsqueda de usuarios para edición
+    this.searchTermEdit = '';
+    this.filteredUsuariosEdit = [...this.usuarios];
+    
     this.showEditModal = true;
   }
 
@@ -473,11 +521,41 @@ export class DocumentoControlComponent implements OnInit {
     this.selectedDocument = null;
     this.documentoParaEditar = {};
     this.historialCambios = '';
+    this.searchTermEdit = '';
+    this.filteredUsuariosEdit = [];
   }
 
   async createNewVersion() {
     if (!this.selectedDocument || !this.historialCambios.trim()) {
       Swal.fire('Error', 'Debe describir los cambios realizados', 'error');
+      return;
+    }
+
+    if (!this.documentoParaEditar.personasRequeridas?.length) {
+      Swal.fire('Error', 'Debe seleccionar al menos una persona que deba firmar el documento', 'error');
+      return;
+    }
+
+    // Confirmación antes de crear la nueva versión
+    const confirmResult = await Swal.fire({
+      title: '🔄 Crear Nueva Versión',
+      html: `
+        <p>¿Está seguro de crear la versión <strong>v${this.selectedDocument.version + 1}</strong>?</p>
+        <p><strong>Personas seleccionadas para firmar:</strong> ${this.documentoParaEditar.personasRequeridas?.length}</p>
+        <br>
+        <div style="background: #fff3cd; border: 1px solid #ffc107; border-radius: 8px; padding: 15px; margin: 10px 0;">
+          <strong>⚠️ Importante:</strong> Todas las firmas serán restablecidas y las personas seleccionadas deberán firmar nuevamente.
+        </div>
+      `,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#189d98',
+      cancelButtonColor: '#6c757d',
+      confirmButtonText: '✅ Sí, crear nueva versión',
+      cancelButtonText: '❌ Cancelar'
+    });
+
+    if (!confirmResult.isConfirmed) {
       return;
     }
 
@@ -497,8 +575,8 @@ export class DocumentoControlComponent implements OnInit {
         creadoPor: this.selectedDocument.creadoPor,
         fechaCreacion: this.selectedDocument.fechaCreacion,
         personasRequeridas: this.documentoParaEditar.personasRequeridas || [],
-        personasEntregadas: this.selectedDocument.personasEntregadas,
-        estado: this.selectedDocument.estado,
+        personasEntregadas: [], // Resetear las firmas para la nueva versión
+        estado: 'pendiente', // Resetear el estado a pendiente
         version: this.selectedDocument.version + 1,
         versionAnterior: this.selectedDocument.id,
         esVersionActual: true,
@@ -509,7 +587,16 @@ export class DocumentoControlComponent implements OnInit {
 
       await this.firestore.collection('documentos-fisicos').add(nuevaVersion);
 
-      Swal.fire('Éxito', 'Nueva versión creada exitosamente', 'success');
+      Swal.fire({
+        title: '✅ Nueva versión creada exitosamente',
+        html: `
+          <p><strong>Versión ${nuevaVersion.version}</strong> del documento "${nuevaVersion.titulo}" ha sido creada.</p>
+          <br>
+          <p><strong>⚠️ Importante:</strong> Todas las firmas han sido restablecidas. Las personas seleccionadas deberán firmar nuevamente esta nueva versión.</p>
+        `,
+        icon: 'success',
+        confirmButtonColor: '#189d98'
+      });
       this.closeEditModal();
       this.loadDocuments();
     } catch (error) {

@@ -210,11 +210,11 @@
         <!-- Header con escudo y título -->
         <div class="documento-header">
           <div class="escudo-container">
-            <img src="assets/estonantzin.jpeg" alt="Escudo Estudiantina Tonantín Guadalupe" class="escudo-imagen">
+            <img src="assets/estonantzin.jpeg" alt="Escudo Estudiantina Tonantzin Guadalupe" class="escudo-imagen">
           </div>
           <div class="titulo-oficial">
             <h2>{{ selectedDocument.titulo }}</h2>
-            <p class="institucion">Estudiantina Tonantín Guadalupe</p>
+            <p class="institucion">Estudiantina Tonantzin Guadalupe</p>
           </div>
         </div>
 
@@ -292,6 +292,11 @@
       <div class="version-info">
         <p><strong>Versión actual:</strong> v{{ selectedDocument.version }}</p>
         <p><strong>Nueva versión:</strong> v{{ selectedDocument.version + 1 }}</p>
+        
+        <div class="alert alert-warning">
+          <strong>⚠️ Importante:</strong> Al crear una nueva versión, todas las firmas serán restablecidas. 
+          Las personas seleccionadas en "Personas requeridas" deberán firmar nuevamente esta nueva versión.
+        </div>
       </div>
 
       <form>
@@ -330,6 +335,69 @@
             rows="3"
             required></textarea>
         </div>
+
+        <!-- Selección de personas requeridas -->
+        <div class="form-group">
+          <label>👥 Personas que deben firmar esta nueva versión:</label>
+          
+          <!-- Búsqueda de usuarios -->
+          <div class="user-search">
+            <input 
+              type="text" 
+              class="form-input search-input"
+              [(ngModel)]="searchTermEdit"
+              name="searchTermEdit"
+              placeholder="🔍 Buscar usuario por nombre..."
+              (input)="filterUsersEdit()">
+            
+            <!-- Botones de selección rápida -->
+            <div class="selection-buttons">
+              <button 
+                type="button" 
+                class="btn-select-all" 
+                (click)="selectAllUsersEdit()">
+                ✅ Seleccionar todos
+              </button>
+              <button 
+                type="button" 
+                class="btn-deselect-all" 
+                (click)="deselectAllUsersEdit()">
+                ❌ Deseleccionar todos
+              </button>
+            </div>
+          </div>
+
+          <!-- Lista de usuarios disponibles -->
+          <div class="users-list-container">
+            <div class="users-grid">
+              <div 
+                *ngFor="let usuario of filteredUsuariosEdit" 
+                class="user-item"
+                [class.selected]="isUserSelectedForEdit(usuario.uid)"
+                (click)="toggleUserSelectionEdit(usuario.uid)">
+                
+                <div class="user-info">
+                  <div class="user-avatar">
+                    {{ usuario.name.charAt(0).toUpperCase() }}
+                  </div>
+                  <div class="user-details">
+                    <span class="user-name">{{ usuario.name }}</span>
+                    <span class="user-email">{{ usuario.email }}</span>
+                  </div>
+                </div>
+                
+                <div class="selection-indicator">
+                  <span *ngIf="isUserSelectedForEdit(usuario.uid)" class="selected-icon">✓</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Resumen de selección -->
+          <div class="selection-summary" *ngIf="documentoParaEditar.personasRequeridas && documentoParaEditar.personasRequeridas.length > 0">
+            <p><strong>Personas seleccionadas:</strong> {{ documentoParaEditar.personasRequeridas.length }}</p>
+          </div>
+        </div>
       </form>
     </div>
 
@@ -338,7 +406,7 @@
         Cancelar
       </button>
       <button class="btn-primary" (click)="createNewVersion()" 
-              [disabled]="!historialCambios.trim()">
+              [disabled]="!historialCambios.trim() || !documentoParaEditar.personasRequeridas?.length">
         🔄 Crear Nueva Versión
       </button>
     </div>

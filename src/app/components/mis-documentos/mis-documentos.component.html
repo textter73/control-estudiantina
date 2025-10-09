@@ -86,9 +86,6 @@
               </button>
             </div>
             
-            <div class="status-badge pending-badge">
-              ⏳ Pendiente de Firma
-            </div>
           </div>
         </div>
       </div>
@@ -158,11 +155,11 @@
         <!-- Header con escudo y título -->
         <div class="documento-header">
           <div class="escudo-container">
-            <img src="assets/estonantzin.jpeg" alt="Escudo Estudiantina Tonantín Guadalupe" class="escudo-imagen">
+            <img src="assets/estonantzin.jpeg" alt="Escudo Estudiantina Tonantzin Guadalupe" class="escudo-imagen">
           </div>
           <div class="titulo-oficial">
             <h2>{{ selectedDocument.titulo }}</h2>
-            <p class="institucion">Estudiantina Tonantín Guadalupe</p>
+            <p class="institucion">Estudiantina Tonantxin Guadalupe</p>
           </div>
         </div>
 
@@ -182,7 +179,7 @@
         <div class="contenido-principal">
           <!-- Línea de identificación del usuario -->
           <div class="usuario-identificacion">
-            <p><strong>Yo: </strong> <span class="nombre-usuario"> {{ userName }}</span>, integrante de la <strong>Estudiantina Tonantín Guadalupe</strong>, por medio del presente documento:</p>
+            <p><strong>Yo: </strong> <span class="nombre-usuario"> {{ userName }}</span>, integrante de la <strong>Estudiantina Tonantxin Guadalupe</strong>, por medio del presente documento:</p>
           </div>
           
           <div class="texto-documento" [innerHTML]="formatDocumentText(selectedDocument.texto)"></div>

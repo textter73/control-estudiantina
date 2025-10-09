@@ -32,6 +32,10 @@ export class DashboardComponent implements OnInit {
   movementFilter: string = 'all';
   users: any[] = [];
   usersMap: { [key: string]: string } = {};
+  
+  // Documentos pendientes
+  pendingDocuments: any[] = [];
+  pendingDocumentsCount: number = 0;
   attendanceStats = {
     presente: 0,
     escuela: 0,
@@ -104,6 +108,7 @@ export class DashboardComponent implements OnInit {
         this.loadUsers();
         this.loadPendingPayments();
         this.loadMyPartialPayments();
+        this.loadPendingDocuments();
       } else {
         this.router.navigate(['/']);
       }
@@ -179,6 +184,10 @@ export class DashboardComponent implements OnInit {
 
   goToTracking() {
     this.router.navigate(['/attendance-tracking']);
+  }
+
+  goToMyDocuments() {
+    this.router.navigate(['/mis-documentos']);
   }
 
   loadActiveEvents() {
@@ -618,6 +627,23 @@ export class DashboardComponent implements OnInit {
         const dateB = b.createdAt?.toDate() || new Date(0);
         return dateB.getTime() - dateA.getTime();
       });
+    });
+  }
+
+  loadPendingDocuments() {
+    if (!this.user) return;
+
+    // Cargar documentos pendientes donde el usuario esté en la lista de requeridos
+    this.firestore.collection('documentos-fisicos', ref => 
+      ref.where('esVersionActual', '==', true)
+         .where('personasRequeridas', 'array-contains', this.user.uid)
+    ).valueChanges({ idField: 'id' }).subscribe((docs: any[]) => {
+      // Filtrar solo los documentos donde el usuario NO ha entregado su firma
+      this.pendingDocuments = docs.filter(doc => 
+        !doc.personasEntregadas || !doc.personasEntregadas.includes(this.user.uid)
+      );
+      
+      this.pendingDocumentsCount = this.pendingDocuments.length;
     });
   }
 

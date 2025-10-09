@@ -119,6 +119,38 @@
       <!---->
     </div>
 
+    <!-- Documentos Pendientes de Firmar -->
+    <div class="document-notifications" *ngIf="pendingDocumentsCount > 0">
+      <div class="notification-card urgent">
+        <div class="notification-header">
+          <div class="notification-icon">📄</div>
+          <div class="notification-title">
+            <h3>Documentos Pendientes de Firma</h3>
+            <p>Tienes {{ pendingDocumentsCount }} documento{{ pendingDocumentsCount > 1 ? 's' : '' }} esperando tu firma física</p>
+          </div>
+        </div>
+        
+        <div class="notification-actions">
+          <button class="btn-primary" (click)="goToMyDocuments()">
+            <span class="btn-icon">✍️</span>
+            Ver Documentos Pendientes
+          </button>
+        </div>
+        
+        <div class="documents-preview" *ngIf="pendingDocuments.length > 0">
+          <div class="document-preview" *ngFor="let doc of pendingDocuments.slice(0, 2)">
+            <div class="document-info">
+              <span class="document-title">{{ doc.titulo }}</span>
+              <span class="document-version">v{{ doc.version }}</span>
+            </div>
+          </div>
+          <div class="more-documents" *ngIf="pendingDocuments.length > 2">
+            <span>+{{ pendingDocuments.length - 2 }} documento{{ pendingDocuments.length - 2 > 1 ? 's' : '' }} más</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Solicitudes de Pago Pendientes -->
     <div class="payment-notifications" *ngIf="pendingPayments.length > 0">
       <h3>💰 Solicitudes de Pago Pendientes</h3>

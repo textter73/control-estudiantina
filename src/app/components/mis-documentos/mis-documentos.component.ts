@@ -114,9 +114,6 @@ export class MisDocumentosComponent implements OnInit {
     // Ordenar por fecha de creación
     this.documentosPendientes.sort((a, b) => b.fechaCreacion.seconds - a.fechaCreacion.seconds);
     this.documentosEntregados.sort((a, b) => b.fechaCreacion.seconds - a.fechaCreacion.seconds);
-
-    console.log('📄 Pendientes:', this.documentosPendientes.length);
-    console.log('✅ Entregados:', this.documentosEntregados.length);
   }
 
   viewDocument(documento: DocumentoUsuario) {
@@ -275,7 +272,7 @@ export class MisDocumentosComponent implements OnInit {
           <img src="assets/estonantzin.jpeg" alt="Escudo Estudiantina" class="escudo-imagen">
           <div class="titulo-oficial">
             <h2>${this.selectedDocument.titulo}</h2>
-            <p class="institucion">Estudiantina Tonantín Guadalupe</p>
+            <p class="institucion">Estudiantina Tonantzin Guadalupe</p>
           </div>
         </div>
         
@@ -286,7 +283,7 @@ export class MisDocumentosComponent implements OnInit {
         
         <div class="contenido-principal">
           <div class="usuario-identificacion">
-            <p><strong>Yo:</strong> <span class="nombre-usuario">${this.userName}</span>, integrante de la <strong>Estudiantina Tonantín Guadalupe</strong>, por medio del presente documento:</p>
+            <p><strong>Yo:</strong> <span class="nombre-usuario">${this.userName}</span>, integrante de la <strong>Estudiantina Tonantzin Guadalupe</strong>, por medio del presente documento:</p>
           </div>
           ${this.formatDocumentText(this.selectedDocument.texto)}
         </div>

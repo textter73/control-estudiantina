@@ -58,7 +58,6 @@ export class TransportManagementComponent implements OnInit {
     this.firestore.collection('transport-requests', ref => ref.orderBy('createdAt', 'desc'))
       .valueChanges({ idField: 'id' }).subscribe((requests: any[]) => {
         this.transportRequests = requests;
-        console.log('Transport requests loaded:', requests);
       });
   }
 

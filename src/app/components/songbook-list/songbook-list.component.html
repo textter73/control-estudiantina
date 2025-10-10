@@ -87,6 +87,7 @@
                   A+
                 </button>
               </div>
+              
               <div class="modal-header">
                 <h2 *ngIf="!isEditing">{{ selectedSong.title }}</h2>
                 <input 
@@ -169,11 +170,13 @@
                 <div class="lyrics-section" 
                      [class.protected-content]="!isEditing">
                   <h3>Letra</h3>
+                  
                   <pre class="lyrics-content" 
                        [class.no-select]="!isEditing" 
                        [class.protected-text]="!isEditing" 
                        [style.font-size.px]="fontSize"
                        *ngIf="!isEditing">{{ selectedSong.structure || 'No hay letra disponible para esta canción.' }}</pre>
+                  
                   <textarea 
                     *ngIf="isAdmin && isEditing"
                     [(ngModel)]="editedStructure"

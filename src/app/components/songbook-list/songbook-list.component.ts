@@ -276,6 +276,7 @@ export class SongbookListComponent implements OnInit, OnDestroy {
     this.editedYoutubeLink = '';
     this.isWatchingVideo = false;
     this.isVideoFloating = false;
+    
     document.body.style.overflow = 'auto'; // Restaurar scroll
     
     // Reset contadores de protección móvil
@@ -625,26 +626,25 @@ export class SongbookListComponent implements OnInit, OnDestroy {
   }
 
   private handleScroll() {
-    if (!this.isWatchingVideo || !this.selectedSong?.youtubeLink) {
-      return;
-    }
-
-    const videoSection = document.querySelector('.video-section') as HTMLElement;
-    const modalBody = document.querySelector('.modal-body') as HTMLElement;
-    
-    if (videoSection && modalBody) {
-      const videoRect = videoSection.getBoundingClientRect();
-      const modalRect = modalBody.getBoundingClientRect();
+    // Lógica para video flotante
+    if (this.isWatchingVideo && this.selectedSong?.youtubeLink) {
+      const videoSection = document.querySelector('.video-section') as HTMLElement;
+      const modalBody = document.querySelector('.modal-body') as HTMLElement;
       
-      // Si el video está fuera de la vista y el usuario está viendo video
-      if (videoRect.bottom < 0 || videoRect.top > window.innerHeight) {
-        if (!this.isVideoFloating) {
-          this.isVideoFloating = true;
-        }
-      } else {
-        // Si el video vuelve a estar visible
-        if (this.isVideoFloating && videoRect.top >= 0 && videoRect.bottom <= window.innerHeight) {
-          this.isVideoFloating = false;
+      if (videoSection && modalBody) {
+        const videoRect = videoSection.getBoundingClientRect();
+        const modalRect = modalBody.getBoundingClientRect();
+        
+        // Si el video está fuera de la vista y el usuario está viendo video
+        if (videoRect.bottom < 0 || videoRect.top > window.innerHeight) {
+          if (!this.isVideoFloating) {
+            this.isVideoFloating = true;
+          }
+        } else {
+          // Si el video vuelve a estar visible
+          if (this.isVideoFloating && videoRect.top >= 0 && videoRect.bottom <= window.innerHeight) {
+            this.isVideoFloating = false;
+          }
         }
       }
     }

@@ -1061,61 +1061,293 @@
   line-height: 1.6;
 }
 
+/* Estilos para controles de karaoke */
+.karaoke-controls {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 15px;
+  padding: 15px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  border: 2px solid #189d98;
+  z-index: 1001;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 200px;
+}
+
+.karaoke-main-controls {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.karaoke-btn {
+  background: linear-gradient(135deg, #189d98, #16a085);
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(24, 157, 152, 0.3);
+}
+
+.karaoke-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(24, 157, 152, 0.4);
+}
+
+.karaoke-btn.active {
+  background: linear-gradient(135deg, #e74c3c, #c0392b);
+  animation: pulse 2s infinite;
+}
+
+.karaoke-btn.paused {
+  background: linear-gradient(135deg, #f39c12, #d68910);
+}
+
+.karaoke-navigation {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  background: #f8f9fa;
+  padding: 8px 12px;
+  border-radius: 8px;
+}
+
+.nav-btn {
+  background: #189d98;
+  color: white;
+  border: none;
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.3s ease;
+}
+
+.nav-btn:hover:not(:disabled) {
+  background: #16a085;
+}
+
+.nav-btn:disabled {
+  background: #bdc3c7;
+  cursor: not-allowed;
+}
+
+.line-counter {
+  font-weight: 600;
+  color: #2c3e50;
+  font-size: 14px;
+  min-width: 60px;
+  text-align: center;
+}
+
+.speed-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  background: #f8f9fa;
+  padding: 8px 12px;
+  border-radius: 8px;
+}
+
+.speed-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.speed-btn {
+  background: #3498db;
+  color: white;
+  border: none;
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background 0.3s ease;
+}
+
+.speed-btn:hover {
+  background: #2980b9;
+}
+
+.speed-value {
+  font-weight: 600;
+  color: #2c3e50;
+  font-size: 12px;
+  min-width: 40px;
+  text-align: center;
+}
+
+/* Estilos para las líneas de karaoke */
+.karaoke-lyrics {
+  max-height: 400px;
+  overflow-y: auto;
+  padding: 20px;
+  background: #f8f9fa;
+  border-radius: 12px;
+  border: 2px solid #e9ecef;
+}
+
+.lyric-line-container {
+  display: flex;
+  align-items: flex-start;
+  padding: 8px 12px;
+  margin: 4px 0;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  border-left: 4px solid transparent;
+}
+
+.lyric-line.upcoming {
+  opacity: 0.6;
+  background: rgba(52, 152, 219, 0.1);
+  border-left-color: #3498db;
+}
+
+.lyric-line.current {
+  background: linear-gradient(135deg, rgba(231, 76, 60, 0.2), rgba(192, 57, 43, 0.1));
+  border-left-color: #e74c3c;
+  transform: scale(1.02);
+  font-weight: 600;
+  animation: highlight 1s ease-in-out;
+  box-shadow: 0 4px 12px rgba(231, 76, 60, 0.2);
+}
+
+.lyric-line.passed {
+  opacity: 0.4;
+  background: rgba(149, 165, 166, 0.1);
+  border-left-color: #95a5a6;
+}
+
+.line-number {
+  background: #189d98;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  min-width: 30px;
+  text-align: center;
+  margin-right: 12px;
+  flex-shrink: 0;
+}
+
+.line-text {
+  flex: 1;
+  white-space: pre-wrap;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  line-height: 1.5;
+}
+
+@keyframes highlight {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1.02); }
+}
+
+@keyframes pulse {
+  0% { box-shadow: 0 4px 12px rgba(24, 157, 152, 0.3); }
+  50% { box-shadow: 0 6px 20px rgba(24, 157, 152, 0.6); }
+  100% { box-shadow: 0 4px 12px rgba(24, 157, 152, 0.3); }
+}
+
+/* Responsive para controles de karaoke en móviles */
+@media (max-width: 768px) {
+  .karaoke-controls {
+    top: 10px;
+    left: 10px;
+    right: 10px;
+    position: fixed;
+    min-width: auto;
+    max-width: calc(100vw - 20px);
+  }
+  
+  .karaoke-navigation,
+  .speed-controls {
+    flex-wrap: wrap;
+    gap: 5px;
+  }
+  
+  .lyric-line-container {
+    padding: 6px 8px;
+  }
+  
+  .line-number {
+    min-width: 25px;
+    padding: 2px 6px;
+    font-size: 11px;
+  }
+}
+
 /* Botones flotantes de zoom */
 .zoom-controls {
   position: fixed;
-  top: 120px;
-  right: 20px;
+  top: 50%;
+  right: 15px;
+  transform: translateY(-50%);
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
   z-index: 10000;
 }
 
 .zoom-btn {
-  width: 50px;
-  height: 50px;
+  width: 35px;
+  height: 35px;
   border: none;
   border-radius: 50%;
   background: linear-gradient(135deg, #189d98, #14807c);
   color: white;
-  font-size: 16px;
-  font-weight: bold;
+  font-size: 12px;
+  font-weight: 600;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(24, 157, 152, 0.3);
+  box-shadow: 0 3px 8px rgba(24, 157, 152, 0.3);
   transition: all 0.3s ease;
   display: flex;
   align-items: center;
   justify-content: center;
   font-family: 'Inter', sans-serif;
+  border: 2px solid rgba(255, 255, 255, 0.2);
 }
 
 .zoom-btn:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(24, 157, 152, 0.4);
+  transform: translateY(-1px) scale(1.05);
+  box-shadow: 0 4px 12px rgba(24, 157, 152, 0.4);
   background: linear-gradient(135deg, #1fb3ae, #189d98);
 }
 
 .zoom-btn:active:not(:disabled) {
-  transform: translateY(0);
+  transform: translateY(0) scale(1);
 }
 
 .zoom-btn:disabled {
-  opacity: 0.5;
+  opacity: 0.4;
   cursor: not-allowed;
-  background: #6c757d;
+  background: #95a5a6;
 }
 
 .zoom-in {
-  font-size: 18px;
-}
-
-.zoom-out {
   font-size: 14px;
 }
 
+.zoom-out {
+  font-size: 10px;
+  line-height: 1;
+}
+
 .zoom-reset {
-  font-size: 16px;
+  font-size: 12px;
   background: linear-gradient(135deg, #ff6b35, #f7931e);
 }
 
@@ -1142,22 +1374,28 @@
 /* Responsive para dispositivos móviles */
 @media (max-width: 768px) {
   .zoom-controls {
-    top: 80px;
-    right: 10px;
-    gap: 6px;
+    top: 50%;
+    right: 8px;
+    transform: translateY(-50%);
+    gap: 4px;
   }
   
   .zoom-btn {
-    width: 45px;
-    height: 45px;
-    font-size: 14px;
+    width: 32px;
+    height: 32px;
+    font-size: 11px;
   }
   
   .zoom-in {
-    font-size: 16px;
+    font-size: 12px;
   }
   
   .zoom-out {
-    font-size: 12px;
+    font-size: 9px;
+  }
+  
+  .zoom-reset {
+    font-size: 10px;
   }
 }
+

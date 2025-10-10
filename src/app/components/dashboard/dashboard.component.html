@@ -116,6 +116,17 @@
         <span class="action-icon">📄</span>
         <span class="action-text">Mis Documentos</span>
       </button>
+      
+      <!-- Gestión de Almacén -->
+      <button class="action" routerLink="/inventory-management" *ngIf="canManageInventory">
+        <span class="action-icon">📦</span>
+        <span class="action-text">Gestión de Almacén</span>
+      </button>
+      
+      <button class="action" routerLink="/supply-request" *ngIf="canRequestSupplies">
+        <span class="action-icon">🛒</span>
+        <span class="action-text">Solicitar Insumos</span>
+      </button>
       <!---->
     </div>
 

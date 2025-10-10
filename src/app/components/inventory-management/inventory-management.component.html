@@ -1,0 +1,247 @@
+<div class="inventory-management">
+  <div class="header">
+    <button class="btn-back" (click)="goToDashboard()">
+      ← Dashboard
+    </button>
+    <h2>Almacén</h2>
+  </div>
+
+  <!-- Navegación por tabs -->
+  <div class="tabs">
+    <button [class.active]="activeTab === 'insumos'" (click)="setActiveTab('insumos')">
+      Insumos
+    </button>
+    <button [class.active]="activeTab === 'solicitudes'" (click)="setActiveTab('solicitudes')">
+      Solicitudes
+      <span class="badge" *ngIf="getSolicitudesPendientes() > 0">{{getSolicitudesPendientes()}}</span>
+    </button>
+    <button [class.active]="activeTab === 'movimientos'" (click)="setActiveTab('movimientos')">
+      Movimientos
+    </button>
+  </div>
+
+  <!-- TAB: INSUMOS -->
+  <div *ngIf="activeTab === 'insumos'" class="tab-content">
+    <div class="controls">
+      <input type="text" [(ngModel)]="filtroBusqueda" 
+             placeholder="Buscar..." class="search-input">
+      
+      <select [(ngModel)]="filtroCategoria" class="category-select">
+        <option value="">Todas</option>
+        <option *ngFor="let categoria of categorias" [value]="categoria">{{categoria}}</option>
+      </select>
+      
+      <button class="btn-add" (click)="openInsumoModal()">
+        Agregar
+      </button>
+    </div>
+
+    <div class="insumos-grid">
+      <div *ngFor="let insumo of insumosFiltrados" class="insumo-card">
+        <div class="insumo-header">
+          <h4>{{insumo.nombre}}</h4>
+          <span class="categoria-badge">{{insumo.categoria}}</span>
+        </div>
+        
+        <div class="stock-info">
+          <span [class]="getStockClass(insumo)">Stock: {{insumo.cantidadDisponible}}</span>
+          <span class="precio">{{formatCurrency(insumo.costoUnitario)}}</span>
+        </div>
+        
+        <div class="insumo-actions">
+          <button class="action-btn edit" (click)="openInsumoModal(insumo)" title="Editar">
+            ✏️
+          </button>
+          <button class="action-btn adjust" (click)="ajustarInventario(insumo)" title="Ajustar">
+            ⚖️
+          </button>
+          <button class="action-btn delete" (click)="deleteInsumo(insumo)" title="Eliminar">
+            🗑️
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: SOLICITUDES -->
+  <div *ngIf="activeTab === 'solicitudes'" class="tab-content">
+    <select [(ngModel)]="filtroEstadoSolicitud" class="filter-select">
+      <option value="">Todos</option>
+      <option *ngFor="let estado of estadosSolicitud" [value]="estado">{{estado}}</option>
+    </select>
+
+    <div class="solicitudes-list">
+      <div *ngFor="let solicitud of solicitudesFiltradas" class="solicitud-card" (click)="openSolicitudModal(solicitud)">
+        <div class="solicitud-header">
+          <div class="solicitud-info">
+            <h5>{{solicitud.nombreInsumo}}</h5>
+            <p class="usuario">{{getUserDisplayName(solicitud.nombreUsuario)}}</p>
+          </div>
+          <span [ngClass]="'badge ' + getStatusClass(solicitud.estado)">{{solicitud.estado | titlecase}}</span>
+        </div>
+        <div class="solicitud-details">
+          <span>Cantidad: x{{solicitud.cantidadSolicitada}}</span>
+          <span>Total: {{formatCurrency(solicitud.costoTotal)}}</span>
+          <span>{{toDate(solicitud.fechaSolicitud) | date:'short'}}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: MOVIMIENTOS -->
+  <div *ngIf="activeTab === 'movimientos'" class="tab-content">
+    <div class="movimientos-list">
+      <div *ngFor="let movimiento of movimientos" class="movimiento-card">
+        <div class="movimiento-header">
+          <div class="movimiento-info">
+            <h5>{{movimiento.nombreInsumo}}</h5>
+            <p class="usuario">{{getUserDisplayName(movimiento.nombreUsuario)}}</p>
+          </div>
+          <span [ngClass]="'badge ' + getMovementTypeClass(movimiento.tipo)">{{movimiento.tipo | titlecase}}</span>
+        </div>
+        <div class="movimiento-details">
+          <span>Cantidad: {{movimiento.cantidad}}</span>
+          <span>{{toDate(movimiento.fecha) | date:'short'}}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: INSUMO -->
+<div class="modal" [class.show]="showInsumoModal" *ngIf="showInsumoModal">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5>{{editingInsumo ? 'Editar Insumo' : 'Nuevo Insumo'}}</h5>
+        <button type="button" class="close" (click)="closeInsumoModal()">
+          <span>&times;</span>
+        </button>
+      </div>
+      
+      <div class="modal-body">
+        <form (ngSubmit)="saveInsumo()">
+          <div class="form-group">
+            <label>Nombre *</label>
+            <input type="text" [(ngModel)]="nuevoInsumo.nombre" name="nombre" 
+                   class="form-control" required>
+          </div>
+          
+          <div class="form-group">
+            <label>Categoría *</label>
+            <select [(ngModel)]="nuevoInsumo.categoria" name="categoria" class="form-control" required>
+              <option *ngFor="let categoria of categorias" [value]="categoria">{{categoria}}</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label>Descripción</label>
+            <textarea [(ngModel)]="nuevoInsumo.descripcion" name="descripcion" 
+                      class="form-control" rows="3"></textarea>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group col-md-6">
+              <label>Cantidad Disponible *</label>
+              <input type="number" [(ngModel)]="nuevoInsumo.cantidadDisponible" 
+                     name="cantidad" class="form-control" min="0" required>
+            </div>
+            <div class="form-group col-md-6">
+              <label>Cantidad Mínima *</label>
+              <input type="number" [(ngModel)]="nuevoInsumo.cantidadMinima" 
+                     name="minima" class="form-control" min="0" required>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label>Costo Unitario *</label>
+            <input type="number" [(ngModel)]="nuevoInsumo.costoUnitario" 
+                   name="costo" class="form-control" min="0" step="0.01" required>
+          </div>
+          
+          <div class="form-group">
+            <label>Proveedor</label>
+            <input type="text" [(ngModel)]="nuevoInsumo.proveedor" 
+                   name="proveedor" class="form-control">
+          </div>
+        </form>
+      </div>
+      
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeInsumoModal()">Cancelar</button>
+        <button type="button" class="btn btn-primary" (click)="saveInsumo()">
+          {{editingInsumo ? 'Actualizar' : 'Crear'}}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: SOLICITUD -->
+<div class="modal" [class.show]="showSolicitudModal" *ngIf="showSolicitudModal && selectedSolicitud">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5>Detalles de Solicitud</h5>
+        <button type="button" class="close" (click)="closeSolicitudModal()">
+          <span>&times;</span>
+        </button>
+      </div>
+      
+      <div class="modal-body">
+        <div class="solicitud-detalle">
+          <div class="detail-row">
+            <strong>Insumo:</strong> {{selectedSolicitud.nombreInsumo}}
+          </div>
+          <div class="detail-row">
+            <strong>Usuario:</strong> {{getUserDisplayName(selectedSolicitud.nombreUsuario)}}
+          </div>
+          <div class="detail-row">
+            <strong>Cantidad:</strong> {{selectedSolicitud.cantidadSolicitada}}
+          </div>
+          <div class="detail-row">
+            <strong>Costo Total:</strong> {{formatCurrency(selectedSolicitud.costoTotal)}}
+          </div>
+          <div class="detail-row">
+            <strong>Estado:</strong> 
+            <span [ngClass]="'badge ' + getStatusClass(selectedSolicitud.estado)">{{selectedSolicitud.estado}}</span>
+          </div>
+          <div class="detail-row">
+            <strong>Fecha Solicitud:</strong> {{toDate(selectedSolicitud.fechaSolicitud) | date:'full'}}
+          </div>
+          <div class="detail-row" *ngIf="selectedSolicitud.fechaRespuesta">
+            <strong>Fecha Respuesta:</strong> {{toDate(selectedSolicitud.fechaRespuesta) | date:'full'}}
+          </div>
+          <div class="detail-row" *ngIf="selectedSolicitud.observaciones">
+            <strong>Observaciones:</strong> {{selectedSolicitud.observaciones}}
+          </div>
+          <div class="detail-row" *ngIf="selectedSolicitud.comentarioAdmin">
+            <strong>Comentario Admin:</strong> {{selectedSolicitud.comentarioAdmin}}
+          </div>
+        </div>
+      </div>
+      
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeSolicitudModal()">Cerrar</button>
+        
+        <div *ngIf="selectedSolicitud.estado === 'pendiente'">
+          <button type="button" class="btn btn-success" (click)="aprobarSolicitud(selectedSolicitud)">
+            ✓ Aprobar
+          </button>
+          <button type="button" class="btn btn-danger" (click)="rechazarSolicitud(selectedSolicitud)">
+            ✗ Rechazar
+          </button>
+        </div>
+        
+        <div *ngIf="selectedSolicitud.estado === 'aprobada'">
+          <button type="button" class="btn btn-info" (click)="marcarComoEntregada(selectedSolicitud)">
+            📦 Marcar como Entregada
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Overlay para modales -->
+<div class="modal-backdrop" *ngIf="showInsumoModal || showSolicitudModal" (click)="closeInsumoModal(); closeSolicitudModal()"></div>

@@ -23,6 +23,8 @@ import { SongEditorGuard } from './guards/song-editor.guard';
 import { DocumentoControlComponent } from './components/documento-control/documento-control.component';
 import { DocumentadorGuard } from './guards/documentador.guard';
 import { MisDocumentosComponent } from './components/mis-documentos/mis-documentos.component';
+import { InventoryManagementComponent } from './components/inventory-management/inventory-management.component';
+import { SupplyRequestComponent } from './components/supply-request/supply-request.component';
 
 const routes: Routes = [
   { path: '', component: LoginComponent },
@@ -42,6 +44,8 @@ const routes: Routes = [
   { path: 'songbook-list', component: SongbookListComponent, canActivate: [AuthGuard] },
   { path: 'documento-control', component: DocumentoControlComponent, canActivate: [DocumentadorGuard] },
   { path: 'mis-documentos', component: MisDocumentosComponent, canActivate: [AuthGuard] },
+  { path: 'inventory-management', component: InventoryManagementComponent, canActivate: [AdminGuard] },
+  { path: 'supply-request', component: SupplyRequestComponent, canActivate: [AuthGuard] },
   { path: '**', redirectTo: '' }
 ];
 

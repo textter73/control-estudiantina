@@ -27,6 +27,9 @@ import { SongbookService } from './services/songbook.service';
 import { RoleService } from './services/role.service';
 import { DocumentoControlComponent } from './components/documento-control/documento-control.component';
 import { MisDocumentosComponent } from './components/mis-documentos/mis-documentos.component';
+import { InventoryManagementComponent } from './components/inventory-management/inventory-management.component';
+import { SupplyRequestComponent } from './components/supply-request/supply-request.component';
+import { InsumoService } from './services/insumo.service';
 
 @NgModule({
   declarations: [
@@ -47,7 +50,9 @@ import { MisDocumentosComponent } from './components/mis-documentos/mis-document
     SongbookComponent,
     SongbookListComponent,
     DocumentoControlComponent,
-    MisDocumentosComponent
+    MisDocumentosComponent,
+    InventoryManagementComponent,
+    SupplyRequestComponent
   ],
   imports: [
     BrowserModule,
@@ -58,7 +63,7 @@ import { MisDocumentosComponent } from './components/mis-documentos/mis-document
     AngularFireAuthModule,
     AngularFirestoreModule
   ],
-  providers: [SongbookService],
+  providers: [SongbookService, InsumoService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

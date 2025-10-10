@@ -1,0 +1,223 @@
+<div class="supply-request">
+  <div class="header">
+    <div class="header-actions">
+      <button class="btn btn-back" (click)="goToDashboard()">
+        <i class="fas fa-arrow-left"></i> Regresar al Dashboard
+      </button>
+    </div>
+    <br><br>
+    <h2><i class="fas fa-shopping-cart"></i> Solicitar Insumos</h2>
+    <p class="subtitle">Catálogo de insumos musicales disponibles</p>
+  </div>
+
+  <!-- Navegación por tabs -->
+  <div class="tabs">
+    <button [class.active]="activeTab === 'catalogo'" (click)="setActiveTab('catalogo')">
+      <i class="fas fa-list"></i> Catálogo
+    </button>
+    <button [class.active]="activeTab === 'mis-solicitudes'" (click)="setActiveTab('mis-solicitudes')">
+      <i class="fas fa-clipboard-list"></i> Mis Solicitudes
+      <span class="badge" *ngIf="getMisSolicitudesPendientes() > 0">{{getMisSolicitudesPendientes()}}</span>
+    </button>
+  </div>
+
+  <!-- TAB: CATÁLOGO -->
+  <div *ngIf="activeTab === 'catalogo'" class="tab-content">
+    <div class="controls">
+      <div class="filters">
+        <select [(ngModel)]="filtroCategoria" class="form-control">
+          <option value="">Todas las categorías</option>
+          <option *ngFor="let categoria of categorias" [value]="categoria">{{categoria}}</option>
+        </select>
+        
+        <input type="text" [(ngModel)]="filtroBusqueda" 
+               placeholder="Buscar insumos..." class="form-control search-input">
+        
+        <div class="checkbox-filter">
+          <label class="checkbox-label">
+            <input type="checkbox" [(ngModel)]="soloDisponibles">
+            <span class="checkmark"></span>
+            Solo disponibles
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <div class="insumos-grid">
+      <div *ngFor="let insumo of insumosFiltrados" class="insumo-card">
+        <div class="insumo-header">
+          <h4>{{insumo.nombre}}</h4>
+          <span class="categoria-badge">{{insumo.categoria}}</span>
+        </div>
+        
+        <div class="insumo-body">
+          <p class="descripcion" *ngIf="insumo.descripcion">{{insumo.descripcion}}</p>
+          
+          <div class="stock-info">
+            <div class="stock-item">
+              <span class="label">Disponible:</span>
+              <span [class]="getStockClass(insumo)">{{insumo.cantidadDisponible}}</span>
+            </div>
+            <div class="stock-item">
+              <span class="label">Precio:</span>
+              <span class="precio">{{formatCurrency(insumo.costoUnitario)}}</span>
+            </div>
+          </div>
+          
+          <div class="proveedor" *ngIf="insumo.proveedor">
+            <small>📦 {{insumo.proveedor}}</small>
+          </div>
+        </div>
+        
+        <div class="insumo-actions">
+          <button class="btn btn-primary" 
+                  (click)="openSolicitudModal(insumo)"
+                  [disabled]="insumo.cantidadDisponible === 0">
+            {{insumo.cantidadDisponible === 0 ? 'Sin Stock' : 'Solicitar'}}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="insumosFiltrados.length === 0" class="empty-state">
+      <i class="fas fa-search"></i>
+      <h3>No se encontraron insumos</h3>
+      <p>Intenta ajustar los filtros de búsqueda</p>
+    </div>
+  </div>
+
+  <!-- TAB: MIS SOLICITUDES -->
+  <div *ngIf="activeTab === 'mis-solicitudes'" class="tab-content">
+    <div class="solicitudes-list">
+      <div *ngFor="let solicitud of misSolicitudesOrdenadas" class="solicitud-card">
+        <div class="solicitud-header">
+          <div class="solicitud-info">
+            <h5>{{solicitud.nombreInsumo}}</h5>
+            <p class="fecha">{{toDate(solicitud.fechaSolicitud) | date:'medium'}}</p>
+          </div>
+          <span [class]="'badge ' + getEstadoClass(solicitud.estado)">
+            <i [class]="getEstadoIcon(solicitud.estado)"></i>
+            {{solicitud.estado}}
+          </span>
+        </div>
+        
+        <div class="solicitud-details">
+          <div class="detail-item">
+            <span class="label">Cantidad:</span>
+            <span>{{solicitud.cantidadSolicitada}}</span>
+          </div>
+          <div class="detail-item">
+            <span class="label">Costo Total:</span>
+            <span>{{formatCurrency(solicitud.costoTotal)}}</span>
+          </div>
+          <div class="detail-item" *ngIf="solicitud.fechaRespuesta">
+            <span class="label">Respuesta:</span>
+            <span>{{toDate(solicitud.fechaRespuesta) | date:'short'}}</span>
+          </div>
+        </div>
+        
+        <div class="solicitud-observaciones" *ngIf="solicitud.observaciones">
+          <strong>Observaciones:</strong> {{solicitud.observaciones}}
+        </div>
+        
+        <div class="solicitud-comentario" *ngIf="solicitud.comentarioAdmin">
+          <strong>Comentario del administrador:</strong> {{solicitud.comentarioAdmin}}
+        </div>
+        
+        <div class="solicitud-status" [ngSwitch]="solicitud.estado">
+          <div *ngSwitchCase="'pendiente'" class="status-pending">
+            <i class="fas fa-clock"></i>
+            Tu solicitud está siendo revisada
+          </div>
+          <div *ngSwitchCase="'aprobada'" class="status-approved">
+            <i class="fas fa-check-circle"></i>
+            Solicitud aprobada. Pendiente de entrega
+          </div>
+          <div *ngSwitchCase="'rechazada'" class="status-rejected">
+            <i class="fas fa-times-circle"></i>
+            Solicitud rechazada
+          </div>
+          <div *ngSwitchCase="'entregada'" class="status-delivered">
+            <i class="fas fa-box"></i>
+            Insumos entregados
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="misSolicitudes.length === 0" class="empty-state">
+      <i class="fas fa-clipboard-list"></i>
+      <h3>No tienes solicitudes</h3>
+      <p>Ve al catálogo para solicitar insumos</p>
+      <button class="btn btn-primary" (click)="setActiveTab('catalogo')">
+        <i class="fas fa-list"></i> Ver Catálogo
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: SOLICITAR INSUMO -->
+<div class="modal" [class.show]="showSolicitudModal" *ngIf="showSolicitudModal && selectedInsumo">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5>Solicitar: {{selectedInsumo.nombre}}</h5>
+        <button type="button" class="close" (click)="closeSolicitudModal()">
+          <span>&times;</span>
+        </button>
+      </div>
+      
+      <div class="modal-body">
+        <div class="insumo-info">
+          <div class="info-row">
+            <strong>Categoría:</strong> {{selectedInsumo.categoria}}
+          </div>
+          <div class="info-row" *ngIf="selectedInsumo.descripcion">
+            <strong>Descripción:</strong> {{selectedInsumo.descripcion}}
+          </div>
+          <div class="info-row">
+            <strong>Disponible:</strong> 
+            <span [class]="getStockClass(selectedInsumo)">{{selectedInsumo.cantidadDisponible}}</span>
+          </div>
+          <div class="info-row">
+            <strong>Precio unitario:</strong> {{formatCurrency(selectedInsumo.costoUnitario)}}
+          </div>
+          <div class="info-row" *ngIf="selectedInsumo.proveedor">
+            <strong>Proveedor:</strong> {{selectedInsumo.proveedor}}
+          </div>
+        </div>
+        
+        <form (ngSubmit)="enviarSolicitud()">
+          <div class="form-group">
+            <label>Cantidad a solicitar *</label>
+            <input type="number" [(ngModel)]="cantidadSolicitada" name="cantidad" 
+                   class="form-control" min="1" [max]="selectedInsumo.cantidadDisponible" required>
+            <small class="form-text">Máximo disponible: {{selectedInsumo.cantidadDisponible}}</small>
+          </div>
+          
+          <div class="form-group">
+            <label>Observaciones</label>
+            <textarea [(ngModel)]="observaciones" name="observaciones" 
+                      class="form-control" rows="3" 
+                      placeholder="Especifica el uso o cualquier detalle adicional"></textarea>
+          </div>
+          
+          <div class="costo-total">
+            <strong>Costo Total: {{formatCurrency(calcularCostoTotal())}}</strong>
+          </div>
+        </form>
+      </div>
+      
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeSolicitudModal()">Cancelar</button>
+        <button type="button" class="btn btn-primary" (click)="enviarSolicitud()"
+                [disabled]="cantidadSolicitada <= 0 || cantidadSolicitada > selectedInsumo.cantidadDisponible">
+          <i class="fas fa-paper-plane"></i> Enviar Solicitud
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Overlay para modal -->
+<div class="modal-backdrop" *ngIf="showSolicitudModal" (click)="closeSolicitudModal()"></div>

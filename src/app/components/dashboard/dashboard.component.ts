@@ -62,6 +62,14 @@ export class DashboardComponent implements OnInit {
     return this.userProfile?.profiles?.includes('documentador') || false;
   }
 
+  get canManageInventory(): boolean {
+    return this.userProfile?.profiles?.includes('administrador') || false;
+  }
+
+  get canRequestSupplies(): boolean {
+    return true; // Todos los usuarios autenticados pueden solicitar insumos
+  }
+
   get canManageAttendance(): boolean {
     return this.userProfile?.profiles?.includes('administrador') || 
            this.userProfile?.profiles?.includes('asistencia') || false;

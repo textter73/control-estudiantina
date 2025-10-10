@@ -63,7 +63,8 @@ export class DashboardComponent implements OnInit {
   }
 
   get canManageInventory(): boolean {
-    return this.userProfile?.profiles?.includes('administrador') || false;
+    return this.userProfile?.profiles?.includes('administrador') || 
+           this.userProfile?.profiles?.includes('insumos') || false;
   }
 
   get canRequestSupplies(): boolean {

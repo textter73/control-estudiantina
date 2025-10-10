@@ -11,7 +11,7 @@ import Swal from 'sweetalert2';
 })
 export class AdminComponent implements OnInit {
   users: any[] = [];
-  availableProfiles = ['administrador', 'finanzas', 'asistencia', 'agenda', 'transporte', 'editor-canciones', 'documentador'];
+  availableProfiles = ['administrador', 'finanzas', 'asistencia', 'agenda', 'transporte', 'editor-canciones', 'documentador', 'insumos'];
   profileDescriptions: { [key: string]: string } = {};
 
   constructor(
@@ -30,7 +30,8 @@ export class AdminComponent implements OnInit {
       'agenda': 'Gestión de eventos',
       'transporte': 'Gestión de transporte',
       'editor-canciones': 'Puede editar letras e instrumentación de canciones',
-      'documentador': 'Gestión de documentos y firmas digitales'
+      'documentador': 'Gestión de documentos y firmas digitales',
+      'insumos': 'Gestión de inventario y solicitudes de insumos'
     };
   }
 

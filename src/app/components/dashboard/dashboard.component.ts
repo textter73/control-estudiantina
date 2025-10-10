@@ -3,6 +3,8 @@ import { AngularFireAuth } from '@angular/fire/compat/auth';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import { InsumoService } from '../../services/insumo.service';
+import { Insumo } from '../../models/insumo.model';
 import Swal from 'sweetalert2';
 
 @Component({
@@ -36,6 +38,12 @@ export class DashboardComponent implements OnInit {
   // Documentos pendientes
   pendingDocuments: any[] = [];
   pendingDocumentsCount: number = 0;
+  
+  // Insumos con stock
+  insumosConStock: Insumo[] = [];
+  totalInsumosConStock: number = 0;
+  insumosStockBajo: Insumo[] = [];
+  
   attendanceStats = {
     presente: 0,
     escuela: 0,
@@ -100,7 +108,8 @@ export class DashboardComponent implements OnInit {
     private afAuth: AngularFireAuth,
     private firestore: AngularFirestore,
     private router: Router,
-    private authService: AuthService
+    private authService: AuthService,
+    private insumoService: InsumoService
   ) {}
 
   ngOnInit() {
@@ -118,6 +127,7 @@ export class DashboardComponent implements OnInit {
         this.loadPendingPayments();
         this.loadMyPartialPayments();
         this.loadPendingDocuments();
+        this.loadInsumosData();
       } else {
         this.router.navigate(['/']);
       }
@@ -708,6 +718,30 @@ export class DashboardComponent implements OnInit {
     const totalQuota = this.getTotalQuotaForConcept(concept);
     const totalPaid = this.getTotalPaidByConcept(concept);
     return totalQuota > 0 ? Math.round((totalPaid / totalQuota) * 100) : 0;
+  }
+
+  loadInsumosData() {
+    this.insumoService.getInsumos().subscribe((insumos: Insumo[]) => {
+      // Filtrar solo insumos activos con stock disponible
+      this.insumosConStock = insumos.filter(insumo => 
+        insumo.activo && insumo.cantidadDisponible > 0
+      );
+      
+      this.totalInsumosConStock = this.insumosConStock.length;
+      
+      // Filtrar insumos con stock bajo (menos de la cantidad mínima)
+      this.insumosStockBajo = this.insumosConStock.filter(insumo => 
+        insumo.cantidadDisponible <= insumo.cantidadMinima
+      );
+    });
+  }
+
+  goToInventoryManagement() {
+    this.router.navigate(['/inventory-management']);
+  }
+
+  goToSupplyRequest() {
+    this.router.navigate(['/supply-request']);
   }
 
 }

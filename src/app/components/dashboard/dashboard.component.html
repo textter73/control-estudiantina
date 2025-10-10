@@ -416,6 +416,44 @@
         </div>
       </div>
     </div>
+
+    <!-- Indicador de Insumos -->
+    <div class="inventory-summary">
+      <div class="summary-card">
+        <div class="summary-header">
+          <div class="summary-icon">📦</div>
+          <div class="summary-title">
+            <h3>Inventario Disponible</h3>
+            <p>Insumos con stock disponible ({{ totalInsumosConStock }} artículos)</p>
+          </div>
+        </div>
+        
+        <!-- Lista de todos los insumos con stock -->
+        <div class="inventory-list" *ngIf="insumosConStock.length > 0">
+          <div class="inventory-item" *ngFor="let insumo of insumosConStock" 
+               [class.low-stock]="insumo.cantidadDisponible <= insumo.cantidadMinima">
+            <div class="item-info">
+              <span class="item-name">{{ insumo.nombre }}</span>
+              <span class="item-category">{{ insumo.categoria }}</span>
+            </div>
+            <div class="item-stock">
+              <span class="stock-number">{{ insumo.cantidadDisponible }}</span>
+              <span class="stock-label">disponibles</span>
+              <span class="warning-icon" *ngIf="insumo.cantidadDisponible <= insumo.cantidadMinima">⚠️</span>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Mensaje cuando no hay insumos -->
+        <div class="no-inventory" *ngIf="insumosConStock.length === 0">
+          <div class="no-inventory-icon">📭</div>
+          <div class="no-inventory-text">
+            <h4>No hay insumos disponibles</h4>
+            <p>Actualmente no hay insumos con stock en el inventario</p>
+          </div>
+        </div>
+      </div>
+    </div>
   </main>
   
   <!-- Modal de Mapa de Asientos -->

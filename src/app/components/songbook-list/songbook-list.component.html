@@ -74,8 +74,27 @@
             <div class="modal-content" 
                  [class.protected-content]="!isEditing" 
                  (click)="$event.stopPropagation()">
+              
+              <!-- Botones flotantes de zoom -->
+              <div class="zoom-controls">
+                <button class="zoom-btn zoom-out" (click)="zoomOut()" [disabled]="fontSize <= minFontSize" title="Reducir tamaño">
+                  A-
+                </button>
+                <button class="zoom-btn zoom-reset" (click)="resetZoom()" title="Tamaño normal">
+                  A
+                </button>
+                <button class="zoom-btn zoom-in" (click)="zoomIn()" [disabled]="fontSize >= maxFontSize" title="Aumentar tamaño">
+                  A+
+                </button>
+              </div>
               <div class="modal-header">
-                <h2>{{ selectedSong.title }}</h2>
+                <h2 *ngIf="!isEditing">{{ selectedSong.title }}</h2>
+                <input 
+                  *ngIf="isAdmin && isEditing"
+                  [(ngModel)]="editedTitle"
+                  class="edit-input title-input"
+                  placeholder="Título de la canción"
+                  type="text">
                 <div class="header-actions">
                   <button *ngIf="canEditSongs" class="edit-btn" (click)="startEditing()">
                     ✏️ Editar
@@ -84,10 +103,48 @@
                 </div>
               </div>
               <div class="modal-body">
-                <div class="song-info-compact">
+                <div class="song-info-compact" *ngIf="!isEditing">
                   <span class="info-badge">{{ selectedSong.category }}</span>
                   <span class="info-badge">{{ selectedSong.status }}</span>
                   <span class="info-badge" *ngIf="selectedSong.composers">{{ selectedSong.composers }}</span>
+                </div>
+                
+                <!-- Formulario de edición de información básica -->
+                <div class="song-info-edit" *ngIf="isAdmin && isEditing">
+                  <div class="edit-row">
+                    <label>Categoría:</label>
+                    <input 
+                      [(ngModel)]="editedCategory"
+                      class="edit-input"
+                      placeholder="Categoría"
+                      type="text">
+                  </div>
+                  <div class="edit-row">
+                    <label>Estado:</label>
+                    <select [(ngModel)]="editedStatus" class="edit-select">
+                      <option value="">Seleccionar estado</option>
+                      <option value="Aprendiendo">Aprendiendo</option>
+                      <option value="En proceso">En proceso</option>
+                      <option value="Completada">Completada</option>
+                      <option value="Repertorio">Repertorio</option>
+                    </select>
+                  </div>
+                  <div class="edit-row">
+                    <label>Compositores:</label>
+                    <input 
+                      [(ngModel)]="editedComposers"
+                      class="edit-input"
+                      placeholder="Compositores"
+                      type="text">
+                  </div>
+                  <div class="edit-row">
+                    <label>Enlace de YouTube:</label>
+                    <input 
+                      [(ngModel)]="editedYoutubeLink"
+                      class="edit-input"
+                      placeholder="https://www.youtube.com/watch?v=..."
+                      type="url">
+                  </div>
                 </div>
                 
                 <!-- Sección de Instrumentación -->
@@ -97,6 +154,7 @@
                   <h3>Instrumentación</h3>
                   <pre class="instrumentation-content" 
                        [class.no-select]="!isEditing" 
+                       [style.font-size.px]="fontSize"
                        *ngIf="!isEditing">{{ selectedSong.instrumentation }}</pre>
                   <textarea 
                     *ngIf="isAdmin && isEditing"
@@ -114,6 +172,7 @@
                   <pre class="lyrics-content" 
                        [class.no-select]="!isEditing" 
                        [class.protected-text]="!isEditing" 
+                       [style.font-size.px]="fontSize"
                        *ngIf="!isEditing">{{ selectedSong.structure || 'No hay letra disponible para esta canción.' }}</pre>
                   <textarea 
                     *ngIf="isAdmin && isEditing"

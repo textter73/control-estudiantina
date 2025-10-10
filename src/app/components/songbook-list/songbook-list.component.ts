@@ -23,9 +23,19 @@ export class SongbookListComponent implements OnInit, OnDestroy {
   isEditing = false;
   editedStructure = '';
   editedInstrumentation = '';
+  editedTitle = '';
+  editedCategory = '';
+  editedStatus = '';
+  editedComposers = '';
+  editedYoutubeLink = '';
   isSaving = false;
   isWatchingVideo = false;
   isVideoFloating = false;
+  
+  // Variables para zoom de texto
+  fontSize = 16; // Tamaño base en píxeles
+  minFontSize = 12;
+  maxFontSize = 24;
 
   // Variables para protección móvil
   private touchStartTime = 0;
@@ -239,6 +249,11 @@ export class SongbookListComponent implements OnInit, OnDestroy {
     this.isModalOpen = true;
     this.editedStructure = song.structure || '';
     this.editedInstrumentation = song.instrumentation || '';
+    this.editedTitle = song.title || '';
+    this.editedCategory = song.category || '';
+    this.editedStatus = song.status || '';
+    this.editedComposers = song.composers || '';
+    this.editedYoutubeLink = song.youtubeLink || '';
     this.isEditing = false;
     document.body.style.overflow = 'hidden'; // Evitar scroll del fondo
     
@@ -254,6 +269,11 @@ export class SongbookListComponent implements OnInit, OnDestroy {
     this.isEditing = false;
     this.editedStructure = '';
     this.editedInstrumentation = '';
+    this.editedTitle = '';
+    this.editedCategory = '';
+    this.editedStatus = '';
+    this.editedComposers = '';
+    this.editedYoutubeLink = '';
     this.isWatchingVideo = false;
     this.isVideoFloating = false;
     document.body.style.overflow = 'auto'; // Restaurar scroll
@@ -268,13 +288,23 @@ export class SongbookListComponent implements OnInit, OnDestroy {
     this.isEditing = true;
     this.editedStructure = this.selectedSong.structure || '';
     this.editedInstrumentation = this.selectedSong.instrumentation || '';
+    this.editedTitle = this.selectedSong.title || '';
+    this.editedCategory = this.selectedSong.category || '';
+    this.editedStatus = this.selectedSong.status || '';
+    this.editedComposers = this.selectedSong.composers || '';
+    this.editedYoutubeLink = this.selectedSong.youtubeLink || '';
   }
 
   async cancelEditing() {
     // Verificar si hay cambios sin guardar
     const hasChanges = 
       this.editedStructure !== (this.selectedSong.structure || '') ||
-      this.editedInstrumentation !== (this.selectedSong.instrumentation || '');
+      this.editedInstrumentation !== (this.selectedSong.instrumentation || '') ||
+      this.editedTitle !== (this.selectedSong.title || '') ||
+      this.editedCategory !== (this.selectedSong.category || '') ||
+      this.editedStatus !== (this.selectedSong.status || '') ||
+      this.editedComposers !== (this.selectedSong.composers || '') ||
+      this.editedYoutubeLink !== (this.selectedSong.youtubeLink || '');
 
     if (hasChanges) {
       const result = await Swal.fire({
@@ -302,7 +332,7 @@ export class SongbookListComponent implements OnInit, OnDestroy {
     // Mostrar confirmación antes de guardar
     const result = await Swal.fire({
       title: '¿Guardar cambios?',
-      text: `Se actualizarán la letra e instrumentación de "${this.selectedSong.title}"`,
+      text: `Se actualizarán todos los campos de "${this.selectedSong.title}"`,
       icon: 'question',
       showCancelButton: true,
       confirmButtonColor: '#189d98',
@@ -317,6 +347,11 @@ export class SongbookListComponent implements OnInit, OnDestroy {
 
     try {
       const updatedData = {
+        title: this.editedTitle,
+        category: this.editedCategory,
+        status: this.editedStatus,
+        composers: this.editedComposers,
+        youtubeLink: this.editedYoutubeLink,
         structure: this.editedStructure,
         instrumentation: this.editedInstrumentation
       };
@@ -324,6 +359,11 @@ export class SongbookListComponent implements OnInit, OnDestroy {
       await this.songbookService.updateSong(this.selectedSong.id, updatedData);
       
       // Actualizar la canción en la lista local
+      this.selectedSong.title = this.editedTitle;
+      this.selectedSong.category = this.editedCategory;
+      this.selectedSong.status = this.editedStatus;
+      this.selectedSong.composers = this.editedComposers;
+      this.selectedSong.youtubeLink = this.editedYoutubeLink;
       this.selectedSong.structure = this.editedStructure;
       this.selectedSong.instrumentation = this.editedInstrumentation;
       
@@ -608,5 +648,25 @@ export class SongbookListComponent implements OnInit, OnDestroy {
         }
       }
     }
+  }
+
+  // Métodos para control de zoom de texto
+  zoomIn() {
+    if (this.fontSize < this.maxFontSize) {
+      this.fontSize += 2;
+      console.log('Zoom in - Font size:', this.fontSize);
+    }
+  }
+
+  zoomOut() {
+    if (this.fontSize > this.minFontSize) {
+      this.fontSize -= 2;
+      console.log('Zoom out - Font size:', this.fontSize);
+    }
+  }
+
+  resetZoom() {
+    this.fontSize = 16;
+    console.log('Reset zoom - Font size:', this.fontSize);
   }
 }

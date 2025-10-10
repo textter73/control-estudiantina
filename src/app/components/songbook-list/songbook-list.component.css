@@ -804,38 +804,43 @@
 
 /* Estilos para preservar formato de acordes y letras */
 .lyrics-content {
-  font-family: 'Courier New', 'Monaco', 'Menlo', monospace;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   white-space: pre-wrap;
   word-wrap: break-word;
-  line-height: 1.6;
+  line-height: 1.8;
   background: #f8f9fa;
-  padding: 1rem;
-  border-radius: 6px;
+  padding: 1.5rem;
+  border-radius: 8px;
   border: 1px solid #e0e0e0;
   margin: 0;
-  font-size: 0.95rem;
-  color: #333;
+  font-size: 1.1rem;
+  font-weight: 400;
+  color: #2c3e50;
   overflow-x: auto;
+  letter-spacing: 0.3px;
 }
 
 .instrumentation-content {
-  font-family: 'Courier New', 'Monaco', 'Menlo', monospace;
+  font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
   white-space: pre-wrap;
   word-wrap: break-word;
-  line-height: 1.5;
+  line-height: 1.7;
   background: #f8f9fa;
-  padding: 1rem;
-  border-radius: 6px;
+  padding: 1.5rem;
+  border-radius: 8px;
   border: 1px solid #e0e0e0;
   margin: 0;
-  font-size: 0.9rem;
-  color: #333;
+  font-size: 1rem;
+  font-weight: 400;
+  color: #2c3e50;
+  letter-spacing: 0.2px;
 }
 
 .lyrics-textarea {
-  font-family: 'Courier New', 'Monaco', 'Menlo', monospace !important;
-  line-height: 1.6;
-  font-size: 0.95rem;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  line-height: 1.8;
+  font-size: 1.1rem;
+  font-weight: 400;
   tab-size: 4;
   -moz-tab-size: 4;
 }
@@ -945,5 +950,214 @@
     
     /* Deshabilitar zoom con gestos */
     touch-action: pan-x pan-y;
+  }
+}
+
+/* Mejorar selección de texto en las letras */
+.lyrics-content::selection {
+  background-color: #3498db;
+  color: white;
+}
+
+/* Mejorar contraste para lectura */
+.song-detail .song-structure,
+.song-detail .song-instrumentation {
+  background: #ffffff;
+  border: 2px solid #ecf0f1;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+/* Estilos mejorados para títulos de secciones */
+.song-detail h3 {
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  font-size: 1.3rem;
+  color: #2c3e50;
+  margin-bottom: 1rem;
+  letter-spacing: 0.5px;
+}
+
+/* Mejor espaciado para secciones */
+.song-detail .section-content {
+  margin-bottom: 2rem;
+}
+
+/* Estilos para campos de edición */
+.edit-input {
+  width: 100%;
+  padding: 12px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 16px;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.edit-input:focus {
+  outline: none;
+  border-color: #189d98;
+  box-shadow: 0 0 0 3px rgba(24, 157, 152, 0.1);
+}
+
+.title-input {
+  font-size: 24px;
+  font-weight: 600;
+  margin-bottom: 0;
+}
+
+.edit-select {
+  width: 100%;
+  padding: 12px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 16px;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background-color: white;
+  cursor: pointer;
+  transition: border-color 0.3s ease;
+}
+
+.edit-select:focus {
+  outline: none;
+  border-color: #189d98;
+}
+
+.song-info-edit {
+  background: #f8f9fa;
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  border: 2px solid #e9ecef;
+}
+
+.edit-row {
+  margin-bottom: 15px;
+}
+
+.edit-row:last-child {
+  margin-bottom: 0;
+}
+
+.edit-row label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: 600;
+  color: #495057;
+  font-size: 14px;
+}
+
+/* Estilos para acordes mejorados */
+.chord {
+  color: #ff6b35;
+  font-weight: bold;
+  background: rgba(255, 107, 53, 0.1);
+  padding: 2px 4px;
+  border-radius: 3px;
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+}
+
+.lyrics-line {
+  margin: 8px 0;
+  line-height: 1.6;
+}
+
+/* Botones flotantes de zoom */
+.zoom-controls {
+  position: fixed;
+  top: 120px;
+  right: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 10000;
+}
+
+.zoom-btn {
+  width: 50px;
+  height: 50px;
+  border: none;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #189d98, #14807c);
+  color: white;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(24, 157, 152, 0.3);
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Inter', sans-serif;
+}
+
+.zoom-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(24, 157, 152, 0.4);
+  background: linear-gradient(135deg, #1fb3ae, #189d98);
+}
+
+.zoom-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.zoom-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: #6c757d;
+}
+
+.zoom-in {
+  font-size: 18px;
+}
+
+.zoom-out {
+  font-size: 14px;
+}
+
+.zoom-reset {
+  font-size: 16px;
+  background: linear-gradient(135deg, #ff6b35, #f7931e);
+}
+
+.zoom-reset:hover {
+  background: linear-gradient(135deg, #ff7b45, #ff9b2e);
+}
+
+/* Animación de los controles de zoom */
+.zoom-controls {
+  animation: slideInRight 0.3s ease-out;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Responsive para dispositivos móviles */
+@media (max-width: 768px) {
+  .zoom-controls {
+    top: 80px;
+    right: 10px;
+    gap: 6px;
+  }
+  
+  .zoom-btn {
+    width: 45px;
+    height: 45px;
+    font-size: 14px;
+  }
+  
+  .zoom-in {
+    font-size: 16px;
+  }
+  
+  .zoom-out {
+    font-size: 12px;
   }
 }

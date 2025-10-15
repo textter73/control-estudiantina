@@ -19,8 +19,9 @@ export class SongbookListComponent implements OnInit, OnDestroy {
   isAdmin = false;
   canEditSongs = false;
   searchTerm = '';
-  selectedCategory = '';
+  selectedCategory: string | null = null;
   isEditing = false;
+  songsByCategory: { [key: string]: any[] } = {};
   editedStructure = '';
   editedInstrumentation = '';
   editedTitle = '';
@@ -59,6 +60,7 @@ export class SongbookListComponent implements OnInit, OnDestroy {
       this.songs = res.map((doc: any) => ({ id: doc.payload.doc.id, ...doc.payload.doc.data() }));
       this.filteredSongs = [...this.songs];
       this.extractCategories();
+      this.organizeSongsByCategory();
       this.loading = false;
     });
 
@@ -225,23 +227,23 @@ export class SongbookListComponent implements OnInit, OnDestroy {
   }
 
   filterSongs() {
-    let filtered = [...this.songs];
-
-    // Filtrar por categoría
-    if (this.selectedCategory) {
-      filtered = filtered.filter(song => song.category === this.selectedCategory);
-    }
-
-    // Filtrar por texto de búsqueda
     if (this.searchTerm.trim()) {
-      filtered = filtered.filter(song =>
+      // Buscar en todas las canciones sin importar la categoría
+      this.filteredSongs = this.songs.filter(song =>
         song.title.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
         song.category.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-        song.status.toLowerCase().includes(this.searchTerm.toLowerCase())
+        (song.composers && song.composers.toLowerCase().includes(this.searchTerm.toLowerCase())) ||
+        (song.status && song.status.toLowerCase().includes(this.searchTerm.toLowerCase())) ||
+        (song.structure && song.structure.toLowerCase().includes(this.searchTerm.toLowerCase()))
       );
+    } else {
+      // Si no hay búsqueda, mostrar las canciones según la categoría seleccionada
+      if (this.selectedCategory) {
+        this.filteredSongs = this.songsByCategory[this.selectedCategory] || [];
+      } else {
+        this.filteredSongs = [];
+      }
     }
-
-    this.filteredSongs = filtered;
   }
 
   openSongDetail(song: any) {
@@ -668,5 +670,24 @@ export class SongbookListComponent implements OnInit, OnDestroy {
   resetZoom() {
     this.fontSize = 16;
     console.log('Reset zoom - Font size:', this.fontSize);
+  }
+
+  private organizeSongsByCategory() {
+    this.songsByCategory = {};
+    this.songs.forEach(song => {
+      const category = song.category || 'Sin categoría';
+      if (!this.songsByCategory[category]) {
+        this.songsByCategory[category] = [];
+      }
+      this.songsByCategory[category].push(song);
+    });
+  }
+
+  toggleSongByCategory(category: string) {
+    if (this.selectedCategory === category) {
+      this.selectedCategory = null;
+    } else {
+      this.selectedCategory = category;
+    }
   }
 }

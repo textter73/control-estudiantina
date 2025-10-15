@@ -48,22 +48,53 @@
           <div class="empty-state" *ngIf="!loading && songs.length === 0">
             <div class="empty-icon">🎵</div>
             <h3>No hay canciones registradas</h3>
-            <p>Agrega tu primera canción al cancionero</p>
           </div>
-          
-          <div class="songs-grid" *ngIf="!loading && filteredSongs.length > 0">
-            <div class="song-card" *ngFor="let song of filteredSongs; let i = index">
-              <div class="song-header">
-                <div class="song-info-inline">
-                  <div class="song-number">{{ i + 1 }}</div>
-                  <h3 class="song-title" (click)="openSongDetail(song)">{{ song.title }}</h3>
+
+          <!-- Resultados de búsqueda -->
+          <div class="search-results" *ngIf="searchTerm && filteredSongs.length > 0">
+            <h3 class="search-results-title">
+              Resultados de búsqueda para "{{ searchTerm }}"
+              <span class="results-count">({{ filteredSongs.length }} coincidencias)</span>
+            </h3>
+            <div class="search-results-list">
+              <div class="song-item" *ngFor="let song of filteredSongs" (click)="openSongDetail(song)">
+                <div class="song-info">
+                  <span class="song-title">{{ song.title }}</span>
+                  <div class="song-details">
+                    <span class="song-category">📁 {{ song.category }}</span>
+                    <span class="song-composer" *ngIf="song.composers">✍️ {{ song.composers }}</span>
+                  </div>
                 </div>
-                <div class="song-badges">
-                  <span class="badge category-badge">{{ song.category }}</span>
-                  <span class="badge status-badge">{{ song.status }}</span>
+                <div class="song-status" *ngIf="song.status">
+                  <span class="status-badge" [class.status-ready]="song.status === 'Lista'">{{ song.status }}</span>
                 </div>
               </div>
             </div>
+          </div>
+
+          <div class="folders-container" *ngIf="!loading && songs.length > 0 && !searchTerm">
+            <div class="folder" *ngFor="let category of categories" (click)="toggleSongByCategory(category)">
+              <div class="folder-header" [class.active]="selectedCategory === category">
+                <span class="folder-icon">📁</span>
+                <span class="folder-name">{{ category }}</span>
+                <span class="folder-count">{{ songsByCategory[category]?.length || 0 }}</span>
+              </div>
+              <div class="folder-content" *ngIf="selectedCategory === category">
+                <div class="song-item" *ngFor="let song of songsByCategory[category]" (click)="openSongDetail(song)">
+                  <div class="song-info">
+                    <span class="song-title">{{ song.title }}</span>
+                    <span class="song-composer" *ngIf="song.composers">{{ song.composers }}</span>
+                  </div>
+                  <div class="song-status" *ngIf="song.status">
+                    <span class="status-badge" [class.status-ready]="song.status === 'Lista'">{{ song.status }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div *ngIf="!loading && songs.length === 0">
+            <p>Agrega tu primera canción al cancionero</p>
           </div>
 
           <!-- Modal para mostrar detalle de la canción -->

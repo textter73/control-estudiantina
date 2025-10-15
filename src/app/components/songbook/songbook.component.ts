@@ -27,7 +27,7 @@ export class SongbookComponent {
     'ofertorio',
     'santo',
     'coordero',
-    'comunio',
+    'comunión',
     'canto de salida',
     'navidad',
     'cantos a maria'

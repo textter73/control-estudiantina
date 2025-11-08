@@ -50,6 +50,81 @@
   box-shadow: 0 5px 15px rgba(0,0,0,0.08);
 }
 
+/* Estilos para botones de administración */
+.admin-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: #f8f9fa;
+  border-radius: 10px;
+  border-left: 4px solid #189d98;
+}
+
+.copy-btn {
+  background: #e8f2ff;
+  color: #0b63c6;
+  border-color: #bcd7ff;
+}
+
+.copy-btn:hover {
+  background: #d0e7ff;
+  border-color: #9bc3ff;
+}
+
+.confirm-all-btn {
+  background: #e8f5e8;
+  color: #2e7d32;
+  border-color: #a5d6a7;
+}
+
+.confirm-all-btn:hover {
+  background: #d4edda;
+  border-color: #81c784;
+}
+
+.add-user-btn {
+  background: #fff3e0;
+  color: #e65100;
+  border-color: #ffcc02;
+}
+
+.add-user-btn:hover {
+  background: #ffe0b2;
+  border-color: #ffb300;
+}
+
+/* Estilos para usuarios pendientes */
+.pending-users {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  background: #fff3cd;
+  border-radius: 8px;
+  border-left: 4px solid #ffc107;
+}
+
+.pending-users h5 {
+  margin: 0 0 0.5rem 0;
+  color: #856404;
+  font-size: 1rem;
+}
+
+.pending-users-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.pending-user {
+  background: #fff;
+  padding: 0.3rem 0.6rem;
+  border-radius: 15px;
+  font-size: 0.9rem;
+  color: #856404;
+  border: 1px solid #f0e68c;
+}
+
 .event-info-header {
   display: flex;
   justify-content: space-between;

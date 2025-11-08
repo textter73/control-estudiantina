@@ -294,4 +294,186 @@ export class EventDetailsComponent implements OnInit {
         return total + 1 + (parseInt(c?.companions) || 0);
       }, 0);
   }
+
+  // Admin: Confirmar asistencia para todos los usuarios que no han respondido
+  async confirmAllPendingUsers() {
+    if (!this.userProfile?.profiles?.includes('administrador') && !this.userProfile?.profiles?.includes('agenda')) {
+      await Swal.fire('Error', 'No tienes permisos para esta acción', 'error');
+      return;
+    }
+
+    const result = await Swal.fire({
+      title: 'Confirmar asistencia masiva',
+      text: '¿Quieres confirmar la asistencia de todos los usuarios que no han respondido?',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, confirmar todos',
+      cancelButtonText: 'Cancelar',
+      input: 'select',
+      inputOptions: {
+        'asistire': 'Asistiré',
+        'tal-vez': 'Tal vez',
+        'no-asistire': 'No asistiré'
+      },
+      inputPlaceholder: 'Selecciona la respuesta para todos',
+      inputValidator: (value) => {
+        if (!value) {
+          return 'Debes seleccionar una respuesta';
+        }
+        return null;
+      }
+    });
+
+    if (result.isConfirmed) {
+      const selectedResponse = result.value;
+      
+      // Obtener usuarios que no han confirmado
+      const confirmedUserIds = (this.event.confirmations || []).map((c: any) => c?.userId).filter(Boolean);
+      const pendingUsers = this.users.filter(user => 
+        user.uid && !confirmedUserIds.includes(user.uid)
+      );
+
+      if (pendingUsers.length === 0) {
+        await Swal.fire('Información', 'Todos los usuarios ya han confirmado su asistencia', 'info');
+        return;
+      }
+
+      // Confirmar con el usuario cuántos usuarios se van a agregar
+      const confirmMass = await Swal.fire({
+        title: 'Confirmar acción',
+        text: `Se agregará la respuesta "${this.getResponseText(selectedResponse)}" para ${pendingUsers.length} usuarios que no han respondido.`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Confirmar',
+        cancelButtonText: 'Cancelar'
+      });
+
+      if (confirmMass.isConfirmed) {
+        const confirmations = this.event.confirmations || [];
+        
+        // Agregar confirmaciones para usuarios pendientes
+        pendingUsers.forEach(user => {
+          confirmations.push({
+            userId: user.uid,
+            userName: user.name || user.email,
+            response: selectedResponse,
+            timestamp: new Date(),
+            companions: 0 // Por defecto sin acompañantes
+          });
+        });
+
+        try {
+          await this.firestore.collection('events').doc(this.eventId).update({ confirmations });
+          await Swal.fire('Éxito', `Se confirmó la asistencia para ${pendingUsers.length} usuarios`, 'success');
+        } catch (error) {
+          await Swal.fire('Error', 'No se pudo actualizar las confirmaciones', 'error');
+        }
+      }
+    }
+  }
+
+  // Admin: Crear confirmación individual para un usuario específico
+  async addUserConfirmation() {
+    if (!this.userProfile?.profiles?.includes('administrador') && !this.userProfile?.profiles?.includes('agenda')) {
+      await Swal.fire('Error', 'No tienes permisos para esta acción', 'error');
+      return;
+    }
+
+    // Obtener usuarios que no han confirmado
+    const confirmedUserIds = (this.event.confirmations || []).map((c: any) => c?.userId).filter(Boolean);
+    const pendingUsers = this.users.filter(user => 
+      user.uid && !confirmedUserIds.includes(user.uid)
+    );
+
+    if (pendingUsers.length === 0) {
+      await Swal.fire('Información', 'Todos los usuarios ya han confirmado su asistencia', 'info');
+      return;
+    }
+
+    // Crear opciones para el select de usuarios
+    const userOptions: { [key: string]: string } = {};
+    pendingUsers.forEach(user => {
+      userOptions[user.uid] = user.name || user.email;
+    });
+
+    const result = await Swal.fire({
+      title: 'Agregar confirmación individual',
+      html: `
+        <div style="margin-bottom: 1rem;">
+          <label style="display: block; margin-bottom: 0.5rem;">Usuario:</label>
+          <select id="user-select" class="swal2-input" style="width: 100%;">
+            <option value="">Selecciona un usuario</option>
+            ${Object.entries(userOptions).map(([uid, name]) => 
+              `<option value="${uid}">${name}</option>`
+            ).join('')}
+          </select>
+        </div>
+        <div style="margin-bottom: 1rem;">
+          <label style="display: block; margin-bottom: 0.5rem;">Respuesta:</label>
+          <select id="response-select" class="swal2-input" style="width: 100%;">
+            <option value="">Selecciona una respuesta</option>
+            <option value="asistire">Asistiré</option>
+            <option value="tal-vez">Tal vez</option>
+            <option value="no-asistire">No asistiré</option>
+          </select>
+        </div>
+        ${this.event.requiresTransport ? `
+        <div>
+          <label style="display: block; margin-bottom: 0.5rem;">Acompañantes:</label>
+          <input type="number" id="companions-input" class="swal2-input" min="0" value="0" style="width: 100%;">
+        </div>
+        ` : ''}
+      `,
+      focusConfirm: false,
+      showCancelButton: true,
+      confirmButtonText: 'Agregar confirmación',
+      cancelButtonText: 'Cancelar',
+      preConfirm: () => {
+        const userSelect = document.getElementById('user-select') as HTMLSelectElement;
+        const responseSelect = document.getElementById('response-select') as HTMLSelectElement;
+        const companionsInput = document.getElementById('companions-input') as HTMLInputElement;
+        
+        if (!userSelect.value) {
+          Swal.showValidationMessage('Debes seleccionar un usuario');
+          return false;
+        }
+        if (!responseSelect.value) {
+          Swal.showValidationMessage('Debes seleccionar una respuesta');
+          return false;
+        }
+        
+        return {
+          userId: userSelect.value,
+          userName: userOptions[userSelect.value],
+          response: responseSelect.value,
+          companions: this.event.requiresTransport ? parseInt(companionsInput?.value || '0') : 0
+        };
+      }
+    });
+
+    if (result.isConfirmed) {
+      const confirmationData = result.value;
+      const confirmations = this.event.confirmations || [];
+      
+      confirmations.push({
+        ...confirmationData,
+        timestamp: new Date()
+      });
+
+      try {
+        await this.firestore.collection('events').doc(this.eventId).update({ confirmations });
+        await Swal.fire('Éxito', `Confirmación agregada para ${confirmationData.userName}`, 'success');
+      } catch (error) {
+        await Swal.fire('Error', 'No se pudo agregar la confirmación', 'error');
+      }
+    }
+  }
+
+  // Obtener usuarios que no han confirmado
+  getPendingUsers(): any[] {
+    const confirmedUserIds = (this.event?.confirmations || []).map((c: any) => c?.userId).filter(Boolean);
+    return this.users.filter(user => 
+      user.uid && !confirmedUserIds.includes(user.uid)
+    );
+  }
 }

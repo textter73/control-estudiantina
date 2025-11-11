@@ -113,8 +113,30 @@
 
     <!-- Lista de eventos -->
     <div class="events-container">
-      <div class="events-grid">
-        <div class="event-card" *ngFor="let event of events">
+      <!-- Tabs de navegación -->
+      <div class="tabs-container">
+        <div class="tabs-header">
+          <button 
+            class="tab-btn" 
+            [class.active]="activeTab === 'open'"
+            (click)="setActiveTab('open')">
+            Eventos Abiertos
+            <span class="tab-count">{{ getOpenEventsCount() }}</span>
+          </button>
+          <button 
+            class="tab-btn" 
+            [class.active]="activeTab === 'historical'"
+            (click)="setActiveTab('historical')">
+            Histórico
+            <span class="tab-count">{{ getHistoricalEventsCount() }}</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Contenido de los tabs -->
+      <div class="tab-content">
+        <div class="events-grid">
+          <div class="event-card" *ngFor="let event of getFilteredEvents()">
           <div class="event-header-card">
             <div class="event-title">{{ event.title }}</div>
             <div class="event-badges">
@@ -200,13 +222,14 @@
         </div>
       </div>
 
-      <div class="empty-state" *ngIf="events.length === 0">
-        <h3>No hay eventos creados</h3>
-        <p>Crea tu primer evento para comenzar</p>
-        <button class="create-first-btn" (click)="showCreateForm = true">
+      <div class="empty-state" *ngIf="getFilteredEvents().length === 0">
+        <h3>{{ activeTab === 'open' ? 'No hay eventos abiertos' : 'No hay eventos en el histórico' }}</h3>
+        <p>{{ activeTab === 'open' ? 'Crea tu primer evento para comenzar' : 'Los eventos finalizados o cancelados aparecerán aquí' }}</p>
+        <button class="create-first-btn" (click)="showCreateForm = true" *ngIf="activeTab === 'open'">
           Crear Primer Evento
         </button>
       </div>
-    </div>
+      </div> <!-- Cierre de .tab-content -->
+    </div> <!-- Cierre de .events-container -->
   </main>
 </div>

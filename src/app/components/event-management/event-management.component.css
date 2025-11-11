@@ -466,3 +466,67 @@
     flex-direction: column;
   }
 }
+
+/* Estilos para las pestañas */
+.tabs-container {
+  margin-bottom: 2rem;
+}
+
+.tabs-header {
+  display: flex;
+  border-bottom: 2px solid #e0e7ff;
+  background: white;
+  border-radius: 15px 15px 0 0;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.tab-btn {
+  flex: 1;
+  padding: 1rem 2rem;
+  border: none;
+  background: #f8fafc;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-bottom: 3px solid transparent;
+}
+
+.tab-btn:hover {
+  background: #e2e8f0;
+  color: #475569;
+}
+
+.tab-btn.active {
+  background: white;
+  color: #189d98;
+  border-bottom-color: #189d98;
+  font-weight: 600;
+}
+
+.tab-count {
+  background: #189d98;
+  color: white;
+  padding: 0.25rem 0.5rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  min-width: 1.5rem;
+  text-align: center;
+}
+
+.tab-btn.active .tab-count {
+  background: #0f6b68;
+}
+
+.tab-content {
+  background: white;
+  border-radius: 0 0 15px 15px;
+  padding: 2rem;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+}

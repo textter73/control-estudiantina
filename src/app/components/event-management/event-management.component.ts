@@ -15,6 +15,7 @@ export class EventManagementComponent implements OnInit {
   events: any[] = [];
   users: any[] = [];
   showCreateForm = false;
+  activeTab: string = 'open';
   
   newEvent = {
     title: '',
@@ -221,5 +222,26 @@ export class EventManagementComponent implements OnInit {
     };
 
     await this.firestore.collection('transport-requests').add(transportRequest);
+  }
+
+  // Métodos para manejar las pestañas y filtros de eventos
+  setActiveTab(tab: string) {
+    this.activeTab = tab;
+  }
+
+  getFilteredEvents() {
+    if (this.activeTab === 'open') {
+      return this.events.filter(event => event.status === 'abierto');
+    } else {
+      return this.events.filter(event => event.status !== 'abierto');
+    }
+  }
+
+  getOpenEventsCount(): number {
+    return this.events.filter(event => event.status === 'abierto').length;
+  }
+
+  getHistoricalEventsCount(): number {
+    return this.events.filter(event => event.status !== 'abierto').length;
   }
 }

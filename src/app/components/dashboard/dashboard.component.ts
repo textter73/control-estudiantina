@@ -822,10 +822,14 @@ export class DashboardComponent implements OnInit {
       this.firestore.collection('users').get().toPromise(),
       this.firestore.collection('attendance').get().toPromise()
     ]).then(([usersSnapshot, attendanceSnapshot]) => {
-      const users = usersSnapshot?.docs.map(doc => ({ 
+      const allUsers = usersSnapshot?.docs.map(doc => ({ 
         uid: doc.id, 
         ...(doc.data() as any) 
       })) || [];
+      
+      // Filtrar solo usuarios activos (no eliminados)
+      const users = allUsers.filter(user => !user.deleted);
+      
       const attendances = attendanceSnapshot?.docs.map(doc => doc.data()) || [];
       
       const memberStats = users.map(user => {

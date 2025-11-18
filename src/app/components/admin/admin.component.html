@@ -4,14 +4,17 @@
       <button class="back-btn" routerLink="/dashboard">
         ← Volver al Dashboard
       </button>
+      <button class="toggle-deleted-btn" (click)="toggleDeletedUsersView()">
+        {{ showDeletedUsers ? 'Ver Usuarios Activos' : 'Ver Usuarios Desactivados' }}
+      </button>
     </div>
-    <h1>Administración de Usuarios</h1>
-    <p>Gestiona los perfiles de los integrantes del sistema</p>
+    <h1>{{ showDeletedUsers ? 'Usuarios Desactivados' : 'Administración de Usuarios' }}</h1>
+    <p>{{ showDeletedUsers ? 'Usuarios que han sido desactivados del sistema' : 'Gestiona los perfiles de los integrantes del sistema' }}</p>
   </header>
 
   <main class="admin-main">
     <!-- Información sobre perfiles disponibles -->
-    <div class="profiles-info">
+    <div class="profiles-info" *ngIf="!showDeletedUsers">
       <h3>📋 Perfiles Disponibles</h3>
       <div class="profiles-grid">
         <div class="profile-info-card" *ngFor="let profile of availableProfiles">
@@ -21,8 +24,8 @@
       </div>
     </div>
 
-    <!-- Vista de tarjetas para móvil -->
-    <div class="users-cards mobile-view">
+    <!-- Vista de tarjetas para móvil - Usuarios Activos -->
+    <div class="users-cards mobile-view" *ngIf="!showDeletedUsers">
       <div class="user-card" *ngFor="let user of users">
         <div class="card-header">
           <h3>{{ user.name }}</h3>
@@ -53,6 +56,48 @@
             class="remove-btn" 
             (click)="removeProfile(user.uid, user.name, user.profiles)">
             Quitar Perfil
+          </button>
+          <button 
+            class="deactivate-btn" 
+            (click)="deactivateUser(user.uid, user.name)">
+            Desactivar Usuario
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Vista de tarjetas para usuarios eliminados -->
+    <div class="users-cards mobile-view" *ngIf="showDeletedUsers">
+      <div class="user-card deleted-user" *ngFor="let user of deletedUsers">
+        <div class="card-header">
+          <h3>{{ user.name }}</h3>
+          <p class="user-email">{{ user.email }}</p>
+          <span class="deleted-badge">DESACTIVADO</span>
+        </div>
+        
+        <div class="card-body">
+          <div class="profiles-section">
+            <label class="section-label">Perfiles que tenía asignados:</label>
+            <div class="profiles-list">
+              <span class="profile-tag disabled" *ngFor="let profile of user.profiles">
+                {{ profile }}
+              </span>
+              <span *ngIf="user.profiles?.length === 0" class="no-profiles">
+                Sin perfiles asignados
+              </span>
+            </div>
+          </div>
+          
+          <div class="deletion-info" *ngIf="user.deletedAt">
+            <p class="deletion-date">Desactivado: {{ user.deletedAt?.toDate() | date:'dd/MM/yyyy HH:mm' }}</p>
+          </div>
+        </div>
+        
+        <div class="card-actions">
+          <button 
+            class="reactivate-btn" 
+            (click)="reactivateUser(user.uid, user.name)">
+            Reactivar Usuario
           </button>
         </div>
       </div>

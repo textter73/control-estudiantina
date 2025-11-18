@@ -37,7 +37,8 @@ export class AdminComponent implements OnInit {
 
   async loadUsers() {
     this.firestore.collection('users').valueChanges().subscribe((users: any[]) => {
-      this.users = users;
+      // Filtrar usuarios que no están marcados como eliminados
+      this.users = users.filter(user => !user.deleted);
     });
   }
 
@@ -114,5 +115,97 @@ export class AdminComponent implements OnInit {
         });
       }
     }
+  }
+
+  async deactivateUser(userId: string, userName: string) {
+    const result = await Swal.fire({
+      title: `¿Desactivar usuario?`,
+      text: `¿Estás seguro de que quieres desactivar a ${userName}? El usuario no aparecerá en listados pero sus datos se conservarán.`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, desactivar',
+      cancelButtonText: 'Cancelar',
+      confirmButtonColor: '#d33'
+    });
+
+    if (result.isConfirmed) {
+      try {
+        const currentUser = await this.authService.afAuth.currentUser;
+        await this.firestore.collection('users').doc(userId).update({
+          deleted: true,
+          deletedAt: new Date(),
+          deletedBy: currentUser?.uid || 'admin'
+        });
+
+        Swal.fire({
+          icon: 'success',
+          title: 'Usuario desactivado',
+          text: `${userName} ha sido desactivado del sistema`,
+          timer: 2000,
+          showConfirmButton: false
+        });
+      } catch (error) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'No se pudo desactivar el usuario'
+        });
+      }
+    }
+  }
+
+  async reactivateUser(userId: string, userName: string) {
+    const result = await Swal.fire({
+      title: `¿Reactivar usuario?`,
+      text: `¿Estás seguro de que quieres reactivar a ${userName}?`,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, reactivar',
+      cancelButtonText: 'Cancelar',
+      confirmButtonColor: '#28a745'
+    });
+
+    if (result.isConfirmed) {
+      try {
+        const currentUser = await this.authService.afAuth.currentUser;
+        await this.firestore.collection('users').doc(userId).update({
+          deleted: false,
+          reactivatedAt: new Date(),
+          reactivatedBy: currentUser?.uid || 'admin'
+        });
+
+        Swal.fire({
+          icon: 'success',
+          title: 'Usuario reactivado',
+          text: `${userName} ha sido reactivado en el sistema`,
+          timer: 2000,
+          showConfirmButton: false
+        });
+      } catch (error) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'No se pudo reactivar el usuario'
+        });
+      }
+    }
+  }
+
+  // Variables para controlar la vista de usuarios
+  showDeletedUsers = false;
+  deletedUsers: any[] = [];
+
+  toggleDeletedUsersView() {
+    this.showDeletedUsers = !this.showDeletedUsers;
+    if (this.showDeletedUsers) {
+      this.loadDeletedUsers();
+    }
+  }
+
+  async loadDeletedUsers() {
+    this.firestore.collection('users').valueChanges().subscribe((users: any[]) => {
+      // Filtrar solo usuarios que están marcados como eliminados
+      this.deletedUsers = users.filter(user => user.deleted);
+    });
   }
 }

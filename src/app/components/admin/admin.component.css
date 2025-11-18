@@ -11,26 +11,33 @@
 
 .header-top {
   display: flex;
-  justify-content: flex-start;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 1rem;
 }
 
-.back-btn {
-  background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+.back-btn, .toggle-deleted-btn {
+  background: #4299e1;
   color: white;
   border: none;
-  padding: 0.8rem 1.5rem;
+  padding: 0.75rem 1.5rem;
   border-radius: 8px;
   cursor: pointer;
-  font-weight: 600;
+  font-size: 1rem;
   transition: all 0.3s ease;
-  text-decoration: none;
-  display: inline-block;
 }
 
-.back-btn:hover {
+.back-btn:hover, .toggle-deleted-btn:hover {
+  background: #3182ce;
   transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(108, 117, 125, 0.4);
+}
+
+.toggle-deleted-btn {
+  background: #718096;
+}
+
+.toggle-deleted-btn:hover {
+  background: #4a5568;
 }
 
 .admin-header h1 {
@@ -374,4 +381,90 @@ tbody tr:hover {
 .profile-documentador {
   background: #189d98;
   color: white;
+}
+
+/* Estilos para el borrado lógico */
+.deactivate-btn {
+  background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.deactivate-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
+}
+
+.reactivate-btn {
+  background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  width: 100%;
+}
+
+.reactivate-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+}
+
+/* Estilos para usuarios eliminados */
+.deleted-user {
+  opacity: 0.8;
+  border-left: 4px solid #dc3545;
+}
+
+.deleted-badge {
+  background: #dc3545;
+  color: white;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: bold;
+  margin-left: 10px;
+}
+
+.profile-tag.disabled {
+  background: #6c757d;
+  opacity: 0.6;
+}
+
+.deletion-info {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid #dee2e6;
+}
+
+.deletion-date {
+  color: #6c757d;
+  font-size: 0.8rem;
+  margin: 0;
+  font-style: italic;
+}
+
+/* Responsive para nuevos elementos */
+@media (max-width: 768px) {
+  .header-top {
+    flex-direction: column;
+    gap: 10px;
+    align-items: stretch;
+  }
+  
+  .card-actions {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .deactivate-btn, .reactivate-btn {
+    width: 100%;
+  }
 }

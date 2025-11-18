@@ -1,62 +1,145 @@
 <div class="attendance-container">
-  <header class="attendance-header">
-    <div class="header-top">
+  <!-- Header simplificado -->
+  <header class="class-header">
+    <div class="header-content">
       <button class="back-btn" routerLink="/dashboard">
-        ← Volver al Dashboard
+        ← Dashboard
       </button>
+      <div class="class-info">
+        <h1>📋 Lista de Asistencia</h1>
+        <p>Pasa lista como en la escuela</p>
+      </div>
     </div>
-    <h1>Control de Asistencia</h1>
-    <p>Registra la asistencia de los integrantes</p>
   </header>
 
-  <main class="attendance-main">
-    <div class="attendance-form">
-      <div class="form-row">
-        <div class="form-group">
-          <label for="attendanceType">Tipo de Asistencia</label>
-          <select id="attendanceType" [(ngModel)]="attendanceType" name="attendanceType">
-            <option value="">Seleccionar tipo</option>
-            <option *ngFor="let type of attendanceTypes" [value]="type">{{ type }}</option>
-          </select>
+  <main class="class-main">
+    <!-- Panel de configuración rápida -->
+    <div class="class-setup">
+      <div class="setup-row">
+        <div class="field-group">
+          <label>📅 Fecha</label>
+          <input type="date" [(ngModel)]="attendanceDate" class="date-input">
         </div>
         
-        <div class="form-group">
-          <label for="attendanceDate">Fecha</label>
-          <input type="date" id="attendanceDate" [(ngModel)]="attendanceDate" name="attendanceDate">
+        <div class="field-group">
+          <label>📝 Tipo de Actividad</label>
+          <div class="type-selector">
+            <button 
+              *ngFor="let type of attendanceTypes" 
+              class="type-btn"
+              [class.active]="attendanceType === type.value"
+              (click)="attendanceType = type.value">
+              <span class="type-icon">{{ type.icon }}</span>
+              <span class="type-label">{{ type.label.split(' ').slice(1).join(' ') }}</span>
+            </button>
+          </div>
         </div>
       </div>
     </div>
 
-    <div class="attendance-table">
-      <table>
-        <thead>
-          <tr>
-            <th>Integrante</th>
-            <th>Estado</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let user of users">
-            <td>{{ user.name }}</td>
-            <td>
-              <div class="status-buttons">
-                <button 
-                  *ngFor="let status of statusOptions"
-                  class="status-btn"
-                  [class.active]="getUserStatus(user.uid) === status"
-                  (click)="updateAttendanceStatus(user.uid, status)">
-                  {{ status }}
-                </button>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+    <!-- Estadísticas en tiempo real -->
+    <div class="stats-bar" *ngIf="attendanceRecords.length > 0">
+      <div class="stat-item success">
+        <span class="stat-icon">✅</span>
+        <span class="stat-count">{{ attendanceStats.presente }}</span>
+        <span class="stat-label">Presentes</span>
+        <span class="stat-percentage">({{ getPercentage('presente') }}%)</span>
+      </div>
+      <div class="stat-item warning">
+        <span class="stat-icon">📚</span>
+        <span class="stat-count">{{ attendanceStats.escuela }}</span>
+        <span class="stat-label">Escuela</span>
+        <span class="stat-percentage">({{ getPercentage('escuela') }}%)</span>
+      </div>
+      <div class="stat-item info">
+        <span class="stat-icon">🤒</span>
+        <span class="stat-count">{{ attendanceStats.enfermedad }}</span>
+        <span class="stat-label">Enfermedad</span>
+        <span class="stat-percentage">({{ getPercentage('enfermedad') }}%)</span>
+      </div>
+      <div class="stat-item danger">
+        <span class="stat-icon">❌</span>
+        <span class="stat-count">{{ attendanceStats.falta }}</span>
+        <span class="stat-label">Faltas</span>
+        <span class="stat-percentage">({{ getPercentage('falta') }}%)</span>
+      </div>
     </div>
 
+    <!-- Herramientas rápidas -->
+    <div class="quick-tools" *ngIf="showQuickActions">
+      <div class="tools-header">
+        <h3>🚀 Acciones Rápidas</h3>
+        <button class="toggle-btn" (click)="showQuickActions = !showQuickActions">
+          {{ showQuickActions ? '▼' : '▶' }}
+        </button>
+      </div>
+      <div class="tools-content">
+        <div class="search-box">
+          <input 
+            type="text" 
+            [(ngModel)]="searchTerm" 
+            placeholder="🔍 Buscar integrante..." 
+            class="search-input">
+        </div>
+        <div class="bulk-actions">
+          <span class="bulk-label">Marcar a todos como:</span>
+          <button 
+            *ngFor="let status of statusOptions"
+            class="bulk-btn"
+            [class]="'bulk-btn-' + status.color"
+            (click)="markAllAs(status.value)">
+            {{ status.icon }} {{ status.label }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Lista de asistencia estilo escolar -->
+    <div class="class-list">
+      <div class="list-header">
+        <h3>👥 Lista de Integrantes ({{ getFilteredUsers().length }})</h3>
+      </div>
+      
+      <div class="student-list">
+        <div 
+          *ngFor="let user of getFilteredUsers(); let i = index" 
+          class="student-row"
+          [class]="'status-' + getUserStatus(user.uid)">
+          
+          <div class="student-info">
+            <span class="student-number">{{ i + 1 }}.</span>
+            <span class="student-name">{{ user.name }}</span>
+            <span class="status-indicator" [innerHTML]="getStatusIcon(getUserStatus(user.uid))"></span>
+          </div>
+          
+          <div class="attendance-controls">
+            <button 
+              *ngFor="let status of statusOptions"
+              class="attendance-btn"
+              [class.active]="getUserStatus(user.uid) === status.value"
+              [class]="'btn-' + status.color"
+              (click)="updateAttendanceStatus(user.uid, status.value)"
+              [title]="status.label">
+              {{ status.icon }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Botón de guardar prominente -->
     <div class="save-section">
-      <button class="save-btn" (click)="saveAttendance()">
-        Guardar Asistencia
+      <button 
+        class="save-btn" 
+        (click)="saveAttendance()"
+        [disabled]="!attendanceType || !attendanceDate">
+        <span class="save-icon">💾</span>
+        <span class="save-text">Guardar Lista de Asistencia</span>
+        <span class="save-count">({{ attendanceStats.total }} integrantes)</span>
+      </button>
+      
+      <button class="reset-btn" (click)="resetForm()" type="button">
+        🔄 Reiniciar
       </button>
     </div>
   </main>

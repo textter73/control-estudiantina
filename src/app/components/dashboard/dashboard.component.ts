@@ -211,9 +211,13 @@ export class DashboardComponent implements OnInit {
 
   loadActiveEvents() {
     this.firestore.collection('events').valueChanges({ idField: 'id' }).subscribe((events: any[]) => {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0); // Resetear la hora para comparar solo fechas
+      
       const activeEvents = events
         .filter(event => event.status === 'abierto')
-        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+        .filter(event => new Date(event.date) >= today) // Solo eventos futuros o de hoy
+        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()); // Más próximo primero
       
       this.activeEvents = activeEvents.map(event => {
         const userConfirmation = event.confirmations?.find((c: any) => c.userId === this.user.uid);

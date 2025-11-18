@@ -27,6 +27,7 @@ export class PaymentRequestsComponent implements OnInit {
   allPartialPayments: any[] = []; // Todos los pagos parciales para estadísticas
   showAddPaymentModal = false;
   selectedPayment: any = null;
+  activeTab: string = 'pending'; // Nueva propiedad para controlar pestañas
   newPartialPayment = {
     amount: 0,
     description: ''
@@ -85,7 +86,24 @@ export class PaymentRequestsComponent implements OnInit {
         const dateB = b.createdAt?.toDate() || new Date();
         return dateB.getTime() - dateA.getTime(); // desc order
       });
+      
+      // Separar pagos por estado
+      this.separatePaymentsByStatus();
     });
+  }
+  
+  separatePaymentsByStatus() {
+    this.pendingPayments = [];
+    this.completedPayments = [];
+    
+    for (const request of this.paymentRequests) {
+      const stats = this.getRequestStats(request.concept);
+      if (stats.completed === stats.total && stats.total > 0) {
+        this.completedPayments.push(request);
+      } else {
+        this.pendingPayments.push(request);
+      }
+    }
   }
 
   loadAllUsers() {
@@ -100,6 +118,8 @@ export class PaymentRequestsComponent implements OnInit {
       ref.where('createdBy', '==', this.user.uid)
     ).valueChanges({ idField: 'id' }).subscribe((notifications: any[]) => {
       this.allNotifications = notifications;
+      // Actualizar separación cuando cambien las notificaciones
+      this.separatePaymentsByStatus();
     });
   }
 
@@ -112,6 +132,8 @@ export class PaymentRequestsComponent implements OnInit {
         const dateB = b.createdAt?.toDate() || new Date(0);
         return dateB.getTime() - dateA.getTime();
       });
+      // Actualizar separación cuando cambien los pagos parciales
+      this.separatePaymentsByStatus();
     });
   }
 
@@ -845,6 +867,27 @@ export class PaymentRequestsComponent implements OnInit {
         text: 'No se pudo cancelar la solicitud'
       });
     }
+  }
+
+  // Métodos para manejar las pestañas
+  setActiveTab(tab: string) {
+    this.activeTab = tab;
+  }
+
+  getFilteredRequests() {
+    if (this.activeTab === 'pending') {
+      return this.pendingPayments;
+    } else {
+      return this.completedPayments;
+    }
+  }
+
+  getPendingRequestsCount(): number {
+    return this.pendingPayments.length;
+  }
+
+  getCompletedRequestsCount(): number {
+    return this.completedPayments.length;
   }
 
   goBack() {

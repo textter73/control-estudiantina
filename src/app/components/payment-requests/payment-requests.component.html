@@ -48,7 +48,29 @@
 
     <!-- Lista Detallada de Solicitudes -->
     <div class="requests-list" *ngIf="paymentRequests.length > 0">
-      <div class="request-card" *ngFor="let request of paymentRequests">
+      <!-- Tabs de navegación -->
+      <div class="tabs-container">
+        <div class="tabs-header">
+          <button 
+            class="tab-btn" 
+            [class.active]="activeTab === 'pending'"
+            (click)="setActiveTab('pending')">
+            Pendientes
+            <span class="tab-count">{{ getPendingRequestsCount() }}</span>
+          </button>
+          <button 
+            class="tab-btn" 
+            [class.active]="activeTab === 'completed'"
+            (click)="setActiveTab('completed')">
+            Completados
+            <span class="tab-count">{{ getCompletedRequestsCount() }}</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Contenido de los tabs -->
+      <div class="tab-content">
+        <div class="request-card" *ngFor="let request of getFilteredRequests()">
         <div class="request-header">
           <div class="request-title">
             <h4 class="concept">{{ request.concept }}</h4>
@@ -130,7 +152,14 @@
           </button>
         </div>
       </div>
-    </div>
+      
+      <!-- Mensaje cuando no hay solicitudes -->
+      <div class="empty-state" *ngIf="getFilteredRequests().length === 0">
+        <h3>{{ activeTab === 'pending' ? 'No hay solicitudes pendientes' : 'No hay solicitudes completadas' }}</h3>
+        <p>{{ activeTab === 'pending' ? 'Las solicitudes activas aparecerán aquí' : 'Las solicitudes completadas aparecerán aquí' }}</p>
+      </div>
+      </div> <!-- Cierre de .tab-content -->
+    </div> <!-- Cierre de .requests-list -->
   </main>
 
   <!-- Modal de Nueva Solicitud de Cuotas -->

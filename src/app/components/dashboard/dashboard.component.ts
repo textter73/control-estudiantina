@@ -827,8 +827,13 @@ export class DashboardComponent implements OnInit {
         ...(doc.data() as any) 
       })) || [];
       
-      // Filtrar solo usuarios activos (no eliminados)
-      const users = allUsers.filter(user => !user.deleted);
+      // Filtrar solo usuarios activos (no eliminados) y excluir "Estudiantina Tonantzin"
+      const users = allUsers.filter(user => 
+        !user.deleted && 
+        user.name !== 'Estudiantina Tonantzin Guadalupe' &&
+        user.name !== 'estudiantina tonantzin' &&
+        user.email !== 'estudiantina@tonantzin.com'
+      );
       
       const attendances = attendanceSnapshot?.docs.map(doc => doc.data()) || [];
       

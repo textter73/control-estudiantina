@@ -1,0 +1,357 @@
+<div class="evaluation-container">
+  <div class="page-header">
+    <h2>🎭 Evaluación de Miembros</h2>
+    <p class="page-subtitle">Sistema de evaluación por niveles basado en habilidades y compromiso</p>
+    
+    <!-- Información del evaluador -->
+    <div class="evaluator-info" *ngIf="currentUserName">
+      <span class="evaluator-label">👤 Evaluando como:</span>
+      <span class="evaluator-name">{{ currentUserName }}</span>
+    </div>
+
+    <!-- Botón de regreso al dashboard -->
+    <div class="navigation-controls">
+      <button class="back-to-dashboard-btn" (click)="goToDashboard()">
+        <i class="fas fa-arrow-left"></i>
+        <span>Regresar al Dashboard</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="evaluation-content">
+    
+    <!-- Selector de Usuario -->
+    <div class="user-selector-section">
+      <div class="form-group">
+        <label for="userSelect" class="form-label">Seleccionar Miembro para Evaluar</label>
+        
+        <!-- Indicador de carga -->
+        <div *ngIf="isLoadingUsers" class="loading-indicator">
+          <i class="fas fa-spinner fa-spin"></i> Cargando usuarios...
+        </div>
+        
+        <!-- Dropdown de usuarios -->
+        <select 
+          *ngIf="!isLoadingUsers"
+          id="userSelect" 
+          [(ngModel)]="selectedUserId" 
+          (change)="onUserSelected()"
+          class="form-select">
+          <option value="">-- Selecciona un miembro --</option>
+          <option *ngFor="let user of users" [value]="user.uid">
+            {{ user.name }} ({{ user.email }})
+          </option>
+        </select>
+        
+        <!-- Mensaje si no hay usuarios -->
+        <div *ngIf="!isLoadingUsers && users.length === 0" class="no-users-message">
+          <i class="fas fa-exclamation-triangle"></i>
+          <p>No se encontraron usuarios activos para evaluar.</p>
+          <p class="help-text">Verifica que haya usuarios activos en el sistema.</p>
+          <button class="reload-btn" (click)="loadUsers()">
+            <i class="fas fa-refresh"></i> Recargar Usuarios
+          </button>
+        </div>
+        
+        <!-- Info de usuarios cargados -->
+        <div *ngIf="!isLoadingUsers && users.length > 0" class="users-info">
+          <small class="text-muted">{{ users.length }} usuario{{ users.length !== 1 ? 's' : '' }} disponible{{ users.length !== 1 ? 's' : '' }} para evaluación</small>
+        </div>
+      </div>
+    </div>
+
+    <!-- Información del Usuario Seleccionado -->
+    <div class="user-info-section" *ngIf="selectedUser">
+      <div class="user-info-card">
+        <div class="user-details">
+          <h3>{{ selectedUser.name }}</h3>
+          <p class="user-email">{{ selectedUser.email }}</p>
+          
+          <!-- Nivel actual del perfil -->
+          <div class="profile-level" *ngIf="userProfileLevel">
+            <div class="level-info">
+              <span class="level-label">🏆 Nivel Actual en Perfil:</span>
+              <span class="level-badge" [class]="getLevelBadgeClass(userProfileLevel.level)">
+                Nivel {{ userProfileLevel.level }} - {{ userProfileLevel.taxPercentage }}% impuesto
+              </span>
+            </div>
+          </div>
+          
+          <!-- Evaluación más reciente -->
+          <div class="current-evaluation" *ngIf="existingEvaluation">
+            <div class="evaluation-info">
+              <span class="eval-label">📋 Última Evaluación:</span>
+              <span class="evaluation-badge" [class]="getLevelBadgeClass(existingEvaluation.nivel)">
+                Nivel {{ existingEvaluation.nivel }} - {{ existingEvaluation.impuestoPorcentaje }}% impuesto
+              </span>
+              <span class="evaluation-score">Puntuación: {{ existingEvaluation.puntuacionTotal }}/44</span>
+            </div>
+          </div>
+          
+          <div class="no-evaluation" *ngIf="!existingEvaluation && !userProfileLevel">
+            <span class="no-eval-text">Sin evaluación previa</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Formulario de Evaluación -->
+    <div class="evaluation-form" *ngIf="selectedUser">
+      
+      <!-- Sección Canto -->
+      <div class="evaluation-section">
+        <h4 class="section-title">🎤 Evaluación de Canto</h4>
+        
+        <div class="criteria-grid">
+          <div class="criteria-item">
+            <label class="criteria-label">Afinación</label>
+            <select [(ngModel)]="evaluationForm.canto.afinacion" class="criteria-select">
+              <option *ngFor="let level of evaluationCriteria['afinacion'].levels" [value]="level.value">
+                {{ getOptionText(level) }}
+              </option>
+            </select>
+          </div>
+          
+          <div class="criteria-item">
+            <label class="criteria-label">Rango Vocal</label>
+            <select [(ngModel)]="evaluationForm.canto.rangoVocal" class="criteria-select">
+              <option *ngFor="let level of evaluationCriteria['rangoVocal'].levels" [value]="level.value">
+                {{ getOptionText(level) }}
+              </option>
+            </select>
+          </div>
+          
+          <div class="criteria-item">
+            <label class="criteria-label">Control Vocal</label>
+            <select [(ngModel)]="evaluationForm.canto.controlVocal" class="criteria-select">
+              <option *ngFor="let level of evaluationCriteria['controlVocal'].levels" [value]="level.value">
+                {{ level.label }} - {{ level.description }}
+              </option>
+            </select>
+          </div>
+          
+          <div class="criteria-item">
+            <label class="criteria-label">Expresividad</label>
+            <select [(ngModel)]="evaluationForm.canto.expresividad" class="criteria-select">
+              <option *ngFor="let level of evaluationCriteria['expresividad'].levels" [value]="level.value">
+                {{ level.label }} - {{ level.description }}
+              </option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sección Instrumento -->
+      <div class="evaluation-section">
+        <h4 class="section-title">🎸 Evaluación de Instrumento</h4>
+        
+        <div class="criteria-grid">
+          <div class="criteria-item">
+            <label class="criteria-label">Técnica</label>
+            <select [(ngModel)]="evaluationForm.instrumento.tecnica" class="criteria-select">
+              <option *ngFor="let level of evaluationCriteria['tecnica'].levels" [value]="level.value">
+                {{ level.label }} - {{ level.description }}
+              </option>
+            </select>
+          </div>
+          
+          <div class="criteria-item">
+            <label class="criteria-label">Precisión</label>
+            <select [(ngModel)]="evaluationForm.instrumento.precision" class="criteria-select">
+              <option *ngFor="let level of evaluationCriteria['precision'].levels" [value]="level.value">
+                {{ level.label }} - {{ level.description }}
+              </option>
+            </select>
+          </div>
+          
+          <div class="criteria-item">
+            <label class="criteria-label">Creatividad</label>
+            <select [(ngModel)]="evaluationForm.instrumento.creatividad" class="criteria-select">
+              <option *ngFor="let level of evaluationCriteria['creatividad'].levels" [value]="level.value">
+                {{ level.label }} - {{ level.description }}
+              </option>
+            </select>
+          </div>
+          
+          <div class="criteria-item">
+            <label class="criteria-label">Versatilidad</label>
+            <select [(ngModel)]="evaluationForm.instrumento.versatilidad" class="criteria-select">
+              <option *ngFor="let level of evaluationCriteria['versatilidad'].levels" [value]="level.value">
+                {{ level.label }} - {{ level.description }}
+              </option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sección Compromiso -->
+      <div class="evaluation-section">
+        <h4 class="section-title">🤝 Evaluación de Compromiso</h4>
+        
+        <div class="criteria-grid">
+          <div class="criteria-item">
+            <label class="criteria-label">Asistencia a Ensayos</label>
+            <select [(ngModel)]="evaluationForm.compromiso.asistenciaEnsayos" class="criteria-select">
+              <option *ngFor="let level of evaluationCriteria['asistenciaEnsayos'].levels" [value]="level.value">
+                {{ level.label }} - {{ level.description }}
+              </option>
+            </select>
+          </div>
+          
+          <div class="criteria-item">
+            <label class="criteria-label">Participación en Eventos</label>
+            <select [(ngModel)]="evaluationForm.compromiso.participacionEventos" class="criteria-select">
+              <option *ngFor="let level of evaluationCriteria['participacionEventos'].levels" [value]="level.value">
+                {{ level.label }} - {{ level.description }}
+              </option>
+            </select>
+          </div>
+          
+          <div class="criteria-item">
+            <label class="criteria-label">Colaboración</label>
+            <select [(ngModel)]="evaluationForm.compromiso.colaboracion" class="criteria-select">
+              <option *ngFor="let level of evaluationCriteria['colaboracion'].levels" [value]="level.value">
+                {{ level.label }} - {{ level.description }}
+              </option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Preview de Puntuación -->
+      <div class="score-preview">
+        <h4>📊 Vista Previa de Evaluación</h4>
+        <div class="preview-content">
+          <div class="score-item">
+            <span class="score-label">Puntuación Total:</span>
+            <span class="score-value">{{ calculatePreviewScore().total }}/44</span>
+          </div>
+          <div class="score-item">
+            <span class="score-label">Nivel Resultante:</span>
+            <span class="level-badge" [class]="getLevelBadgeClass(calculatePreviewScore().nivel)">
+              Nivel {{ calculatePreviewScore().nivel }}
+            </span>
+          </div>
+          <div class="score-item">
+            <span class="score-label">Porcentaje de Impuesto:</span>
+            <span class="tax-value">{{ calculatePreviewScore().impuesto }}%</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Comentarios -->
+      <div class="comments-section">
+        <label for="comments" class="form-label">Comentarios (Opcional)</label>
+        <textarea 
+          id="comments"
+          [(ngModel)]="evaluationForm.comentarios"
+          class="form-textarea"
+          rows="3"
+          placeholder="Observaciones adicionales sobre el miembro...">
+        </textarea>
+      </div>
+
+      <!-- Botones de Acción -->
+      <div class="action-buttons">
+        <button 
+          class="save-btn" 
+          (click)="saveEvaluation()"
+          [disabled]="isLoading">
+          <i class="fas fa-save"></i>
+          {{ isLoading ? 'Guardando...' : existingEvaluation ? 'Actualizar Evaluación' : 'Guardar Evaluación' }}
+        </button>
+        
+        <button 
+          class="cancel-btn" 
+          (click)="resetForm()"
+          [disabled]="isLoading">
+          <i class="fas fa-undo"></i>
+          Resetear Formulario
+        </button>
+      </div>
+    </div>
+
+    <!-- Lista de Todas las Evaluaciones -->
+    <div class="evaluations-list" *ngIf="allEvaluations.length > 0">
+      <h3>📋 Evaluaciones Existentes</h3>
+      
+      <div class="evaluations-grid">
+        <div 
+          class="evaluation-card" 
+          *ngFor="let evaluation of allEvaluations"
+          [class]="getLevelBadgeClass(evaluation.nivel)">
+          
+          <div class="evaluation-header">
+            <h4>{{ evaluation.userName }}</h4>
+            <div class="evaluation-badges">
+              <span class="level-badge" [class]="getLevelBadgeClass(evaluation.nivel)">
+                Nivel {{ evaluation.nivel }}
+              </span>
+              <span class="tax-badge">{{ evaluation.impuestoPorcentaje }}% impuesto</span>
+            </div>
+          </div>
+          
+          <div class="evaluation-details">
+            <div class="detail-row">
+              <span class="detail-label">Puntuación Total:</span>
+              <span class="detail-value">{{ evaluation.puntuacionTotal }}/44</span>
+            </div>
+            
+            <div class="detail-row">
+              <span class="detail-label">Evaluado por:</span>
+              <span class="detail-value">{{ evaluation.evaluatedBy }}</span>
+            </div>
+            
+            <div class="detail-row">
+              <span class="detail-label">Fecha:</span>
+              <span class="detail-value">{{ getEvaluationDate(evaluation.evaluatedAt) | date:'dd/MM/yyyy HH:mm' }}</span>
+            </div>
+            
+            <div class="detail-row" *ngIf="evaluation.comentarios">
+              <span class="detail-label">Comentarios:</span>
+              <span class="detail-value">{{ evaluation.comentarios }}</span>
+            </div>
+          </div>
+          
+          <div class="evaluation-actions">
+            <button 
+              class="edit-btn" 
+              (click)="selectedUserId = evaluation.userId; onUserSelected()">
+              <i class="fas fa-edit"></i> Editar
+            </button>
+            
+            <button 
+              class="delete-btn" 
+              (click)="deleteEvaluation(evaluation.id!)">
+              <i class="fas fa-trash"></i> Eliminar
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sistema de Niveles Explicación -->
+    <div class="levels-explanation">
+      <h3>📚 Sistema de Niveles</h3>
+      <div class="levels-grid">
+        <div 
+          class="level-card" 
+          *ngFor="let level of levelConfigurations"
+          [class]="getLevelBadgeClass(level.nivel)">
+          
+          <div class="level-header">
+            <h4>{{ level.nombre }}</h4>
+            <span class="level-range">{{ level.puntuacionMin }}-{{ level.puntuacionMax }} puntos</span>
+          </div>
+          
+          <p class="level-description">{{ level.descripcion }}</p>
+          
+          <div class="level-tax">
+            <strong>Impuesto: {{ level.impuestoPorcentaje }}%</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

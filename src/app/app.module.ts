@@ -29,7 +29,9 @@ import { DocumentoControlComponent } from './components/documento-control/docume
 import { MisDocumentosComponent } from './components/mis-documentos/mis-documentos.component';
 import { InventoryManagementComponent } from './components/inventory-management/inventory-management.component';
 import { SupplyRequestComponent } from './components/supply-request/supply-request.component';
+import { MemberEvaluationComponent } from './components/member-evaluation/member-evaluation.component';
 import { InsumoService } from './services/insumo.service';
+import { UserEvaluationService } from './services/user-evaluation.service';
 
 @NgModule({
   declarations: [
@@ -52,7 +54,8 @@ import { InsumoService } from './services/insumo.service';
     DocumentoControlComponent,
     MisDocumentosComponent,
     InventoryManagementComponent,
-    SupplyRequestComponent
+    SupplyRequestComponent,
+    MemberEvaluationComponent
   ],
   imports: [
     BrowserModule,
@@ -63,7 +66,7 @@ import { InsumoService } from './services/insumo.service';
     AngularFireAuthModule,
     AngularFirestoreModule
   ],
-  providers: [SongbookService, InsumoService],
+  providers: [SongbookService, InsumoService, UserEvaluationService],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

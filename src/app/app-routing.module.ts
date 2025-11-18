@@ -25,6 +25,7 @@ import { DocumentadorGuard } from './guards/documentador.guard';
 import { MisDocumentosComponent } from './components/mis-documentos/mis-documentos.component';
 import { InventoryManagementComponent } from './components/inventory-management/inventory-management.component';
 import { SupplyRequestComponent } from './components/supply-request/supply-request.component';
+import { MemberEvaluationComponent } from './components/member-evaluation/member-evaluation.component';
 
 const routes: Routes = [
   { path: '', component: LoginComponent },
@@ -46,6 +47,7 @@ const routes: Routes = [
   { path: 'mis-documentos', component: MisDocumentosComponent, canActivate: [AuthGuard] },
   { path: 'inventory-management', component: InventoryManagementComponent, canActivate: [AdminGuard] },
   { path: 'supply-request', component: SupplyRequestComponent, canActivate: [AuthGuard] },
+  { path: 'member-evaluation', component: MemberEvaluationComponent, canActivate: [AdminGuard] },
   { path: '**', redirectTo: '' }
 ];
 

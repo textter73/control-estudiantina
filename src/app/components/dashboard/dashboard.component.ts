@@ -3,6 +3,7 @@ import { AngularFireAuth } from '@angular/fire/compat/auth';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import { UserEvaluationService } from '../../services/user-evaluation.service';
 import { InsumoService } from '../../services/insumo.service';
 import { Insumo } from '../../models/insumo.model';
 import Swal from 'sweetalert2';
@@ -15,6 +16,7 @@ import Swal from 'sweetalert2';
 export class DashboardComponent implements OnInit {
   user: any = null;
   userProfile: any = null;
+  userLevel: {level: number, taxPercentage: number} | null = null;
   attendancePercentage: number = 0;
   totalAttendances: number = 0;
   presentAttendances: number = 0;
@@ -165,7 +167,8 @@ export class DashboardComponent implements OnInit {
     private firestore: AngularFirestore,
     private router: Router,
     private authService: AuthService,
-    private insumoService: InsumoService
+    private insumoService: InsumoService,
+    private evaluationService: UserEvaluationService
   ) {}
 
   ngOnInit() {
@@ -174,6 +177,7 @@ export class DashboardComponent implements OnInit {
         this.user = user;
         const userDoc = await this.firestore.collection('users').doc(user.uid).get().toPromise();
         this.userProfile = userDoc?.data();
+        this.loadUserLevel(user.uid); // Cargar nivel del usuario
         this.loadAttendanceData();
         this.loadActiveEvents();
         this.loadTransportRequests();
@@ -977,7 +981,6 @@ export class DashboardComponent implements OnInit {
       // Solo incluir la imagen si existe (ya está en base64)
       if (this.profileForm.profileImage && this.profileForm.profileImage.trim()) {
         updateData.profileImage = this.profileForm.profileImage.trim();
-        console.log('Guardando imagen en base64:', this.profileForm.profileImage.substring(0, 50) + '...');
       }
 
       // Actualizar el documento del usuario en Firestore
@@ -1059,6 +1062,26 @@ export class DashboardComponent implements OnInit {
       
       // Leer el archivo como data URL (base64)
       reader.readAsDataURL(file);
+    }
+  }
+
+  // Cargar nivel e impuesto del usuario desde su perfil
+  loadUserLevel(userId: string) {
+    this.evaluationService.getUserLevelFromProfile(userId).subscribe(levelData => {
+      this.userLevel = levelData;
+    });
+  }
+
+  // Obtener clase CSS para el badge del nivel
+  getLevelBadgeClass(nivel: number): string {
+    switch(nivel) {
+      case 1: return 'level-1';
+      case 2: return 'level-2';
+      case 3: return 'level-3';
+      case 4: return 'level-4';
+      case 5: return 'level-5';
+      case 6: return 'level-6';
+      default: return 'level-6';
     }
   }
 }

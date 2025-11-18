@@ -15,6 +15,18 @@
         <div class="user-text">
           <span class="user-name">{{ userProfile?.nickname || userProfile?.name || 'Usuario' }}</span>
           <span class="user-email">{{ user?.email }}</span>
+          <!-- Información del nivel e impuesto -->
+          <div class="user-level-info" *ngIf="userLevel">
+            <span class="level-badge" [class]="getLevelBadgeClass(userLevel.level)">
+              🏆 Nivel {{ userLevel.level }}
+            </span>
+            <span class="tax-info">
+              📊 Impuesto: {{ userLevel.taxPercentage }}%
+            </span>
+          </div>
+          <div class="no-level-info" *ngIf="!userLevel">
+            <span class="no-level-text">📋 Sin evaluación</span>
+          </div>
         </div>
         <div class="user-buttons">
           <button class="profile-btn" (click)="openProfileModal()">
@@ -77,6 +89,11 @@
       <button class="action" routerLink="/admin" *ngIf="isAdmin">
         <span class="action-icon">⚙️</span>
         <span class="action-text">Usuarios</span>
+      </button>
+      
+      <button class="action" routerLink="/member-evaluation" *ngIf="isAdmin">
+        <span class="action-icon">🎭</span>
+        <span class="action-text">Evaluación</span>
       </button>
       
       <button class="action" routerLink="/attendance" *ngIf="canManageAttendance">

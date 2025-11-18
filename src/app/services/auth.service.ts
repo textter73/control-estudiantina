@@ -82,4 +82,19 @@ export class AuthService {
     return this.firestore.collection('users').valueChanges();
   }
 
+  // Obtener usuario actual autenticado
+  getCurrentUser() {
+    return this.afAuth.authState;
+  }
+
+  // Obtener datos del usuario actual desde Firestore
+  async getCurrentUserData() {
+    const user = await this.afAuth.currentUser;
+    if (user) {
+      const userDoc = await this.firestore.collection('users').doc(user.uid).get().toPromise();
+      return userDoc?.data();
+    }
+    return null;
+  }
+
 }

@@ -51,6 +51,32 @@ export class DashboardComponent implements OnInit {
     falta: 0
   };
 
+  // Nuevas estadísticas por tipo de actividad
+  eventAttendanceStats = {
+    percentage: 0,
+    attended: 0,
+    total: 0
+  };
+
+  rehearsalAttendanceStats = {
+    percentage: 0,
+    attended: 0,
+    total: 0
+  };
+
+  massAttendanceStats = {
+    percentage: 0,
+    attended: 0,
+    total: 0
+  };
+
+  // Estadísticas globales de asistencia
+  globalAttendanceStats = {
+    percentage: 0,
+    attended: 0,
+    total: 0
+  };
+
   getPercentage(count: number): number {
     return this.totalAttendances > 0 ? Math.round((count / this.totalAttendances) * 100) : 0;
   }
@@ -144,6 +170,11 @@ export class DashboardComponent implements OnInit {
       let participationCount = 0;
       const stats = { presente: 0, escuela: 0, enfermedad: 0, falta: 0 };
       
+      // Contadores por tipo de actividad
+      let eventTotal = 0, eventAttended = 0;
+      let rehearsalTotal = 0, rehearsalAttended = 0;
+      let massTotal = 0, massAttended = 0;
+      
       attendances.forEach(attendance => {
         const userRecord = attendance.records?.find((record: any) => record.userId === this.user.uid);
         if (userRecord) {
@@ -159,32 +190,64 @@ export class DashboardComponent implements OnInit {
           if (stats.hasOwnProperty(userRecord.status)) {
             stats[userRecord.status as keyof typeof stats]++;
           }
+          
+          // Contar por tipo de actividad
+          const wasPresent = ['presente', 'escuela', 'enfermedad'].includes(userRecord.status);
+          
+          switch (attendance.type) {
+            case 'evento':
+              eventTotal++;
+              if (wasPresent) eventAttended++;
+              break;
+            case 'ensayo':
+              rehearsalTotal++;
+              if (wasPresent) rehearsalAttended++;
+              break;
+            case 'misa dominical':
+              massTotal++;
+              if (wasPresent) massAttended++;
+              break;
+          }
         }
       });
       
       this.attendanceStats = stats;
       
-      // Calcular estadísticas de misa dominical
-      let misaAsistidas = 0;
-      let misaTotal = 0;
+      // Calcular estadísticas por tipo
+      this.eventAttendanceStats = {
+        percentage: eventTotal > 0 ? Math.round((eventAttended / eventTotal) * 100) : 0,
+        attended: eventAttended,
+        total: eventTotal
+      };
       
-      attendances.forEach(attendance => {
-        if (attendance.type === 'misa dominical') {
-          const userRecord = attendance.records?.find((record: any) => record.userId === this.user.uid);
-          if (userRecord) {
-            misaTotal++;
-            if (['presente', 'escuela', 'enfermedad'].includes(userRecord.status)) {
-              misaAsistidas++;
-            }
-          }
-        }
-      });
+      this.rehearsalAttendanceStats = {
+        percentage: rehearsalTotal > 0 ? Math.round((rehearsalAttended / rehearsalTotal) * 100) : 0,
+        attended: rehearsalAttended,
+        total: rehearsalTotal
+      };
       
+      this.massAttendanceStats = {
+        percentage: massTotal > 0 ? Math.round((massAttended / massTotal) * 100) : 0,
+        attended: massAttended,
+        total: massTotal
+      };
+      
+      // Calcular estadísticas globales
+      const globalTotal = eventTotal + rehearsalTotal + massTotal;
+      const globalAttended = eventAttended + rehearsalAttended + massAttended;
+      
+      this.globalAttendanceStats = {
+        percentage: globalTotal > 0 ? Math.round((globalAttended / globalTotal) * 100) : 0,
+        attended: globalAttended,
+        total: globalTotal
+      };
+      
+      // Mantener compatibilidad con el código existente para misaStats
       this.misaStats = {
-        asistidas: misaAsistidas,
-        faltas: misaTotal - misaAsistidas,
-        total: misaTotal,
-        percentage: misaTotal > 0 ? Math.round((misaAsistidas / misaTotal) * 100) : 0
+        asistidas: massAttended,
+        faltas: massTotal - massAttended,
+        total: massTotal,
+        percentage: massTotal > 0 ? Math.round((massAttended / massTotal) * 100) : 0
       };
       
       this.totalAttendances = totalCount;

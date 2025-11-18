@@ -2285,6 +2285,299 @@
   font-size: 0.95rem;
 }
 
+/* Estilos para los Indicadores de Asistencia Circulares */
+.attendance-indicators {
+  background: white;
+  border-radius: 15px;
+  padding: 2rem;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+  margin-bottom: 2rem;
+}
+
+.attendance-indicators h3 {
+  margin: 0 0 2rem 0;
+  color: #2d3748;
+  font-weight: 600;
+  text-align: center;
+  font-size: 1.5rem;
+}
+
+/* Gráfica Global */
+.global-attendance {
+  margin-bottom: 3rem;
+  display: flex;
+  justify-content: center;
+}
+
+.global-card {
+  background: linear-gradient(135deg, #fff 0%, #f8fafc 100%);
+  border-radius: 25px;
+  padding: 2.5rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.4s ease;
+  border: 3px solid transparent;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+  position: relative;
+  overflow: hidden;
+  min-width: 350px;
+  max-width: 400px;
+}
+
+.global-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 6px;
+  background: linear-gradient(90deg, #189d98 0%, #4299e1 50%, #f56565 100%);
+  border-radius: 25px 25px 0 0;
+}
+
+.global-card:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 20px 50px rgba(0,0,0,0.15);
+  border-color: #189d98;
+}
+
+.global-header {
+  margin-bottom: 2rem;
+}
+
+.global-icon {
+  font-size: 3rem;
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.global-header h4 {
+  margin: 0 0 0.5rem 0;
+  color: #2d3748;
+  font-weight: 700;
+  font-size: 1.4rem;
+}
+
+.global-header p {
+  margin: 0;
+  color: #718096;
+  font-size: 0.95rem;
+  font-style: italic;
+}
+
+.global-indicator {
+  position: relative;
+  display: inline-block;
+  margin-bottom: 2rem;
+}
+
+.global-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+}
+
+.global-percentage {
+  font-size: 2.5rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, #189d98 0%, #4299e1 50%, #f56565 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  display: block;
+  line-height: 1;
+}
+
+.global-label {
+  font-size: 0.9rem;
+  color: #4a5568;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.global-breakdown {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.breakdown-item {
+  background: #f7fafc;
+  border-radius: 12px;
+  padding: 0.75rem 1rem;
+  border: 2px solid #e2e8f0;
+  transition: all 0.3s ease;
+}
+
+.breakdown-item:hover {
+  border-color: #cbd5e0;
+  transform: translateY(-2px);
+}
+
+.breakdown-icon {
+  font-size: 1.2rem;
+  margin-right: 0.5rem;
+}
+
+.breakdown-count {
+  font-weight: 600;
+  color: #2d3748;
+  font-size: 0.9rem;
+}
+
+.global-total {
+  background: linear-gradient(135deg, #edf2f7 0%, #e2e8f0 100%);
+  border-radius: 15px;
+  padding: 1rem;
+  border: 1px solid #cbd5e0;
+}
+
+.total-label {
+  display: block;
+  font-size: 0.8rem;
+  color: #4a5568;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.25rem;
+}
+
+.total-count {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #2d3748;
+}
+
+.indicators-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 2rem;
+  justify-items: center;
+}
+
+.indicator-card {
+  background: #f8fafc;
+  border-radius: 20px;
+  padding: 2rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+  width: 100%;
+  max-width: 300px;
+  position: relative;
+  overflow: hidden;
+}
+
+.indicator-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--indicator-color, #e2e8f0), var(--indicator-color, #e2e8f0));
+  border-radius: 20px 20px 0 0;
+}
+
+.indicator-card:nth-child(1) {
+  --indicator-color: #f56565;
+}
+
+.indicator-card:nth-child(2) {
+  --indicator-color: #4299e1;
+}
+
+.indicator-card:nth-child(3) {
+  --indicator-color: #ffd700;
+}
+
+.indicator-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+  border-color: var(--indicator-color);
+  background: white;
+}
+
+.indicator-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.indicator-icon {
+  font-size: 2rem;
+}
+
+.indicator-header h4 {
+  margin: 0;
+  color: #2d3748;
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.circular-indicator {
+  position: relative;
+  display: inline-block;
+  margin-bottom: 1.5rem;
+}
+
+.indicator-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+}
+
+.indicator-center .percentage {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #2d3748;
+  display: block;
+}
+
+.indicator-stats {
+  margin-bottom: 0.5rem;
+}
+
+.indicator-stats .attended {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--indicator-color);
+}
+
+.indicator-stats .separator {
+  margin: 0 0.25rem;
+  color: #a0aec0;
+  font-weight: 500;
+}
+
+.indicator-stats .total {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #4a5568;
+}
+
+.indicator-label {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #718096;
+  font-weight: 500;
+}
+
+/* Animaciones para los círculos */
+.indicator-card svg circle:last-child {
+  transition: stroke-dashoffset 1s ease-in-out;
+}
+
 /* Responsive para móviles */
 @media (max-width: 768px) {
   .inventory-item {
@@ -2300,5 +2593,98 @@
   
   .inventory-list {
     max-height: 300px;
+  }
+  
+  .indicators-container {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  
+  .indicator-card {
+    padding: 1.5rem;
+  }
+  
+  .circular-indicator svg {
+    width: 100px;
+    height: 100px;
+  }
+  
+  .indicator-center .percentage {
+    font-size: 1.2rem;
+  }
+  
+  .global-card {
+    min-width: auto;
+    max-width: 100%;
+    padding: 2rem;
+  }
+  
+  .global-indicator svg {
+    width: 130px;
+    height: 130px;
+  }
+  
+  .global-percentage {
+    font-size: 2rem;
+  }
+  
+  .global-breakdown {
+    gap: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .attendance-indicators {
+    padding: 1.5rem;
+  }
+  
+  .attendance-indicators h3 {
+    font-size: 1.2rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .indicator-card {
+    padding: 1.25rem;
+  }
+  
+  .indicator-icon {
+    font-size: 1.5rem;
+  }
+  
+  .indicator-header h4 {
+    font-size: 1rem;
+  }
+  
+  .global-card {
+    padding: 1.5rem;
+  }
+  
+  .global-icon {
+    font-size: 2.5rem;
+  }
+  
+  .global-header h4 {
+    font-size: 1.2rem;
+  }
+  
+  .global-indicator svg {
+    width: 120px;
+    height: 120px;
+  }
+  
+  .global-percentage {
+    font-size: 1.8rem;
+  }
+  
+  .breakdown-item {
+    padding: 0.5rem 0.75rem;
+  }
+  
+  .breakdown-icon {
+    font-size: 1rem;
+  }
+  
+  .breakdown-count {
+    font-size: 0.8rem;
   }
 }

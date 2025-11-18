@@ -298,122 +298,196 @@
       </div>
     </div>
 
-    <div class="attendance-chart" (click)="goToTracking()">
-      <h3>Mi Asistencia</h3>
-      <div class="charts-container">
-        <div class="donut-chart">
-          <svg width="150" height="150" viewBox="0 0 150 150">
-            <circle cx="75" cy="75" r="60" fill="none" stroke="#e1e5e9" stroke-width="15" *ngIf="attendancePercentage < 100"></circle>
-            <circle 
-              cx="75" 
-              cy="75" 
-              r="60" 
-              fill="none" 
-              stroke="#189d98" 
-              stroke-width="15"
-              [attr.stroke-dasharray]="attendancePercentage === 100 ? '377' : (attendancePercentage * 377) / 100 + ' 377'"
-              [attr.stroke-dashoffset]="attendancePercentage === 100 ? '0' : '94.25'"
-              [attr.transform]="attendancePercentage === 100 ? '' : 'rotate(-90 75 75)'">
-            </circle>
-          </svg>
-          <div class="chart-center">
-            <span class="percentage">{{ attendancePercentage }}%</span>
-            <span class="label">Efectiva</span>
+    <!-- Indicadores de Asistencia por Tipo -->
+    <div class="attendance-indicators">
+      <h3>Mi Asistencia por Actividad</h3>
+      
+      <!-- Gráfica Global -->
+      <div class="global-attendance">
+        <div class="global-card" (click)="goToTracking()">
+          <div class="global-header">
+            <span class="global-icon">📊</span>
+            <h4>Asistencia General</h4>
+            <p>Todas las actividades</p>
           </div>
-        </div>
-        
-        <div class="donut-chart">
-          <svg width="150" height="150" viewBox="0 0 150 150">
-            <circle cx="75" cy="75" r="60" fill="none" stroke="#e1e5e9" stroke-width="15" *ngIf="participationPercentage < 100"></circle>
-            <circle 
-              cx="75" 
-              cy="75" 
-              r="60" 
-              fill="none" 
-              stroke="#189d98" 
-              stroke-width="15"
-              [attr.stroke-dasharray]="participationPercentage === 100 ? '377' : (participationPercentage * 377) / 100 + ' 377'"
-              [attr.stroke-dashoffset]="participationPercentage === 100 ? '0' : '94.25'"
-              [attr.transform]="participationPercentage === 100 ? '' : 'rotate(-90 75 75)'">
-            </circle>
-          </svg>
-          <div class="chart-center">
-            <span class="percentage">{{ participationPercentage }}%</span>
-            <span class="label">Asistencia</span>
+          <div class="global-indicator">
+            <svg width="160" height="160" viewBox="0 0 160 160">
+              <circle 
+                cx="80" 
+                cy="80" 
+                r="65" 
+                fill="none" 
+                stroke="#e2e8f0" 
+                stroke-width="12">
+              </circle>
+              <circle 
+                cx="80" 
+                cy="80" 
+                r="65" 
+                fill="none" 
+                stroke="url(#globalGradient)" 
+                stroke-width="12"
+                [attr.stroke-dasharray]="408.41"
+                [attr.stroke-dashoffset]="408.41 - (globalAttendanceStats.percentage * 408.41) / 100"
+                transform="rotate(-90 80 80)"
+                stroke-linecap="round">
+              </circle>
+              <defs>
+                <linearGradient id="globalGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" style="stop-color:#189d98;stop-opacity:1" />
+                  <stop offset="50%" style="stop-color:#4299e1;stop-opacity:1" />
+                  <stop offset="100%" style="stop-color:#f56565;stop-opacity:1" />
+                </linearGradient>
+              </defs>
+            </svg>
+            <div class="global-center">
+              <span class="global-percentage">{{ globalAttendanceStats.percentage }}%</span>
+              <span class="global-label">Total</span>
+            </div>
+          </div>
+          <div class="global-breakdown">
+            <div class="breakdown-item">
+              <span class="breakdown-icon">🎉</span>
+              <span class="breakdown-count">{{ eventAttendanceStats.attended }}/{{ eventAttendanceStats.total }}</span>
+            </div>
+            <div class="breakdown-item">
+              <span class="breakdown-icon">🎵</span>
+              <span class="breakdown-count">{{ rehearsalAttendanceStats.attended }}/{{ rehearsalAttendanceStats.total }}</span>
+            </div>
+            <div class="breakdown-item">
+              <span class="breakdown-icon">⛪</span>
+              <span class="breakdown-count">{{ massAttendanceStats.attended }}/{{ massAttendanceStats.total }}</span>
+            </div>
+          </div>
+          <div class="global-total">
+            <span class="total-label">Total Actividades</span>
+            <span class="total-count">{{ globalAttendanceStats.attended }} de {{ globalAttendanceStats.total }}</span>
           </div>
         </div>
       </div>
       
-      <div class="attendance-summary">
-        <h4>Resumen de Asistencia</h4>
-        <div class="summary-list">
-          <div class="summary-item">
-            <span class="summary-icon">✅</span>
-            <span class="summary-label">Presente</span>
-            <div class="summary-count">
-              <span class="count-fraction">{{ attendanceStats.presente }} de {{ totalAttendances }}</span>
-              <span class="count-percentage">({{ getPercentage(attendanceStats.presente) }}%)</span>
+      <div class="indicators-container">
+        
+        <!-- Asistencia a Eventos -->
+        <div class="indicator-card" (click)="goToTracking()">
+          <div class="indicator-header">
+            <span class="indicator-icon">🎉</span>
+            <h4>Eventos</h4>
+          </div>
+          <div class="circular-indicator">
+            <svg width="120" height="120" viewBox="0 0 120 120">
+              <circle 
+                cx="60" 
+                cy="60" 
+                r="50" 
+                fill="none" 
+                stroke="#e2e8f0" 
+                stroke-width="10">
+              </circle>
+              <circle 
+                cx="60" 
+                cy="60" 
+                r="50" 
+                fill="none" 
+                stroke="#f56565" 
+                stroke-width="10"
+                [attr.stroke-dasharray]="314.16"
+                [attr.stroke-dashoffset]="314.16 - (eventAttendanceStats.percentage * 314.16) / 100"
+                transform="rotate(-90 60 60)">
+              </circle>
+            </svg>
+            <div class="indicator-center">
+              <span class="percentage">{{ eventAttendanceStats.percentage }}%</span>
             </div>
           </div>
-          <div class="summary-item">
-            <span class="summary-icon">🏫</span>
-            <span class="summary-label">Escuela</span>
-            <div class="summary-count">
-              <span class="count-fraction">{{ attendanceStats.escuela }} de {{ totalAttendances }}</span>
-              <span class="count-percentage">({{ getPercentage(attendanceStats.escuela) }}%)</span>
-            </div>
+          <div class="indicator-stats">
+            <span class="attended">{{ eventAttendanceStats.attended }}</span>
+            <span class="separator">/</span>
+            <span class="total">{{ eventAttendanceStats.total }}</span>
           </div>
-          <div class="summary-item">
-            <span class="summary-icon">🩺</span>
-            <span class="summary-label">Enfermedad</span>
-            <div class="summary-count">
-              <span class="count-fraction">{{ attendanceStats.enfermedad }} de {{ totalAttendances }}</span>
-              <span class="count-percentage">({{ getPercentage(attendanceStats.enfermedad) }}%)</span>
-            </div>
-          </div>
-          <div class="summary-item">
-            <span class="summary-icon">❌</span>
-            <span class="summary-label">Falta</span>
-            <div class="summary-count">
-              <span class="count-fraction">{{ attendanceStats.falta }} de {{ totalAttendances }}</span>
-              <span class="count-percentage">({{ getPercentage(attendanceStats.falta) }}%)</span>
-            </div>
-          </div>
+          <p class="indicator-label">Participaciones</p>
         </div>
-      </div>
-    </div>
 
-    <div class="misa-chart" (click)="goToTracking()">
-      <h3>Misa Dominical</h3>
-      <div class="misa-donut">
-        <svg width="200" height="200" viewBox="0 0 200 200">
-          <circle 
-            cx="100" 
-            cy="100" 
-            r="80" 
-            fill="none" 
-            stroke="#ffd700" 
-            stroke-width="20">
-          </circle>
-        </svg>
-        <div class="chart-center">
-          <span class="percentage">{{ misaStats.percentage }}%</span>
-          <span class="label">Asistencia</span>
+        <!-- Asistencia a Ensayos -->
+        <div class="indicator-card" (click)="goToTracking()">
+          <div class="indicator-header">
+            <span class="indicator-icon">🎵</span>
+            <h4>Ensayos</h4>
+          </div>
+          <div class="circular-indicator">
+            <svg width="120" height="120" viewBox="0 0 120 120">
+              <circle 
+                cx="60" 
+                cy="60" 
+                r="50" 
+                fill="none" 
+                stroke="#e2e8f0" 
+                stroke-width="10">
+              </circle>
+              <circle 
+                cx="60" 
+                cy="60" 
+                r="50" 
+                fill="none" 
+                stroke="#4299e1" 
+                stroke-width="10"
+                [attr.stroke-dasharray]="314.16"
+                [attr.stroke-dashoffset]="314.16 - (rehearsalAttendanceStats.percentage * 314.16) / 100"
+                transform="rotate(-90 60 60)">
+              </circle>
+            </svg>
+            <div class="indicator-center">
+              <span class="percentage">{{ rehearsalAttendanceStats.percentage }}%</span>
+            </div>
+          </div>
+          <div class="indicator-stats">
+            <span class="attended">{{ rehearsalAttendanceStats.attended }}</span>
+            <span class="separator">/</span>
+            <span class="total">{{ rehearsalAttendanceStats.total }}</span>
+          </div>
+          <p class="indicator-label">Asistencias</p>
         </div>
-      </div>
-      <div class="misa-stats">
-        <div class="misa-stat">
-          <span class="stat-number">{{ misaStats.asistidas }}</span>
-          <span class="stat-label">Asistidas</span>
+
+        <!-- Asistencia a Misa -->
+        <div class="indicator-card" (click)="goToTracking()">
+          <div class="indicator-header">
+            <span class="indicator-icon">⛪</span>
+            <h4>Misa Dominical</h4>
+          </div>
+          <div class="circular-indicator">
+            <svg width="120" height="120" viewBox="0 0 120 120">
+              <circle 
+                cx="60" 
+                cy="60" 
+                r="50" 
+                fill="none" 
+                stroke="#e2e8f0" 
+                stroke-width="10">
+              </circle>
+              <circle 
+                cx="60" 
+                cy="60" 
+                r="50" 
+                fill="none" 
+                stroke="#ffd700" 
+                stroke-width="10"
+                [attr.stroke-dasharray]="314.16"
+                [attr.stroke-dashoffset]="314.16 - (massAttendanceStats.percentage * 314.16) / 100"
+                transform="rotate(-90 60 60)">
+              </circle>
+            </svg>
+            <div class="indicator-center">
+              <span class="percentage">{{ massAttendanceStats.percentage }}%</span>
+            </div>
+          </div>
+          <div class="indicator-stats">
+            <span class="attended">{{ massAttendanceStats.attended }}</span>
+            <span class="separator">/</span>
+            <span class="total">{{ massAttendanceStats.total }}</span>
+          </div>
+          <p class="indicator-label">Asistencias</p>
         </div>
-        <div class="misa-stat">
-          <span class="stat-number">{{ misaStats.faltas }}</span>
-          <span class="stat-label">Faltas</span>
-        </div>
-        <div class="misa-stat">
-          <span class="stat-number">{{ misaStats.total }}</span>
-          <span class="stat-label">Total</span>
-        </div>
+        
       </div>
     </div>
 

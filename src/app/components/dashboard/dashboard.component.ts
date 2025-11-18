@@ -29,6 +29,7 @@ export class DashboardComponent implements OnInit {
   showTransportModal = false;
   selectedTransportConfig: any = null;
   showMovementsModal = false;
+  showRankingModal = false;
   cardMovements: any[] = [];
   filteredMovements: any[] = [];
   movementFilter: string = 'all';
@@ -76,6 +77,9 @@ export class DashboardComponent implements OnInit {
     attended: 0,
     total: 0
   };
+
+  // Lista de todos los integrantes con sus estadísticas
+  membersAttendanceList: any[] = [];
 
   getPercentage(count: number): number {
     return this.totalAttendances > 0 ? Math.round((count / this.totalAttendances) * 100) : 0;
@@ -154,6 +158,7 @@ export class DashboardComponent implements OnInit {
         this.loadMyPartialPayments();
         this.loadPendingDocuments();
         this.loadInsumosData();
+        this.loadAllMembersAttendance();
       } else {
         this.router.navigate(['/']);
       }
@@ -811,4 +816,77 @@ export class DashboardComponent implements OnInit {
     this.router.navigate(['/supply-request']);
   }
 
+  loadAllMembersAttendance() {
+    // Cargar usuarios y asistencias para calcular estadísticas de todos
+    Promise.all([
+      this.firestore.collection('users').get().toPromise(),
+      this.firestore.collection('attendance').get().toPromise()
+    ]).then(([usersSnapshot, attendanceSnapshot]) => {
+      const users = usersSnapshot?.docs.map(doc => ({ 
+        uid: doc.id, 
+        ...(doc.data() as any) 
+      })) || [];
+      const attendances = attendanceSnapshot?.docs.map(doc => doc.data()) || [];
+      
+      const memberStats = users.map(user => {
+        let eventTotal = 0, eventAttended = 0;
+        let rehearsalTotal = 0, rehearsalAttended = 0;
+        let massTotal = 0, massAttended = 0;
+        
+        attendances.forEach((attendance: any) => {
+          const userRecord = attendance.records?.find((record: any) => record.userId === user.uid);
+          if (userRecord) {
+            const wasPresent = ['presente', 'escuela', 'enfermedad'].includes(userRecord.status);
+            
+            switch (attendance.type) {
+              case 'evento':
+                eventTotal++;
+                if (wasPresent) eventAttended++;
+                break;
+              case 'ensayo':
+                rehearsalTotal++;
+                if (wasPresent) rehearsalAttended++;
+                break;
+              case 'misa dominical':
+                massTotal++;
+                if (wasPresent) massAttended++;
+                break;
+            }
+          }
+        });
+        
+        const totalActivities = eventTotal + rehearsalTotal + massTotal;
+        const totalAttended = eventAttended + rehearsalAttended + massAttended;
+        
+        return {
+          uid: user.uid,
+          name: user.name || 'Usuario sin nombre',
+          eventPercentage: eventTotal > 0 ? Math.round((eventAttended / eventTotal) * 100) : 0,
+          rehearsalPercentage: rehearsalTotal > 0 ? Math.round((rehearsalAttended / rehearsalTotal) * 100) : 0,
+          massPercentage: massTotal > 0 ? Math.round((massAttended / massTotal) * 100) : 0,
+          totalPercentage: totalActivities > 0 ? Math.round((totalAttended / totalActivities) * 100) : 0,
+          eventStats: { attended: eventAttended, total: eventTotal },
+          rehearsalStats: { attended: rehearsalAttended, total: rehearsalTotal },
+          massStats: { attended: massAttended, total: massTotal },
+          totalStats: { attended: totalAttended, total: totalActivities }
+        };
+      });
+      
+      // Ordenar de mayor a menor porcentaje total
+      this.membersAttendanceList = memberStats
+        .filter(member => member.totalStats.total > 0) // Solo mostrar usuarios con actividades
+        .sort((a, b) => b.totalPercentage - a.totalPercentage);
+    }).catch(error => {
+      console.error('Error loading members attendance:', error);
+    });
+  }
+
+  // Métodos para el modal de ranking
+  openRankingModal() {
+    this.showRankingModal = true;
+  }
+
+  closeRankingModal() {
+    this.showRankingModal = false;
+  }
 }

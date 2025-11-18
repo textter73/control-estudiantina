@@ -491,6 +491,20 @@
       </div>
     </div>
 
+    <!-- Botón para ver Ranking de Asistencia -->
+    <div class="ranking-button-section" *ngIf="membersAttendanceList.length > 0">
+      <button class="ranking-btn" (click)="openRankingModal()">
+        <div class="ranking-btn-content">
+          <span class="ranking-btn-icon">🏆</span>
+          <div class="ranking-btn-text">
+            <h4>Ranking de Asistencia</h4>
+            <p>Ver posiciones de todos los integrantes</p>
+          </div>
+          <span class="ranking-btn-count">{{ membersAttendanceList.length }} integrantes</span>
+        </div>
+      </button>
+    </div>
+
     <!-- Indicador de Insumos -->
     <div class="inventory-summary">
       <div class="summary-card">
@@ -673,6 +687,142 @@
       
       <div class="modal-footer">
         <button class="close-btn-footer" (click)="closeMovementsModal()">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Ranking de Asistencia -->
+  <div class="ranking-modal" *ngIf="showRankingModal" (click)="closeRankingModal()">
+    <div class="modal-content ranking-modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>🏆 Ranking de Asistencia</h3>
+        <p class="modal-subtitle">Integrantes ordenados por asistencia total</p>
+        <button class="close-btn" (click)="closeRankingModal()">✕</button>
+      </div>
+      
+      <div class="modal-body ranking-modal-body">
+        <div class="members-list">
+          <div *ngFor="let member of membersAttendanceList; let i = index" class="member-row">
+            <div class="member-rank">
+              <span class="rank-number">{{ i + 1 }}</span>
+              <span class="rank-medal" *ngIf="i < 3">
+                {{ i === 0 ? '🥇' : i === 1 ? '🥈' : '🥉' }}
+              </span>
+            </div>
+            
+            <div class="member-info">
+              <h4 class="member-name">{{ member.name }}</h4>
+              <div class="member-stats">
+                <span class="total-activities">{{ member.totalStats.attended }}/{{ member.totalStats.total }} actividades</span>
+              </div>
+            </div>
+            
+            <div class="member-indicators">
+              <!-- Ensayos -->
+              <div class="mini-indicator rehearsal">
+                <svg width="40" height="40" viewBox="0 0 40 40">
+                  <circle cx="20" cy="20" r="16" fill="none" stroke="#e2e8f0" stroke-width="3"></circle>
+                  <circle 
+                    cx="20" cy="20" r="16" 
+                    fill="none" 
+                    stroke="#4299e1" 
+                    stroke-width="3"
+                    [attr.stroke-dasharray]="100.53"
+                    [attr.stroke-dashoffset]="100.53 - (member.rehearsalPercentage * 100.53) / 100"
+                    transform="rotate(-90 20 20)"
+                    stroke-linecap="round">
+                  </circle>
+                </svg>
+                <div class="mini-center">
+                  <span class="mini-percentage">{{ member.rehearsalPercentage }}%</span>
+                </div>
+                <div class="mini-label">
+                  <span class="mini-text">Ensayos</span>
+                </div>
+              </div>
+              
+              <!-- Eventos -->
+              <div class="mini-indicator event">
+                <svg width="40" height="40" viewBox="0 0 40 40">
+                  <circle cx="20" cy="20" r="16" fill="none" stroke="#e2e8f0" stroke-width="3"></circle>
+                  <circle 
+                    cx="20" cy="20" r="16" 
+                    fill="none" 
+                    stroke="#f56565" 
+                    stroke-width="3"
+                    [attr.stroke-dasharray]="100.53"
+                    [attr.stroke-dashoffset]="100.53 - (member.eventPercentage * 100.53) / 100"
+                    transform="rotate(-90 20 20)"
+                    stroke-linecap="round">
+                  </circle>
+                </svg>
+                <div class="mini-center">
+                  <span class="mini-percentage">{{ member.eventPercentage }}%</span>
+                </div>
+                <div class="mini-label">
+                  <span class="mini-text">Eventos</span>
+                </div>
+              </div>
+              
+              <!-- Misas -->
+              <div class="mini-indicator mass">
+                <svg width="40" height="40" viewBox="0 0 40 40">
+                  <circle cx="20" cy="20" r="16" fill="none" stroke="#e2e8f0" stroke-width="3"></circle>
+                  <circle 
+                    cx="20" cy="20" r="16" 
+                    fill="none" 
+                    stroke="#ffd700" 
+                    stroke-width="3"
+                    [attr.stroke-dasharray]="100.53"
+                    [attr.stroke-dashoffset]="100.53 - (member.massPercentage * 100.53) / 100"
+                    transform="rotate(-90 20 20)"
+                    stroke-linecap="round">
+                  </circle>
+                </svg>
+                <div class="mini-center">
+                  <span class="mini-percentage">{{ member.massPercentage }}%</span>
+                </div>
+                <div class="mini-label">
+                  <span class="mini-text">Misas</span>
+                </div>
+              </div>
+              
+              <!-- Total -->
+              <div class="mini-indicator total">
+                <svg width="45" height="45" viewBox="0 0 45 45">
+                  <defs>
+                    <linearGradient [attr.id]="'memberGradient' + i" x1="0%" y1="0%" x2="100%" y2="0%">
+                      <stop offset="0%" style="stop-color:#189d98;stop-opacity:1" />
+                      <stop offset="50%" style="stop-color:#4299e1;stop-opacity:1" />
+                      <stop offset="100%" style="stop-color:#f56565;stop-opacity:1" />
+                    </linearGradient>
+                  </defs>
+                  <circle cx="22.5" cy="22.5" r="18" fill="none" stroke="#e2e8f0" stroke-width="4"></circle>
+                  <circle 
+                    cx="22.5" cy="22.5" r="18" 
+                    fill="none" 
+                    [attr.stroke]="'url(#memberGradient' + i + ')'" 
+                    stroke-width="4"
+                    [attr.stroke-dasharray]="113.1"
+                    [attr.stroke-dashoffset]="113.1 - (member.totalPercentage * 113.1) / 100"
+                    transform="rotate(-90 22.5 22.5)"
+                    stroke-linecap="round">
+                  </circle>
+                </svg>
+                <div class="mini-center total-center">
+                  <span class="mini-percentage total-percentage">{{ member.totalPercentage }}%</span>
+                </div>
+                <div class="mini-label">
+                  <span class="mini-text">Total</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="modal-footer">
+        <button class="close-btn-footer" (click)="closeRankingModal()">Cerrar</button>
       </div>
     </div>
   </div>

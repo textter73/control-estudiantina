@@ -30,9 +30,35 @@ export class DashboardComponent implements OnInit {
   selectedTransportConfig: any = null;
   showMovementsModal = false;
   showRankingModal = false;
+  showProfileModal = false;
   cardMovements: any[] = [];
   filteredMovements: any[] = [];
   movementFilter: string = 'all';
+  
+  // Variables para editar perfil
+  profileForm = {
+    name: '',
+    nickname: '',
+    profileImage: '',
+    birthDay: '',
+    birthMonth: ''
+  };
+  
+  months = [
+    { value: '01', name: 'Enero' },
+    { value: '02', name: 'Febrero' },
+    { value: '03', name: 'Marzo' },
+    { value: '04', name: 'Abril' },
+    { value: '05', name: 'Mayo' },
+    { value: '06', name: 'Junio' },
+    { value: '07', name: 'Julio' },
+    { value: '08', name: 'Agosto' },
+    { value: '09', name: 'Septiembre' },
+    { value: '10', name: 'Octubre' },
+    { value: '11', name: 'Noviembre' },
+    { value: '12', name: 'Diciembre' }
+  ];
+  
   users: any[] = [];
   usersMap: { [key: string]: string } = {};
   
@@ -897,5 +923,142 @@ export class DashboardComponent implements OnInit {
 
   closeRankingModal() {
     this.showRankingModal = false;
+  }
+
+  // Métodos para el modal de perfil
+  openProfileModal() {
+    // Llenar el formulario con los datos actuales
+    this.profileForm = {
+      name: this.userProfile?.name || this.user?.email || '',
+      nickname: this.userProfile?.nickname || '',
+      profileImage: this.userProfile?.profileImage || '',
+      birthDay: this.userProfile?.birthDay || '',
+      birthMonth: this.userProfile?.birthMonth || ''
+    };
+    this.showProfileModal = true;
+  }
+
+  closeProfileModal() {
+    this.showProfileModal = false;
+  }
+
+  async saveProfile() {
+    if (!this.user) return;
+
+    // Validación básica
+    if (!this.profileForm.name.trim()) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'El nombre es obligatorio'
+      });
+      return;
+    }
+
+    if (this.profileForm.birthDay && (!this.profileForm.birthMonth || this.profileForm.birthMonth === '')) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Si especificas el día, también debes seleccionar el mes'
+      });
+      return;
+    }
+
+    try {
+      // Preparar los datos a guardar
+      const updateData: any = {
+        name: this.profileForm.name.trim(),
+        nickname: this.profileForm.nickname.trim(),
+        birthDay: this.profileForm.birthDay,
+        birthMonth: this.profileForm.birthMonth,
+        updatedAt: new Date()
+      };
+
+      // Solo incluir la imagen si existe (ya está en base64)
+      if (this.profileForm.profileImage && this.profileForm.profileImage.trim()) {
+        updateData.profileImage = this.profileForm.profileImage.trim();
+        console.log('Guardando imagen en base64:', this.profileForm.profileImage.substring(0, 50) + '...');
+      }
+
+      // Actualizar el documento del usuario en Firestore
+      await this.firestore.collection('users').doc(this.user.uid).update(updateData);
+
+      // Actualizar el perfil local
+      this.userProfile = {
+        ...this.userProfile,
+        ...updateData
+      };
+
+      Swal.fire({
+        icon: 'success',
+        title: 'Perfil actualizado',
+        text: 'Tu información ha sido guardada correctamente',
+        timer: 2000,
+        showConfirmButton: false
+      });
+
+      this.closeProfileModal();
+    } catch (error) {
+      console.error('Error al guardar perfil:', error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'No se pudo guardar la información'
+      });
+    }
+  }
+
+  onFileSelected(event: any) {
+    const file = event.target.files[0];
+    if (file) {
+      // Validar tipo de archivo
+      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+      if (!allowedTypes.includes(file.type)) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Tipo de archivo no válido',
+          text: 'Solo se permiten imágenes (JPG, PNG, GIF, WebP)'
+        });
+        return;
+      }
+
+      // Validar tamaño (máximo 5MB)
+      const maxSize = 5 * 1024 * 1024; // 5MB en bytes
+      if (file.size > maxSize) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Archivo muy grande',
+          text: 'La imagen no debe superar los 5MB'
+        });
+        return;
+      }
+
+      // Convertir a base64
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        // El resultado ya es base64 (data:image/jpeg;base64,...)
+        this.profileForm.profileImage = e.target.result;
+        
+        // Opcional: mostrar confirmación
+        Swal.fire({
+          icon: 'success',
+          title: 'Imagen cargada',
+          text: 'La imagen se ha cargado correctamente',
+          timer: 1500,
+          showConfirmButton: false
+        });
+      };
+      
+      reader.onerror = () => {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'No se pudo cargar la imagen'
+        });
+      };
+      
+      // Leer el archivo como data URL (base64)
+      reader.readAsDataURL(file);
+    }
   }
 }

@@ -6,8 +6,24 @@
         <h4>Estudiantina Tonantzin Guadalupe</h4>
       </div>
       <div class="user-info">
-        <span>Bienvenid@, {{ userProfile?.name || user?.email }}</span>
-        <button class="logout-btn" (click)="logout()">Cerrar Sesión</button>
+        <div class="user-avatar" (click)="openProfileModal()" *ngIf="userProfile?.profileImage">
+          <img [src]="userProfile.profileImage" alt="Mi Foto de Perfil" class="avatar-image">
+        </div>
+        <div class="user-avatar default-avatar" (click)="openProfileModal()" *ngIf="!userProfile?.profileImage">
+          <i class="fas fa-user-circle" style="font-size: 125px; color: rgba(255,255,255,0.8);"></i>
+        </div>
+        <div class="user-text">
+          <span class="user-name">{{ userProfile?.nickname || userProfile?.name || 'Usuario' }}</span>
+          <span class="user-email">{{ user?.email }}</span>
+        </div>
+        <div class="user-buttons">
+          <button class="profile-btn" (click)="openProfileModal()">
+            <i class="fas fa-edit"></i> Mi Perfil
+          </button>
+          <button class="logout-btn" (click)="logout()">
+            <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+          </button>
+        </div>
       </div>
     </div>
   </header>
@@ -823,6 +839,111 @@
       
       <div class="modal-footer">
         <button class="close-btn-footer" (click)="closeRankingModal()">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Editar Perfil -->
+  <div class="profile-modal" *ngIf="showProfileModal" (click)="closeProfileModal()">
+    <div class="modal-content profile-modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>👤 Mi Perfil</h3>
+        <p class="modal-subtitle">Edita tu información personal</p>
+        <button class="close-btn" (click)="closeProfileModal()">✕</button>
+      </div>
+      
+      <div class="modal-body profile-modal-body">
+        <form class="profile-form" (ngSubmit)="saveProfile()">
+          
+          <!-- Imagen de Perfil -->
+          <div class="form-group profile-image-section">
+            <label class="form-label">Foto de Perfil</label>
+            <div class="image-upload-container">
+              <div class="current-image" *ngIf="profileForm.profileImage">
+                <img [src]="profileForm.profileImage" alt="Imagen de perfil" class="profile-image-preview">
+              </div>
+              <div class="no-image" *ngIf="!profileForm.profileImage">
+                <span class="no-image-icon">📷</span>
+                <span class="no-image-text">Sin imagen</span>
+              </div>
+              <input 
+                type="file" 
+                id="profileImage" 
+                accept="image/*" 
+                (change)="onFileSelected($event)"
+                class="file-input">
+              <label for="profileImage" class="file-input-label">
+                {{ profileForm.profileImage ? 'Cambiar Imagen' : 'Subir Imagen' }}
+              </label>
+            </div>
+          </div>
+
+          <!-- Nombre -->
+          <div class="form-group">
+            <label for="name" class="form-label">Nombre Completo *</label>
+            <input 
+              type="text" 
+              id="name" 
+              [(ngModel)]="profileForm.name" 
+              name="name"
+              class="form-input"
+              placeholder="Tu nombre completo"
+              required>
+          </div>
+
+          <!-- Mote/Apodo -->
+          <div class="form-group">
+            <label for="nickname" class="form-label">Mote/Apodo</label>
+            <input 
+              type="text" 
+              id="nickname" 
+              [(ngModel)]="profileForm.nickname" 
+              name="nickname"
+              class="form-input"
+              placeholder="Como te gusta que te digan">
+          </div>
+
+          <!-- Cumpleaños -->
+          <div class="form-group birthday-section">
+            <label class="form-label">Fecha de Cumpleaños</label>
+            <div class="birthday-inputs">
+              <div class="day-input">
+                <label for="birthDay" class="sub-label">Día</label>
+                <select 
+                  id="birthDay" 
+                  [(ngModel)]="profileForm.birthDay" 
+                  name="birthDay"
+                  class="form-select">
+                  <option value="">--</option>
+                  <option *ngFor="let day of [].constructor(31); let i = index" 
+                          [value]="(i + 1).toString().padStart(2, '0')">
+                    {{ i + 1 }}
+                  </option>
+                </select>
+              </div>
+              
+              <div class="month-input">
+                <label for="birthMonth" class="sub-label">Mes</label>
+                <select 
+                  id="birthMonth" 
+                  [(ngModel)]="profileForm.birthMonth" 
+                  name="birthMonth"
+                  class="form-select">
+                  <option value="">Seleccionar mes</option>
+                  <option *ngFor="let month of months" [value]="month.value">
+                    {{ month.name }}
+                  </option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+        </form>
+      </div>
+      
+      <div class="modal-footer">
+        <button type="button" class="cancel-btn" (click)="closeProfileModal()">Cancelar</button>
+        <button type="button" class="save-btn" (click)="saveProfile()">Guardar Cambios</button>
       </div>
     </div>
   </div>

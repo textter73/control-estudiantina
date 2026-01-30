@@ -314,7 +314,7 @@ export class DashboardComponent implements OnInit {
       
       const activeEvents = events
         .filter(event => event.status === 'abierto')
-        .filter(event => new Date(event.date) >= today) // Solo eventos futuros o de hoy
+        // .filter(event => new Date(event.date) >= today) // Solo eventos futuros o de hoy
         .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()); // Más próximo primero
       
       this.activeEvents = activeEvents.map(event => {

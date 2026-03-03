@@ -79,7 +79,12 @@ export class AuthService {
   }
 
   getAllUsers() {
-    return this.firestore.collection('users').valueChanges();
+    return this.firestore.collection('users').valueChanges({ idField: 'uid' });
+  }
+
+  // Obtener solo usuarios activos (no desactivados)
+  getActiveUsers() {
+    return this.firestore.collection('users', ref => ref.where('deleted', '!=', true)).valueChanges({ idField: 'uid' });
   }
 
   // Obtener usuario actual autenticado

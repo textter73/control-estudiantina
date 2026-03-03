@@ -108,7 +108,8 @@ export class PaymentRequestsComponent implements OnInit {
 
   loadAllUsers() {
     this.firestore.collection('users').valueChanges({ idField: 'id' }).subscribe((users: any[]) => {
-      this.allUsers = users; // Incluir todos los usuarios, incluyendo el usuario actual
+      // Filtrar usuarios que no están desactivados
+      this.allUsers = users.filter(user => !user.deleted);
       this.filteredUsers = [...this.allUsers];
     });
   }

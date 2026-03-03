@@ -63,10 +63,11 @@ export class FinancialManagementComponent implements OnInit {
 
   loadUsers() {
     this.firestore.collection('users').valueChanges({ idField: 'id' }).subscribe((users: any[]) => {
-      this.users = users;
+      // Filtrar usuarios que no están desactivados
+      this.users = users.filter(user => !user.deleted);
       // Crear un mapa de ID -> nombre para búsqueda rápida
       this.usersMap = {};
-      users.forEach(user => {
+      this.users.forEach(user => {
         this.usersMap[user.id] = user.name || user.email || 'Usuario desconocido';
       });
     });

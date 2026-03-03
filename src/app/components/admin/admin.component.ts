@@ -157,7 +157,7 @@ export class AdminComponent implements OnInit {
   async reactivateUser(userId: string, userName: string) {
     const result = await Swal.fire({
       title: `¿Reactivar usuario?`,
-      text: `¿Estás seguro de que quieres reactivar a ${userName}?`,
+      text: `¿Estás seguro de que quieres reactivar a ${userName}? Se borrarán todas sus asistencias y empezará desde cero.`,
       icon: 'question',
       showCancelButton: true,
       confirmButtonText: 'Sí, reactivar',
@@ -168,17 +168,40 @@ export class AdminComponent implements OnInit {
     if (result.isConfirmed) {
       try {
         const currentUser = await this.authService.afAuth.currentUser;
+        
+        // Reactivar el usuario
         await this.firestore.collection('users').doc(userId).update({
           deleted: false,
           reactivatedAt: new Date(),
           reactivatedBy: currentUser?.uid || 'admin'
         });
 
+        // Eliminar todas las asistencias del usuario
+        const attendanceSnapshot = await this.firestore.collection('attendance').get().toPromise();
+        const batch = this.firestore.firestore.batch();
+        let attendancesUpdated = 0;
+
+        attendanceSnapshot?.docs.forEach(doc => {
+          const attendanceData = doc.data() as any;
+          if (attendanceData.records && Array.isArray(attendanceData.records)) {
+            const filteredRecords = attendanceData.records.filter((record: any) => record.userId !== userId);
+            
+            // Solo actualizar si se eliminó algún registro
+            if (filteredRecords.length !== attendanceData.records.length) {
+              batch.update(doc.ref, { records: filteredRecords });
+              attendancesUpdated++;
+            }
+          }
+        });
+
+        // Ejecutar el batch para actualizar todas las asistencias
+        await batch.commit();
+
         Swal.fire({
           icon: 'success',
           title: 'Usuario reactivado',
-          text: `${userName} ha sido reactivado en el sistema`,
-          timer: 2000,
+          text: `${userName} ha sido reactivado y se eliminaron ${attendancesUpdated} registros de asistencia`,
+          timer: 3000,
           showConfirmButton: false
         });
       } catch (error) {

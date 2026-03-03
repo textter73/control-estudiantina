@@ -11,6 +11,7 @@ import { AuthGuard } from './guards/auth.guard';
 import { AdminGuard } from './guards/admin.guard';
 import { AttendanceGuard } from './guards/attendance.guard';
 import { EventGuard } from './guards/event.guard';
+import { InventoryGuard } from './guards/inventory.guard';
 import { EventManagementComponent } from './components/event-management/event-management.component';
 import { EventDetailsComponent } from './components/event-details/event-details.component';
 import { TransportManagementComponent } from './components/transport-management/transport-management.component';
@@ -45,7 +46,7 @@ const routes: Routes = [
   { path: 'songbook-list', component: SongbookListComponent, canActivate: [AuthGuard] },
   { path: 'documento-control', component: DocumentoControlComponent, canActivate: [DocumentadorGuard] },
   { path: 'mis-documentos', component: MisDocumentosComponent, canActivate: [AuthGuard] },
-  { path: 'inventory-management', component: InventoryManagementComponent, canActivate: [AdminGuard] },
+  { path: 'inventory-management', component: InventoryManagementComponent, canActivate: [InventoryGuard] },
   { path: 'supply-request', component: SupplyRequestComponent, canActivate: [AuthGuard] },
   { path: 'member-evaluation', component: MemberEvaluationComponent, canActivate: [AdminGuard] },
   { path: '**', redirectTo: '' }

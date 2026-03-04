@@ -51,6 +51,7 @@ export class InventoryManagementComponent implements OnInit {
   
   // Usuario actual
   currentUser: any;
+  userProfile: any = null;
 
   constructor(
     private insumoService: InsumoService,
@@ -59,10 +60,18 @@ export class InventoryManagementComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    this.authService.afAuth.currentUser.then(user => {
-      this.currentUser = user;
+    this.authService.afAuth.authState.subscribe(async (user) => {
+      if (user) {
+        this.currentUser = user;
+        const userDoc = await this.authService.firestore.collection('users').doc(user.uid).get().toPromise();
+        this.userProfile = userDoc?.data();
+      }
     });
     this.loadData();
+  }
+
+  isAdmin(): boolean {
+    return this.userProfile?.profiles?.includes('administrador') || false;
   }
 
   async getUserName(): Promise<string> {
@@ -130,6 +139,22 @@ export class InventoryManagementComponent implements OnInit {
       
       return matchCategoria && matchBusqueda;
     });
+  }
+
+  get insumosAgrupados(): { categoria: string, insumos: Insumo[] }[] {
+    const grupos: { [key: string]: Insumo[] } = {};
+    
+    this.insumosFiltrados.forEach(insumo => {
+      if (!grupos[insumo.categoria]) {
+        grupos[insumo.categoria] = [];
+      }
+      grupos[insumo.categoria].push(insumo);
+    });
+    
+    return Object.keys(grupos).map(categoria => ({
+      categoria,
+      insumos: grupos[categoria]
+    })).sort((a, b) => a.categoria.localeCompare(b.categoria));
   }
 
   openInsumoModal(insumo?: Insumo): void {

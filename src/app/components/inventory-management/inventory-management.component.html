@@ -39,29 +39,35 @@
         <option *ngFor="let categoria of categorias" [value]="categoria">{{categoria}}</option>
       </select>
       
-      <button class="btn-add" (click)="openInsumoModal()">
+      <button *ngIf="isAdmin()" class="btn-add" (click)="openInsumoModal()">
         + Agregar
       </button>
     </div>
 
     <div class="list-container">
-      <div *ngFor="let insumo of insumosFiltrados" class="item-list">
-        <div class="item-content" (click)="openInsumoModal(insumo)">
-          <div class="item-left">
-            <div class="item-icon">📦</div>
-          </div>
-          <div class="item-main">
-            <div class="item-title">{{insumo.nombre}}</div>
-            <div class="item-subtitle">{{insumo.categoria}}</div>
-            <div class="item-info">
-              <span class="stock" [class]="getStockClass(insumo)">Stock: {{insumo.cantidadDisponible}}</span>
-              <span class="price">{{formatCurrency(insumo.costoUnitario)}}</span>
+      <div *ngFor="let grupo of insumosAgrupados" class="category-group">
+        <div class="category-header">
+          <h3 class="category-title">{{grupo.categoria}}</h3>
+          <span class="category-count">{{grupo.insumos.length}}</span>
+        </div>
+        
+        <div *ngFor="let insumo of grupo.insumos" class="item-list">
+          <div class="item-content" [class.clickable]="isAdmin()" (click)="isAdmin() && openInsumoModal(insumo)">
+            <div class="item-left">
+              <div class="item-icon">📦</div>
             </div>
-          </div>
-          <div class="item-actions">
-            <button class="btn-action" (click)="$event.stopPropagation(); openInsumoModal(insumo)" title="Editar">✏️</button>
-            <button class="btn-action" (click)="$event.stopPropagation(); ajustarInventario(insumo)" title="Ajustar">⚖️</button>
-            <button class="btn-action" (click)="$event.stopPropagation(); deleteInsumo(insumo)" title="Eliminar">🗑️</button>
+            <div class="item-main">
+              <div class="item-title">{{insumo.nombre}}</div>
+              <div class="item-info">
+                <span class="stock" [class]="getStockClass(insumo)">Stock: {{insumo.cantidadDisponible}}</span>
+                <span class="price">{{formatCurrency(insumo.costoUnitario)}}</span>
+              </div>
+            </div>
+            <div class="item-actions" *ngIf="isAdmin()">
+              <button class="btn-action" (click)="$event.stopPropagation(); openInsumoModal(insumo)" title="Editar">✏️</button>
+              <button class="btn-action" (click)="$event.stopPropagation(); ajustarInventario(insumo)" title="Ajustar">⚖️</button>
+              <button class="btn-action" (click)="$event.stopPropagation(); deleteInsumo(insumo)" title="Eliminar">🗑️</button>
+            </div>
           </div>
         </div>
       </div>

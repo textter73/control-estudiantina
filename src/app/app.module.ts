@@ -1,7 +1,11 @@
-import { NgModule } from '@angular/core';
+import { NgModule, LOCALE_ID } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { registerLocaleData } from '@angular/common';
+import localeEs from '@angular/common/locales/es';
+
+registerLocaleData(localeEs);
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { LoginComponent } from './components/login/login.component';
@@ -66,7 +70,12 @@ import { UserEvaluationService } from './services/user-evaluation.service';
     AngularFireAuthModule,
     AngularFirestoreModule
   ],
-  providers: [SongbookService, InsumoService, UserEvaluationService],
+  providers: [
+    SongbookService,
+    InsumoService,
+    UserEvaluationService,
+    { provide: LOCALE_ID, useValue: 'es' }
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

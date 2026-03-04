@@ -22,6 +22,8 @@ export enum CategoriaInsumo {
   AFINADORES = 'afinadores',
   CORREAS = 'correas',
   FUNDAS = 'fundas',
+  GUITARRA = 'guitarra',
+  TRICORDIO = 'tricordio',
   ACCESORIOS = 'accesorios',
   MANTENIMIENTO = 'mantenimiento',
   OTROS = 'otros'
@@ -67,5 +69,6 @@ export interface MovimientoInventario {
 export enum TipoMovimiento {
   ENTRADA = 'entrada',
   SALIDA = 'salida',
-  AJUSTE = 'ajuste'
+  AJUSTE = 'ajuste',
+  RECHAZADO = 'rechazado'
 }

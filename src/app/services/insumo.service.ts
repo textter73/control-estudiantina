@@ -179,10 +179,39 @@ export class InsumoService {
   }
 
   async rechazarSolicitud(solicitudId: string, comentarioAdmin?: string): Promise<void> {
-    return this.updateSolicitud(solicitudId, {
-      estado: EstadoSolicitud.RECHAZADA,
-      comentarioAdmin: comentarioAdmin
-    });
+    try {
+      // Obtener la solicitud
+      const solicitudDoc = await this.firestore.doc(`solicitudesInsumo/${solicitudId}`).get().toPromise();
+      if (solicitudDoc && solicitudDoc.exists) {
+        const solicitud = solicitudDoc.data() as SolicitudInsumo;
+        
+        // Actualizar la solicitud
+        await this.updateSolicitud(solicitudId, {
+          estado: EstadoSolicitud.RECHAZADA,
+          comentarioAdmin: comentarioAdmin
+        });
+
+        // Registrar el movimiento de rechazo (sin afectar inventario)
+        const movimiento: MovimientoInventario = {
+          insumoId: solicitud.insumoId,
+          nombreInsumo: solicitud.nombreInsumo,
+          tipo: TipoMovimiento.RECHAZADO,
+          cantidad: solicitud.cantidadSolicitada,
+          cantidadAnterior: 0, // No afecta inventario
+          cantidadNueva: 0, // No afecta inventario
+          motivo: `Solicitud rechazada - ${comentarioAdmin || 'Sin comentario'}`,
+          usuarioId: solicitud.usuarioId,
+          nombreUsuario: solicitud.nombreUsuario,
+          fecha: new Date(),
+          solicitudId: solicitudId
+        };
+
+        await this.registrarMovimiento(movimiento);
+      }
+    } catch (error) {
+      console.error('Error al rechazar solicitud:', error);
+      throw error;
+    }
   }
 
   async entregarSolicitud(solicitudId: string): Promise<void> {

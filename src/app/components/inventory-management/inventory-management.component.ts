@@ -44,7 +44,7 @@ export class InventoryManagementComponent implements OnInit {
   
   // Enums para el template
   categorias = Object.values(CategoriaInsumo);
-  estadosSolicitud = Object.values(EstadoSolicitud);
+  estadosSolicitud = Object.values(EstadoSolicitud).filter(estado => estado !== EstadoSolicitud.RECHAZADA);
   
   // Tab activo
   activeTab: string = 'insumos';
@@ -262,7 +262,8 @@ export class InventoryManagementComponent implements OnInit {
   get solicitudesFiltradas(): SolicitudInsumo[] {
     return this.solicitudes.filter(solicitud => {
       const matchEstado = !this.filtroEstadoSolicitud || solicitud.estado === this.filtroEstadoSolicitud;
-      return matchEstado;
+      const noRechazada = solicitud.estado !== 'rechazada';
+      return matchEstado && noRechazada;
     });
   }
 

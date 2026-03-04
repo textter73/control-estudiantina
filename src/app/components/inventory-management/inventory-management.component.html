@@ -1,108 +1,144 @@
 <div class="inventory-management">
+  <!-- Header -->
   <div class="header">
     <button class="btn-back" (click)="goToDashboard()">
-      ← Dashboard
+      ← Volver
     </button>
-    <h2>Almacén</h2>
+    <div class="header-content">
+      <h2>Gestión de Almacén</h2>
+    </div>
   </div>
 
   <!-- Navegación por tabs -->
-  <div class="tabs">
-    <button [class.active]="activeTab === 'insumos'" (click)="setActiveTab('insumos')">
-      Insumos
-    </button>
-    <button [class.active]="activeTab === 'solicitudes'" (click)="setActiveTab('solicitudes')">
-      Solicitudes
-      <span class="badge" *ngIf="getSolicitudesPendientes() > 0">{{getSolicitudesPendientes()}}</span>
-    </button>
-    <button [class.active]="activeTab === 'movimientos'" (click)="setActiveTab('movimientos')">
-      Movimientos
-    </button>
+  <div class="tabs-container">
+    <div class="tabs">
+      <button class="tab-btn" [class.active]="activeTab === 'insumos'" (click)="setActiveTab('insumos')">
+        <span class="tab-icon">📦</span>
+        <span class="tab-text">Insumos</span>
+      </button>
+      <button class="tab-btn" [class.active]="activeTab === 'solicitudes'" (click)="setActiveTab('solicitudes')">
+        <span class="tab-icon">📋</span>
+        <span class="tab-text">Solicitudes</span>
+        <span class="tab-badge" *ngIf="getSolicitudesPendientes() > 0">{{getSolicitudesPendientes()}}</span>
+      </button>
+      <button class="tab-btn" [class.active]="activeTab === 'movimientos'" (click)="setActiveTab('movimientos')">
+        <span class="tab-icon">📈</span>
+        <span class="tab-text">Movimientos</span>
+      </button>
+    </div>
   </div>
 
   <!-- TAB: INSUMOS -->
   <div *ngIf="activeTab === 'insumos'" class="tab-content">
-    <div class="controls">
+    <div class="toolbar">
       <input type="text" [(ngModel)]="filtroBusqueda" 
-             placeholder="Buscar..." class="search-input">
+             placeholder="🔍 Buscar..." class="search-input">
       
-      <select [(ngModel)]="filtroCategoria" class="category-select">
+      <select [(ngModel)]="filtroCategoria" class="filter-select">
         <option value="">Todas</option>
         <option *ngFor="let categoria of categorias" [value]="categoria">{{categoria}}</option>
       </select>
       
       <button class="btn-add" (click)="openInsumoModal()">
-        Agregar
+        + Agregar
       </button>
     </div>
 
-    <div class="insumos-grid">
-      <div *ngFor="let insumo of insumosFiltrados" class="insumo-card">
-        <div class="insumo-header">
-          <h4>{{insumo.nombre}}</h4>
-          <span class="categoria-badge">{{insumo.categoria}}</span>
+    <div class="list-container">
+      <div *ngFor="let insumo of insumosFiltrados" class="item-list">
+        <div class="item-content" (click)="openInsumoModal(insumo)">
+          <div class="item-left">
+            <div class="item-icon">📦</div>
+          </div>
+          <div class="item-main">
+            <div class="item-title">{{insumo.nombre}}</div>
+            <div class="item-subtitle">{{insumo.categoria}}</div>
+            <div class="item-info">
+              <span class="stock" [class]="getStockClass(insumo)">Stock: {{insumo.cantidadDisponible}}</span>
+              <span class="price">{{formatCurrency(insumo.costoUnitario)}}</span>
+            </div>
+          </div>
+          <div class="item-actions">
+            <button class="btn-action" (click)="$event.stopPropagation(); openInsumoModal(insumo)" title="Editar">✏️</button>
+            <button class="btn-action" (click)="$event.stopPropagation(); ajustarInventario(insumo)" title="Ajustar">⚖️</button>
+            <button class="btn-action" (click)="$event.stopPropagation(); deleteInsumo(insumo)" title="Eliminar">🗑️</button>
+          </div>
         </div>
-        
-        <div class="stock-info">
-          <span [class]="getStockClass(insumo)">Stock: {{insumo.cantidadDisponible}}</span>
-          <span class="precio">{{formatCurrency(insumo.costoUnitario)}}</span>
-        </div>
-        
-        <div class="insumo-actions">
-          <button class="action-btn edit" (click)="openInsumoModal(insumo)" title="Editar">
-            ✏️
-          </button>
-          <button class="action-btn adjust" (click)="ajustarInventario(insumo)" title="Ajustar">
-            ⚖️
-          </button>
-          <button class="action-btn delete" (click)="deleteInsumo(insumo)" title="Eliminar">
-            🗑️
-          </button>
-        </div>
+      </div>
+      
+      <div *ngIf="insumosFiltrados.length === 0" class="empty-state">
+        <div class="empty-icon">📦</div>
+        <h3>No hay insumos</h3>
+        <p>No se encontraron insumos con los filtros aplicados</p>
       </div>
     </div>
   </div>
 
   <!-- TAB: SOLICITUDES -->
   <div *ngIf="activeTab === 'solicitudes'" class="tab-content">
-    <select [(ngModel)]="filtroEstadoSolicitud" class="filter-select">
-      <option value="">Todos</option>
-      <option *ngFor="let estado of estadosSolicitud" [value]="estado">{{estado}}</option>
-    </select>
+    <div class="toolbar">
+      <select [(ngModel)]="filtroEstadoSolicitud" class="filter-select">
+        <option value="">Todos</option>
+        <option *ngFor="let estado of estadosSolicitud" [value]="estado">{{estado | titlecase}}</option>
+      </select>
+    </div>
 
-    <div class="solicitudes-list">
-      <div *ngFor="let solicitud of solicitudesFiltradas" class="solicitud-card" (click)="openSolicitudModal(solicitud)">
-        <div class="solicitud-header">
-          <div class="solicitud-info">
-            <h5>{{solicitud.nombreInsumo}}</h5>
-            <p class="usuario">{{getUserDisplayName(solicitud.nombreUsuario)}}</p>
+    <div class="list-container">
+      <div *ngFor="let solicitud of solicitudesFiltradas" class="item-list" (click)="openSolicitudModal(solicitud)">
+        <div class="item-content">
+          <div class="item-left">
+            <div class="item-icon">📋</div>
           </div>
-          <span [ngClass]="'badge ' + getStatusClass(solicitud.estado)">{{solicitud.estado | titlecase}}</span>
+          <div class="item-main">
+            <div class="item-title">{{solicitud.nombreInsumo}}</div>
+            <div class="item-subtitle">👤 {{getUserDisplayName(solicitud.nombreUsuario)}}</div>
+            <div class="item-info">
+              <span>Cant: {{solicitud.cantidadSolicitada}}</span>
+              <span>{{formatCurrency(solicitud.costoTotal)}}</span>
+              <span class="date">{{toDate(solicitud.fechaSolicitud) | date:'short'}}</span>
+            </div>
+          </div>
+          <div class="item-badge">
+            <span class="badge" [ngClass]="'badge-' + solicitud.estado">{{solicitud.estado}}</span>
+          </div>
         </div>
-        <div class="solicitud-details">
-          <span>Cantidad: x{{solicitud.cantidadSolicitada}}</span>
-          <span>Total: {{formatCurrency(solicitud.costoTotal)}}</span>
-          <span>{{toDate(solicitud.fechaSolicitud) | date:'short'}}</span>
-        </div>
+      </div>
+      
+      <div *ngIf="solicitudesFiltradas.length === 0" class="empty-state">
+        <div class="empty-icon">📋</div>
+        <h3>No hay solicitudes</h3>
+        <p>No se encontraron solicitudes con los filtros aplicados</p>
       </div>
     </div>
   </div>
 
   <!-- TAB: MOVIMIENTOS -->
   <div *ngIf="activeTab === 'movimientos'" class="tab-content">
-    <div class="movimientos-list">
-      <div *ngFor="let movimiento of movimientos" class="movimiento-card">
-        <div class="movimiento-header">
-          <div class="movimiento-info">
-            <h5>{{movimiento.nombreInsumo}}</h5>
-            <p class="usuario">{{getUserDisplayName(movimiento.nombreUsuario)}}</p>
+    <div class="list-container">
+      <div *ngFor="let movimiento of movimientos" class="item-list">
+        <div class="item-content">
+          <div class="item-left">
+            <div class="item-icon">📈</div>
           </div>
-          <span [ngClass]="'badge ' + getMovementTypeClass(movimiento.tipo)">{{movimiento.tipo | titlecase}}</span>
+          <div class="item-main">
+            <div class="item-title">{{movimiento.nombreInsumo}}</div>
+            <div class="item-subtitle">👤 {{getUserDisplayName(movimiento.nombreUsuario)}}</div>
+            <div class="item-info">
+              <span>Cantidad: {{movimiento.cantidad}}</span>
+              <span class="date">{{toDate(movimiento.fecha) | date:'short'}}</span>
+            </div>
+            <div class="item-note" *ngIf="movimiento.motivo">{{movimiento.motivo}}</div>
+          </div>
+          <div class="item-badge">
+            <span class="badge" [ngClass]="'badge-' + movimiento.tipo">{{movimiento.tipo}}</span>
+          </div>
         </div>
-        <div class="movimiento-details">
-          <span>Cantidad: {{movimiento.cantidad}}</span>
-          <span>{{toDate(movimiento.fecha) | date:'short'}}</span>
-        </div>
+      </div>
+      
+      <div *ngIf="movimientos.length === 0" class="empty-state">
+        <div class="empty-icon">📈</div>
+        <h3>No hay movimientos</h3>
+        <p>Aún no se han registrado movimientos de inventario</p>
       </div>
     </div>
   </div>
@@ -236,6 +272,12 @@
         <div *ngIf="selectedSolicitud.estado === 'aprobada'">
           <button type="button" class="btn btn-info" (click)="marcarComoEntregada(selectedSolicitud)">
             📦 Marcar como Entregada
+          </button>
+        </div>
+        
+        <div *ngIf="selectedSolicitud.estado === 'rechazada'">
+          <button type="button" class="btn btn-success" (click)="aprobarSolicitud(selectedSolicitud)">
+            ✓ Reactivar / Aprobar
           </button>
         </div>
       </div>

@@ -202,9 +202,9 @@ export const EVALUATION_CRITERIA: { [key: string]: EvaluationCriteria } = {
     name: 'Ensayos',
     description: 'Asistencia a ensayos',
     levels: [
-      { value: 1, label: '1 - Básico', description: '<50% de asistencia' },
-      { value: 2, label: '2 - Aceptable', description: '50-74% de asistencia' },
-      { value: 3, label: '3 - Bueno', description: '75-99% de asistencia' },
+      { value: 1, label: '1 - Básico', description: '<75% de asistencia' },
+      { value: 2, label: '2 - Aceptable', description: '75-84% de asistencia' },
+      { value: 3, label: '3 - Bueno', description: '85-99% de asistencia' },
       { value: 4, label: '4 - Excelente', description: '100% de asistencia' }
     ]
   },
@@ -212,9 +212,9 @@ export const EVALUATION_CRITERIA: { [key: string]: EvaluationCriteria } = {
     name: 'Eventos',
     description: 'Asistencia a eventos',
     levels: [
-      { value: 1, label: '1 - Básico', description: '<50% de asistencia' },
-      { value: 2, label: '2 - Aceptable', description: '50-74% de asistencia' },
-      { value: 3, label: '3 - Bueno', description: '75-99% de asistencia' },
+      { value: 1, label: '1 - Básico', description: '<75% de asistencia' },
+      { value: 2, label: '2 - Aceptable', description: '75-84% de asistencia' },
+      { value: 3, label: '3 - Bueno', description: '85-99% de asistencia' },
       { value: 4, label: '4 - Excelente', description: '100% de asistencia' }
     ]
   },
@@ -222,9 +222,9 @@ export const EVALUATION_CRITERIA: { [key: string]: EvaluationCriteria } = {
     name: 'Misas',
     description: 'Asistencia a misas',
     levels: [
-      { value: 1, label: '1 - Básico', description: '<50% de asistencia' },
-      { value: 2, label: '2 - Aceptable', description: '50-74% de asistencia' },
-      { value: 3, label: '3 - Bueno', description: '75-99% de asistencia' },
+      { value: 1, label: '1 - Básico', description: '<75% de asistencia' },
+      { value: 2, label: '2 - Aceptable', description: '75-84% de asistencia' },
+      { value: 3, label: '3 - Bueno', description: '85-99% de asistencia' },
       { value: 4, label: '4 - Excelente', description: '100% de asistencia' }
     ]
   }

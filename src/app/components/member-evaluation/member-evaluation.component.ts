@@ -263,20 +263,20 @@ export class MemberEvaluationComponent implements OnInit {
   convertPercentageToLevel(percentage: number): number {
     // Seguir las reglas exactas:
     // 4 puntos = 100%
-    // 3 puntos = 75-99%
-    // 2 puntos = 50-74%
-    // 1 punto = <50%
+    // 3 puntos = 85-99%
+    // 2 puntos = 75-84%
+    // 1 punto = <75%
     
     let nivel: number;
     
     if (percentage >= 100) {
-      nivel = 4;  // 100% o más
-    } else if (percentage >= 75 && percentage < 100) {
-      nivel = 3;  // 75-99%
-    } else if (percentage >= 50 && percentage < 75) {
-      nivel = 2;  // 50-74%
+      nivel = 4;  // 100%
+    } else if (percentage >= 85 && percentage < 100) {
+      nivel = 3;  // 85-99%
+    } else if (percentage >= 75 && percentage < 85) {
+      nivel = 2;  // 75-84%
     } else {
-      nivel = 1;  // <50%
+      nivel = 1;  // <75%
     }
     
     return nivel;
@@ -284,9 +284,9 @@ export class MemberEvaluationComponent implements OnInit {
 
   getAttendanceDescription(percentage: number): string {
     if (percentage >= 100) return '100% de asistencia';
-    if (percentage >= 75 && percentage < 100) return '75-99% de asistencia';
-    if (percentage >= 50 && percentage < 75) return '50-74% de asistencia';
-    return 'Menos del 50% de asistencia';
+    if (percentage >= 85 && percentage < 100) return '85-99% de asistencia';
+    if (percentage >= 75 && percentage < 85) return '75-84% de asistencia';
+    return 'Menos del 75% de asistencia';
   }
 
   resetForm() {

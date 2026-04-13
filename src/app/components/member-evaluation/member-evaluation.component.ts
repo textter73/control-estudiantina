@@ -5,6 +5,8 @@ import { UserEvaluationService } from '../../services/user-evaluation.service';
 import { AuthService } from '../../services/auth.service';
 import { UserEvaluation, EVALUATION_CRITERIA, LEVEL_CONFIGURATIONS } from '../../models/user-evaluation.model';
 import Swal from 'sweetalert2';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 @Component({
   selector: 'app-member-evaluation',
@@ -42,9 +44,9 @@ export class MemberEvaluationComponent implements OnInit {
       versatilidad: 1
     },
     compromiso: {
-      asistenciaEnsayos: 1,
-      participacionEventos: 1,
-      colaboracion: 1
+      ensayos: 1,
+      eventos: 1,
+      misas: 1
     },
     puntuacionTotal: 0,
     nivel: 6,
@@ -56,6 +58,33 @@ export class MemberEvaluationComponent implements OnInit {
   isLoadingUsers = true;
   allEvaluations: UserEvaluation[] = [];
   currentUserName = '';
+  
+  // Sistema de evaluación por lotes
+  batchEvaluations: UserEvaluation[] = [];
+  evaluationPeriod: string = '';
+  showBatchPanel: boolean = true; // Abierto por defecto cuando hay evaluaciones
+
+  // Estadísticas de asistencia del usuario seleccionado
+  userAttendanceStats = {
+    ensayos: { percentage: 0, attended: 0, total: 0, nivel: 1 },
+    eventos: { percentage: 0, attended: 0, total: 0, nivel: 1 },
+    misas: { percentage: 0, attended: 0, total: 0, nivel: 1 }
+  };
+
+  /**
+   * Filtra usuarios que no están en el lote actual
+   */
+  get availableUsers() {
+    const evaluatedUserIds = this.batchEvaluations.map(e => e.userId);
+    return this.users.filter(user => !evaluatedUserIds.includes(user.uid));
+  }
+
+  /**
+   * Devuelve las evaluaciones del lote ordenadas por nivel (ascendente)
+   */
+  get sortedBatchEvaluations() {
+    return [...this.batchEvaluations].sort((a, b) => a.nivel - b.nivel);
+  }
 
   constructor(
     private firestore: AngularFirestore,
@@ -68,6 +97,7 @@ export class MemberEvaluationComponent implements OnInit {
     this.loadCurrentUser();
     this.loadUsers();
     this.loadAllEvaluations();
+    this.loadDraftBatch(); // Cargar borrador guardado si existe
   }
 
   async loadCurrentUser() {
@@ -134,37 +164,129 @@ export class MemberEvaluationComponent implements OnInit {
       this.userProfileLevel = profileLevel;
     });
 
+    // Cargar estadísticas de asistencia
+    this.loadUserAttendance();
+
     // Cargar evaluación existente si la hay
     this.evaluationService.getUserEvaluation(this.selectedUserId).subscribe(evaluation => {
       this.existingEvaluation = evaluation || null;
       
       if (evaluation) {
         // Cargar datos de evaluación existente y asegurar que sean números
-        this.evaluationForm = {
-          ...evaluation,
-          canto: {
-            afinacion: Number(evaluation.canto.afinacion),
-            rangoVocal: Number(evaluation.canto.rangoVocal),
-            controlVocal: Number(evaluation.canto.controlVocal),
-            expresividad: Number(evaluation.canto.expresividad)
-          },
-          instrumento: {
-            tecnica: Number(evaluation.instrumento.tecnica),
-            precision: Number(evaluation.instrumento.precision),
-            creatividad: Number(evaluation.instrumento.creatividad),
-            versatilidad: Number(evaluation.instrumento.versatilidad)
-          },
-          compromiso: {
-            asistenciaEnsayos: Number(evaluation.compromiso.asistenciaEnsayos),
-            participacionEventos: Number(evaluation.compromiso.participacionEventos),
-            colaboracion: Number(evaluation.compromiso.colaboracion)
-          }
+        // NOTA: NO cargamos compromiso porque se calcula automáticamente desde asistencia
+        this.evaluationForm.canto = {
+          afinacion: Number(evaluation.canto.afinacion),
+          rangoVocal: Number(evaluation.canto.rangoVocal),
+          controlVocal: Number(evaluation.canto.controlVocal),
+          expresividad: Number(evaluation.canto.expresividad)
         };
+        this.evaluationForm.instrumento = {
+          tecnica: Number(evaluation.instrumento.tecnica),
+          precision: Number(evaluation.instrumento.precision),
+          creatividad: Number(evaluation.instrumento.creatividad),
+          versatilidad: Number(evaluation.instrumento.versatilidad)
+        };
+        // El compromiso ya fue calculado por loadUserAttendance(), no lo sobrescribimos
       } else {
-        // Resetear formulario para nuevo usuario
-        this.resetForm();
+        // Resetear formulario para nuevo usuario (mantiene compromiso calculado)
+        this.evaluationForm.canto = {
+          afinacion: 1, rangoVocal: 1, controlVocal: 1, expresividad: 1
+        };
+        this.evaluationForm.instrumento = {
+          tecnica: 1, precision: 1, creatividad: 1, versatilidad: 1
+        };
+        // El compromiso ya fue calculado por loadUserAttendance()
       }
     });
+  }
+
+  loadUserAttendance() {
+    if (!this.selectedUserId) return;
+
+    this.firestore.collection('attendance').valueChanges().subscribe((attendances: any[]) => {
+      
+      // Contadores por tipo de actividad
+      let ensayoTotal = 0, ensayoAttended = 0;
+      let eventoTotal = 0, eventoAttended = 0;
+      let misaTotal = 0, misaAttended = 0;
+      let userRecordsFound = 0;
+
+      attendances.forEach(attendance => {
+        const userRecord = attendance.records?.find((record: any) => record.userId === this.selectedUserId);
+        if (userRecord) {
+          userRecordsFound++;
+          
+          // Considerar presente si el estado es 'presente', 'escuela', o 'enfermedad'
+          const wasPresent = ['presente', 'escuela', 'enfermedad'].includes(userRecord.status);
+
+          switch (attendance.type) {
+            case 'ensayo':
+              ensayoTotal++;
+              if (wasPresent) ensayoAttended++;
+              break;
+            case 'evento':
+              eventoTotal++;
+              if (wasPresent) eventoAttended++;
+              break;
+            case 'misa dominical':
+              misaTotal++;
+              if (wasPresent) misaAttended++;
+              break;
+          }
+        }
+      });
+
+      // Calcular porcentajes
+      const ensayoPercentage = ensayoTotal > 0 ? Math.round((ensayoAttended / ensayoTotal) * 100) : 0;
+      const eventoPercentage = eventoTotal > 0 ? Math.round((eventoAttended / eventoTotal) * 100) : 0;
+      const misaPercentage = misaTotal > 0 ? Math.round((misaAttended / misaTotal) * 100) : 0;
+
+      // Convertir porcentajes a nivel (1-4)
+      const ensayoNivel = this.convertPercentageToLevel(ensayoPercentage);
+      const eventoNivel = this.convertPercentageToLevel(eventoPercentage);
+      const misaNivel = this.convertPercentageToLevel(misaPercentage);
+
+      // Guardar estadísticas
+      this.userAttendanceStats = {
+        ensayos: { percentage: ensayoPercentage, attended: ensayoAttended, total: ensayoTotal, nivel: ensayoNivel },
+        eventos: { percentage: eventoPercentage, attended: eventoAttended, total: eventoTotal, nivel: eventoNivel },
+        misas: { percentage: misaPercentage, attended: misaAttended, total: misaTotal, nivel: misaNivel }
+      };
+
+      // Actualizar automáticamente el formulario de evaluación con los valores calculados
+      this.evaluationForm.compromiso.ensayos = ensayoNivel;
+      this.evaluationForm.compromiso.eventos = eventoNivel;
+      this.evaluationForm.compromiso.misas = misaNivel;
+    });
+  }
+
+  convertPercentageToLevel(percentage: number): number {
+    // Seguir las reglas exactas:
+    // 4 puntos = 100%
+    // 3 puntos = 75-99%
+    // 2 puntos = 50-74%
+    // 1 punto = <50%
+    
+    let nivel: number;
+    
+    if (percentage >= 100) {
+      nivel = 4;  // 100% o más
+    } else if (percentage >= 75 && percentage < 100) {
+      nivel = 3;  // 75-99%
+    } else if (percentage >= 50 && percentage < 75) {
+      nivel = 2;  // 50-74%
+    } else {
+      nivel = 1;  // <50%
+    }
+    
+    return nivel;
+  }
+
+  getAttendanceDescription(percentage: number): string {
+    if (percentage >= 100) return '100% de asistencia';
+    if (percentage >= 75 && percentage < 100) return '75-99% de asistencia';
+    if (percentage >= 50 && percentage < 75) return '50-74% de asistencia';
+    return 'Menos del 50% de asistencia';
   }
 
   resetForm() {
@@ -186,9 +308,9 @@ export class MemberEvaluationComponent implements OnInit {
         versatilidad: 1
       },
       compromiso: {
-        asistenciaEnsayos: 1,
-        participacionEventos: 1,
-        colaboracion: 1
+        ensayos: 1,
+        eventos: 1,
+        misas: 1
       },
       puntuacionTotal: 0,
       nivel: 6,
@@ -212,9 +334,9 @@ export class MemberEvaluationComponent implements OnInit {
                             Number(this.evaluationForm.instrumento.creatividad) + 
                             Number(this.evaluationForm.instrumento.versatilidad);
     
-    const compromisoTotal = Number(this.evaluationForm.compromiso.asistenciaEnsayos) + 
-                           Number(this.evaluationForm.compromiso.participacionEventos) + 
-                           Number(this.evaluationForm.compromiso.colaboracion);
+    const compromisoTotal = Number(this.evaluationForm.compromiso.ensayos) + 
+                           Number(this.evaluationForm.compromiso.eventos) + 
+                           Number(this.evaluationForm.compromiso.misas);
     
     const total = cantoTotal + instrumentoTotal + compromisoTotal;
     
@@ -233,6 +355,55 @@ export class MemberEvaluationComponent implements OnInit {
     return { total, nivel, impuesto };
   }
 
+  getCantoTotal(): number {
+    return Number(this.evaluationForm.canto.afinacion || 0) + 
+           Number(this.evaluationForm.canto.rangoVocal || 0) + 
+           Number(this.evaluationForm.canto.controlVocal || 0) + 
+           Number(this.evaluationForm.canto.expresividad || 0);
+  }
+
+  getInstrumentoTotal(): number {
+    return Number(this.evaluationForm.instrumento.tecnica || 0) + 
+           Number(this.evaluationForm.instrumento.precision || 0) + 
+           Number(this.evaluationForm.instrumento.creatividad || 0) + 
+           Number(this.evaluationForm.instrumento.versatilidad || 0);
+  }
+
+  getCompromisoTotal(): number {
+    return Number(this.evaluationForm.compromiso.ensayos || 0) + 
+           Number(this.evaluationForm.compromiso.eventos || 0) + 
+           Number(this.evaluationForm.compromiso.misas || 0);
+  }
+
+  /**
+   * Calcula el total de canto para una evaluación específica
+   */
+  getCantoTotalForEval(evaluation: UserEvaluation): number {
+    return Number(evaluation.canto.afinacion || 0) + 
+           Number(evaluation.canto.rangoVocal || 0) + 
+           Number(evaluation.canto.controlVocal || 0) + 
+           Number(evaluation.canto.expresividad || 0);
+  }
+
+  /**
+   * Calcula el total de instrumento para una evaluación específica
+   */
+  getInstrumentoTotalForEval(evaluation: UserEvaluation): number {
+    return Number(evaluation.instrumento.tecnica || 0) + 
+           Number(evaluation.instrumento.precision || 0) + 
+           Number(evaluation.instrumento.creatividad || 0) + 
+           Number(evaluation.instrumento.versatilidad || 0);
+  }
+
+  /**
+   * Calcula el total de compromiso para una evaluación específica
+   */
+  getCompromisoTotalForEval(evaluation: UserEvaluation): number {
+    return Number(evaluation.compromiso.ensayos || 0) + 
+           Number(evaluation.compromiso.eventos || 0) + 
+           Number(evaluation.compromiso.misas || 0);
+  }
+
   async saveEvaluation() {
     if (!this.selectedUserId || !this.selectedUser) {
       Swal.fire({
@@ -243,47 +414,154 @@ export class MemberEvaluationComponent implements OnInit {
       return;
     }
 
+    if (!this.evaluationPeriod.trim()) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Período Requerido',
+        text: 'Por favor ingresa el período de evaluación (ej: Marzo - Abril 2026)'
+      });
+      return;
+    }
+
+    // Verificar si el usuario ya fue evaluado en este lote
+    const existsInBatch = this.batchEvaluations.find(e => e.userId === this.selectedUserId);
+    if (existsInBatch) {
+      const result = await Swal.fire({
+        icon: 'question',
+        title: 'Usuario ya evaluado',
+        text: `${this.selectedUser.name} ya tiene una evaluación en este lote. ¿Deseas reemplazarla?`,
+        showCancelButton: true,
+        confirmButtonText: 'Sí, reemplazar',
+        cancelButtonText: 'Cancelar'
+      });
+
+      if (!result.isConfirmed) return;
+
+      // Eliminar evaluación anterior del lote
+      this.batchEvaluations = this.batchEvaluations.filter(e => e.userId !== this.selectedUserId);
+    }
+
+    // Crear evaluación con período
+    const evaluation: UserEvaluation = {
+      ...this.evaluationForm,
+      userId: this.selectedUserId,
+      userName: this.selectedUser.name,
+      evaluatedBy: this.currentUserName,
+      evaluationPeriod: this.evaluationPeriod.trim(),
+      evaluatedAt: null // Se establecerá al guardar
+    };
+
+    // Calcular nivel
+    const preview = this.calculatePreviewScore();
+    evaluation.puntuacionTotal = preview.total;
+    evaluation.nivel = preview.nivel;
+    evaluation.impuestoPorcentaje = preview.impuesto;
+
+    // Agregar al lote
+    this.batchEvaluations.push(evaluation);
+
+    // Abrir el panel del lote automáticamente
+    this.showBatchPanel = true;
+
+    // Auto-guardar borrador
+    this.autoSaveDraft();
+
+    Swal.fire({
+      icon: 'success',
+      title: '¡Agregado al lote!',
+      html: `
+        <div style="text-align: center;">
+          <p><strong>${this.selectedUser.name}</strong> agregado al lote de evaluación</p>
+          <p class="text-muted">Período: ${this.evaluationPeriod}</p>
+          <br>
+          <div style="background: #d4edda; padding: 10px; border-radius: 5px; margin: 10px 0;">
+            <strong>📦 ${this.batchEvaluations.length} evaluación(es) en el lote</strong>
+          </div>
+        </div>
+      `,
+      timer: 2000,
+      showConfirmButton: false
+    });
+
+    // Resetear selección para siguiente evaluación
+    this.selectedUserId = '';
+    this.selectedUser = null;
+    this.resetForm();
+  }
+
+  async saveBatch() {
+    if (this.batchEvaluations.length === 0) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Lote vacío',
+        text: 'No hay evaluaciones para guardar'
+      });
+      return;
+    }
+
+    const result = await Swal.fire({
+      icon: 'question',
+      title: 'Confirmar Guardado',
+      html: `
+        <div style="text-align: left; padding: 10px;">
+          <p><strong>¿Guardar ${this.batchEvaluations.length} evaluación(es)?</strong></p>
+          <p>Período: <strong>${this.evaluationPeriod}</strong></p>
+          <br>
+          <div style="max-height: 200px; overflow-y: auto; background: #f8f9fa; padding: 10px; border-radius: 5px;">
+            ${this.batchEvaluations.map(e => `
+              <div style="padding: 5px; border-bottom: 1px solid #dee2e6;">
+                ✓ ${e.userName} - Nivel ${e.nivel} (${e.puntuacionTotal} pts)
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `,
+      showCancelButton: true,
+      confirmButtonText: 'Sí, guardar todo',
+      cancelButtonText: 'Cancelar',
+      confirmButtonColor: '#189d98'
+    });
+
+    if (!result.isConfirmed) return;
+
     this.isLoading = true;
 
     try {
-      // Establecer datos básicos
-      this.evaluationForm.userId = this.selectedUserId;
-      this.evaluationForm.userName = this.selectedUser.name;
-      this.evaluationForm.evaluatedBy = this.currentUserName; // Usar el nombre del usuario actual
-
-      // Guardar evaluación (SIN actualizar perfil)
-      await this.evaluationService.saveEvaluation(this.evaluationForm);
-
-      // Recargar nivel del perfil después de guardar
-      this.evaluationService.getUserLevelFromProfile(this.selectedUserId).subscribe(profileLevel => {
-        this.userProfileLevel = profileLevel;
-      });
+      // Guardar todas las evaluaciones
+      for (const evaluation of this.batchEvaluations) {
+        await this.evaluationService.saveEvaluation(evaluation);
+      }
 
       Swal.fire({
         icon: 'success',
-        title: '¡Evaluación guardada!',
+        title: '¡Lote guardado exitosamente!',
         html: `
           <div style="text-align: center;">
-            <p><strong>${this.selectedUser.name}</strong> ha sido evaluado por <strong>${this.currentUserName}</strong></p>
-            <br>
-            <div style="background: #f0f9ff; padding: 10px; border-radius: 5px; margin: 10px 0;">
-              <strong>📋 Evaluación guardada exitosamente</strong>
-            </div>
+            <p><strong>${this.batchEvaluations.length} evaluación(es)</strong> guardadas correctamente</p>
+            <p>Período: <strong>${this.evaluationPeriod}</strong></p>
           </div>
         `,
         timer: 3000,
         showConfirmButton: false
       });
 
+      // Limpiar lote
+      this.batchEvaluations = [];
+      this.evaluationPeriod = '';
+      this.showBatchPanel = false;
+
+      // Limpiar borrador guardado
+      this.clearDraftBatch();
+
       // Recargar evaluaciones
       this.loadAllEvaluations();
-      
+
     } catch (error) {
-      console.error('Error al guardar evaluación:', error);
+      console.error('Error al guardar lote:', error);
       Swal.fire({
         icon: 'error',
         title: 'Error',
-        text: 'No se pudo guardar la evaluación'
+        text: 'No se pudo guardar el lote de evaluaciones'
       });
     }
 
@@ -396,9 +674,426 @@ export class MemberEvaluationComponent implements OnInit {
     this.evaluationForm.instrumento.versatilidad = Number(this.evaluationForm.instrumento.versatilidad);
     
     // Compromiso
-    this.evaluationForm.compromiso.asistenciaEnsayos = Number(this.evaluationForm.compromiso.asistenciaEnsayos);
-    this.evaluationForm.compromiso.participacionEventos = Number(this.evaluationForm.compromiso.participacionEventos);
-    this.evaluationForm.compromiso.colaboracion = Number(this.evaluationForm.compromiso.colaboracion);
+    this.evaluationForm.compromiso.ensayos = Number(this.evaluationForm.compromiso.ensayos);
+    this.evaluationForm.compromiso.eventos = Number(this.evaluationForm.compromiso.eventos);
+    this.evaluationForm.compromiso.misas = Number(this.evaluationForm.compromiso.misas);
+  }
+
+  // Métodos para manejo de lotes
+  removeFromBatch(userId: string) {
+    const evaluation = this.batchEvaluations.find(e => e.userId === userId);
+    if (!evaluation) return;
+
+    Swal.fire({
+      title: '¿Eliminar del lote?',
+      text: `Se eliminará la evaluación de ${evaluation.userName}`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.batchEvaluations = this.batchEvaluations.filter(e => e.userId !== userId);
+        
+        // Auto-guardar o limpiar si está vacío
+        if (this.batchEvaluations.length > 0) {
+          this.autoSaveDraft();
+        } else {
+          this.clearDraftBatch();
+        }
+        
+        Swal.fire({
+          icon: 'success',
+          title: 'Eliminado',
+          text: 'Evaluación eliminada del lote',
+          timer: 1500,
+          showConfirmButton: false
+        });
+      }
+    });
+  }
+
+  editBatchEvaluation(userId: string) {
+    const evaluation = this.batchEvaluations.find(e => e.userId === userId);
+    if (!evaluation) return;
+
+    // Remover del lote
+    this.batchEvaluations = this.batchEvaluations.filter(e => e.userId !== userId);
+
+    // Auto-guardar cambios
+    if (this.batchEvaluations.length > 0) {
+      this.autoSaveDraft();
+    } else {
+      this.clearDraftBatch();
+    }
+
+    // Cargar en el formulario
+    this.selectedUserId = userId;
+    this.selectedUser = this.users.find(u => u.uid === userId);
+    this.evaluationForm = {
+      ...evaluation,
+      canto: {
+        afinacion: Number(evaluation.canto.afinacion),
+        rangoVocal: Number(evaluation.canto.rangoVocal),
+        controlVocal: Number(evaluation.canto.controlVocal),
+        expresividad: Number(evaluation.canto.expresividad)
+      },
+      instrumento: {
+        tecnica: Number(evaluation.instrumento.tecnica),
+        precision: Number(evaluation.instrumento.precision),
+        creatividad: Number(evaluation.instrumento.creatividad),
+        versatilidad: Number(evaluation.instrumento.versatilidad)
+      },
+      compromiso: {
+        ensayos: Number(evaluation.compromiso.ensayos),
+        eventos: Number(evaluation.compromiso.eventos),
+        misas: Number(evaluation.compromiso.misas)
+      }
+    };
+
+    // Scroll hacia arriba
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    Swal.fire({
+      icon: 'info',
+      title: 'Editando evaluación',
+      text: `Modifica la evaluación de ${evaluation.userName} y vuelve a agregarla`,
+      timer: 2000,
+      showConfirmButton: false
+    });
+  }
+
+  cancelBatch() {
+    if (this.batchEvaluations.length === 0) {
+      this.showBatchPanel = false;
+      return;
+    }
+
+    Swal.fire({
+      title: '¿Cancelar lote completo?',
+      text: `Se perderán ${this.batchEvaluations.length} evaluación(es) sin guardar`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, cancelar',
+      cancelButtonText: 'No',
+      confirmButtonColor: '#d33'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.batchEvaluations = [];
+        this.evaluationPeriod = '';
+        this.showBatchPanel = false;
+        
+        // Limpiar borrador guardado
+        this.clearDraftBatch();
+        
+        Swal.fire({
+          icon: 'success',
+          title: 'Lote cancelado',
+          timer: 1500,
+          showConfirmButton: false
+        });
+      }
+    });
+  }
+
+  toggleBatchPanel() {
+    this.showBatchPanel = !this.showBatchPanel;
+  }
+
+  // ============= EXPORTAR A PDF =============
+  
+  /**
+   * Genera un PDF con el formato de evaluación
+   */
+  exportToPDF() {
+    if (this.batchEvaluations.length === 0) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Lote vacío',
+        text: 'No hay evaluaciones para exportar'
+      });
+      return;
+    }
+
+    try {
+      const doc = new jsPDF('landscape', 'mm', 'a4');
+      
+      // Título
+      const currentYear = new Date().getFullYear();
+      doc.setFontSize(16);
+      doc.setFont('helvetica', 'bold');
+      doc.text(`EVALUACIÓN ${this.evaluationPeriod || currentYear}`, doc.internal.pageSize.getWidth() / 2, 15, { align: 'center' });
+
+      // Preparar datos para la tabla
+      const sortedEvals = this.sortedBatchEvaluations;
+      
+      const tableData = sortedEvals.map(evaluation => {
+        const instrumento = evaluation.instrumento;
+        const canto = evaluation.canto;
+        const compromiso = evaluation.compromiso;
+        
+        const compromisoTotal = Number(compromiso.ensayos) + Number(compromiso.eventos) + Number(compromiso.misas);
+        const total = this.getCantoTotalForEval(evaluation) + 
+                     this.getInstrumentoTotalForEval(evaluation) + 
+                     compromisoTotal;
+
+        return [
+          evaluation.userName,
+          instrumento.tecnica,
+          instrumento.precision,
+          instrumento.creatividad,
+          instrumento.versatilidad,
+          canto.afinacion,
+          canto.rangoVocal,
+          canto.controlVocal,
+          canto.expresividad,
+          compromisoTotal,
+          total,
+          evaluation.nivel,
+          evaluation.impuestoPorcentaje + '%'
+        ];
+      });
+
+      // Generar tabla
+      autoTable(doc, {
+        startY: 25,
+        head: [[
+          'Nombre',
+          { content: 'HABILIDAD EN EL INSTRUMENTO', colSpan: 4, styles: { halign: 'center', fillColor: [24, 157, 152] } },
+          { content: 'HABILIDADES EN EL CANTO', colSpan: 4, styles: { halign: 'center', fillColor: [24, 157, 152] } },
+          'ASISTENCIA',
+          'TOTAL',
+          'NIVEL',
+          'Impuesto'
+        ], [
+          '',
+          'Técnica',
+          'Precisión',
+          'Creatividad',
+          'Versatilidad',
+          'Afinación',
+          'Rango Vocal',
+          'Control Vocal',
+          'Expresividad',
+          'Puntos',
+          '',
+          '',
+          ''
+        ]],
+        body: tableData,
+        theme: 'grid',
+        headStyles: { 
+          fillColor: [24, 157, 152],
+          textColor: 255,
+          fontStyle: 'bold',
+          halign: 'center',
+          fontSize: 8
+        },
+        styles: {
+          fontSize: 8,
+          cellPadding: 2,
+          halign: 'center',
+          valign: 'middle'
+        },
+        columnStyles: {
+          0: { halign: 'left', cellWidth: 40 }, // Nombre
+          1: { cellWidth: 15 },  // Técnica
+          2: { cellWidth: 15 },  // Precisión
+          3: { cellWidth: 15 },  // Creatividad
+          4: { cellWidth: 17 },  // Versatilidad
+          5: { cellWidth: 15 },  // Afinación
+          6: { cellWidth: 17 },  // Rango Vocal
+          7: { cellWidth: 17 },  // Control Vocal
+          8: { cellWidth: 17 },  // Expresividad
+          9: { cellWidth: 15 },  // ASISTENCIA
+          10: { cellWidth: 15, fontStyle: 'bold' }, // TOTAL
+          11: { cellWidth: 15, fontStyle: 'bold' }, // NIVEL
+          12: { cellWidth: 18 }  // Impuesto
+        },
+        didDrawCell: (data: any) => {
+          // Colorear filas según nivel
+          if (data.section === 'body' && data.column.index === 11) {
+            const nivel = tableData[data.row.index][11];
+            let color;
+            switch(nivel) {
+              case 1: color = [40, 167, 69]; break;   // Verde
+              case 2: color = [32, 201, 151]; break;  // Verde agua
+              case 3: color = [52, 152, 219]; break;  // Azul
+              case 4: color = [155, 89, 182]; break;  // Púrpura
+              case 5: color = [243, 156, 18]; break;  // Naranja
+              case 6: color = [231, 76, 60]; break;   // Rojo
+              default: color = [108, 117, 125];
+            }
+            doc.setFillColor(color[0], color[1], color[2]);
+            doc.rect(data.cell.x, data.cell.y, data.cell.width, data.cell.height, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(8);
+            doc.setFont('helvetica', 'bold');
+            doc.text(nivel.toString(), data.cell.x + data.cell.width / 2, data.cell.y + data.cell.height / 2 + 1, { align: 'center' });
+          }
+        }
+      });
+
+      // Guardar PDF
+      const filename = `Evaluacion_${this.evaluationPeriod || currentYear}_${new Date().getTime()}.pdf`;
+      doc.save(filename);
+
+      Swal.fire({
+        icon: 'success',
+        title: '¡PDF Generado!',
+        text: `Se ha descargado ${filename}`,
+        timer: 2500,
+        showConfirmButton: false
+      });
+
+    } catch (error) {
+      console.error('Error generando PDF:', error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'No se pudo generar el PDF'
+      });
+    }
+  }
+
+  // ============= SISTEMA DE GUARDADO EN BORRADOR =============
+  
+  private readonly DRAFT_STORAGE_KEY = 'evaluation_batch_draft';
+
+  /**
+   * Guarda el lote actual en localStorage como borrador
+   */
+  saveDraftBatch() {
+    if (this.batchEvaluations.length === 0) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Lote vacío',
+        text: 'No hay evaluaciones para guardar como borrador'
+      });
+      return;
+    }
+
+    try {
+      const draft = {
+        evaluations: this.batchEvaluations,
+        period: this.evaluationPeriod,
+        savedAt: new Date().toISOString()
+      };
+
+      localStorage.setItem(this.DRAFT_STORAGE_KEY, JSON.stringify(draft));
+
+      Swal.fire({
+        icon: 'success',
+        title: '💾 Borrador Guardado',
+        html: `
+          <div style="text-align: center;">
+            <p>Se ha guardado el progreso de <strong>${this.batchEvaluations.length} evaluación(es)</strong></p>
+            <p class="text-muted">Puedes cerrar y continuar después</p>
+          </div>
+        `,
+        timer: 2500,
+        showConfirmButton: false
+      });
+    } catch (error) {
+      console.error('Error guardando borrador:', error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'No se pudo guardar el borrador'
+      });
+    }
+  }
+
+  /**
+   * Carga el borrador guardado desde localStorage
+   */
+  loadDraftBatch() {
+    try {
+      const draftJson = localStorage.getItem(this.DRAFT_STORAGE_KEY);
+      if (!draftJson) return;
+
+      const draft = JSON.parse(draftJson);
+      
+      // Verificar que el borrador tenga datos válidos
+      if (draft.evaluations && Array.isArray(draft.evaluations) && draft.evaluations.length > 0) {
+        this.batchEvaluations = draft.evaluations;
+        this.evaluationPeriod = draft.period || '';
+        this.showBatchPanel = true;
+
+        // Mostrar notificación de que se recuperó un borrador
+        const savedDate = new Date(draft.savedAt);
+        const timeAgo = this.getTimeAgo(savedDate);
+
+        Swal.fire({
+          icon: 'info',
+          title: '📋 Borrador Recuperado',
+          html: `
+            <div style="text-align: center;">
+              <p>Se encontró un borrador con <strong>${this.batchEvaluations.length} evaluación(es)</strong></p>
+              <p class="text-muted">Guardado ${timeAgo}</p>
+              <p class="text-muted">Período: <strong>${this.evaluationPeriod}</strong></p>
+            </div>
+          `,
+          showCancelButton: true,
+          confirmButtonText: 'Continuar con borrador',
+          cancelButtonText: 'Descartar borrador',
+          confirmButtonColor: '#189d98'
+        }).then((result) => {
+          if (!result.isConfirmed) {
+            // Usuario decidió descartar el borrador
+            this.clearDraftBatch();
+            this.batchEvaluations = [];
+            this.evaluationPeriod = '';
+            this.showBatchPanel = false;
+          }
+        });
+      }
+    } catch (error) {
+      console.error('Error cargando borrador:', error);
+      // Si hay error, limpiar el localStorage
+      localStorage.removeItem(this.DRAFT_STORAGE_KEY);
+    }
+  }
+
+  /**
+   * Limpia el borrador de localStorage
+   */
+  clearDraftBatch() {
+    localStorage.removeItem(this.DRAFT_STORAGE_KEY);
+  }
+
+  /**
+   * Guarda automáticamente en localStorage cada vez que cambia el lote
+   */
+  private autoSaveDraft() {
+    if (this.batchEvaluations.length > 0) {
+      try {
+        const draft = {
+          evaluations: this.batchEvaluations,
+          period: this.evaluationPeriod,
+          savedAt: new Date().toISOString()
+        };
+        localStorage.setItem(this.DRAFT_STORAGE_KEY, JSON.stringify(draft));
+      } catch (error) {
+        console.error('Error en auto-guardado:', error);
+      }
+    }
+  }
+
+  /**
+   * Calcula tiempo transcurrido desde una fecha
+   */
+  private getTimeAgo(date: Date): string {
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 1) return 'hace unos momentos';
+    if (diffMins < 60) return `hace ${diffMins} minuto${diffMins > 1 ? 's' : ''}`;
+    if (diffHours < 24) return `hace ${diffHours} hora${diffHours > 1 ? 's' : ''}`;
+    return `hace ${diffDays} día${diffDays > 1 ? 's' : ''}`;
   }
 
   // Método para navegar al dashboard

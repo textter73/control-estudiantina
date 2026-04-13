@@ -5,6 +5,7 @@ export interface UserEvaluation {
   userName: string;
   evaluatedBy: string;
   evaluatedAt: any;  // Puede ser Date o Firestore Timestamp
+  evaluationPeriod?: string;  // Período de evaluación (ej: "Marzo - Abril 2026")
   
   // Evaluación de Canto (1-4 puntos cada uno)
   canto: {
@@ -24,9 +25,9 @@ export interface UserEvaluation {
   
   // Evaluación de Compromiso (1-4 puntos cada uno)
   compromiso: {
-    asistenciaEnsayos: number;      // 1=Básico, 2=Aceptable, 3=Bueno, 4=Excelente
-    participacionEventos: number;   // 1=Básico, 2=Aceptable, 3=Bueno, 4=Excelente
-    colaboracion: number;           // 1=Básico, 2=Aceptable, 3=Bueno, 4=Excelente
+    ensayos: number;      // 4=100%, 3=75-99%, 2=50-74%, 1=<50%
+    eventos: number;      // 4=100%, 3=75-99%, 2=50-74%, 1=<50%
+    misas: number;        // 4=100%, 3=75-99%, 2=50-74%, 1=<50%
   };
   
   // Puntuaciones calculadas
@@ -197,34 +198,34 @@ export const EVALUATION_CRITERIA: { [key: string]: EvaluationCriteria } = {
   },
   
   // Compromiso
-  asistenciaEnsayos: {
-    name: 'Asistencia a Ensayos',
-    description: 'Regularidad con la que asiste a los ensayos',
+  ensayos: {
+    name: 'Ensayos',
+    description: 'Asistencia a ensayos',
     levels: [
-      { value: 1, label: 'Básico', description: 'Asiste ocasionalmente, con muchas ausencias' },
-      { value: 2, label: 'Aceptable', description: 'Asiste regularmente, pero con algunas ausencias' },
-      { value: 3, label: 'Bueno', description: 'Asiste a la mayoría de los ensayos, con pocas ausencias' },
-      { value: 4, label: 'Excelente', description: 'Asiste a todos los ensayos sin falta' }
+      { value: 1, label: '1 - Básico', description: '<50% de asistencia' },
+      { value: 2, label: '2 - Aceptable', description: '50-74% de asistencia' },
+      { value: 3, label: '3 - Bueno', description: '75-99% de asistencia' },
+      { value: 4, label: '4 - Excelente', description: '100% de asistencia' }
     ]
   },
-  participacionEventos: {
-    name: 'Participación en Eventos',
-    description: 'Disposición para participar en conciertos y otros eventos',
+  eventos: {
+    name: 'Eventos',
+    description: 'Asistencia a eventos',
     levels: [
-      { value: 1, label: 'Básico', description: 'Participa ocasionalmente' },
-      { value: 2, label: 'Aceptable', description: 'Participa regularmente, pero con algunas excepciones' },
-      { value: 3, label: 'Bueno', description: 'Participa en la mayoría de los eventos' },
-      { value: 4, label: 'Excelente', description: 'Siempre dispuesto a participar en eventos' }
+      { value: 1, label: '1 - Básico', description: '<50% de asistencia' },
+      { value: 2, label: '2 - Aceptable', description: '50-74% de asistencia' },
+      { value: 3, label: '3 - Bueno', description: '75-99% de asistencia' },
+      { value: 4, label: '4 - Excelente', description: '100% de asistencia' }
     ]
   },
-  colaboracion: {
-    name: 'Colaboración',
-    description: 'Disposición para colaborar y trabajar en equipo',
+  misas: {
+    name: 'Misas',
+    description: 'Asistencia a misas',
     levels: [
-      { value: 1, label: 'Básico', description: 'Colaboración limitada' },
-      { value: 2, label: 'Aceptable', description: 'Adecuadamente colaborativo, pero con limitaciones en ciertas situaciones' },
-      { value: 3, label: 'Bueno', description: 'Colaborativo, pero con algunas áreas de mejora' },
-      { value: 4, label: 'Excelente', description: 'Altamente colaborativo, siempre dispuesto a ayudar' }
+      { value: 1, label: '1 - Básico', description: '<50% de asistencia' },
+      { value: 2, label: '2 - Aceptable', description: '50-74% de asistencia' },
+      { value: 3, label: '3 - Bueno', description: '75-99% de asistencia' },
+      { value: 4, label: '4 - Excelente', description: '100% de asistencia' }
     ]
   }
 };

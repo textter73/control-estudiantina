@@ -76,9 +76,9 @@ export class UserEvaluationService {
     const instrumentoTotal = evaluation.instrumento.tecnica + evaluation.instrumento.precision + 
                             evaluation.instrumento.creatividad + evaluation.instrumento.versatilidad;
     
-    const compromisoTotal = evaluation.compromiso.asistenciaEnsayos + 
-                           evaluation.compromiso.participacionEventos + 
-                           evaluation.compromiso.colaboracion;
+    const compromisoTotal = evaluation.compromiso.ensayos + 
+                           evaluation.compromiso.eventos + 
+                           evaluation.compromiso.misas;
     
     const puntuacionTotal = cantoTotal + instrumentoTotal + compromisoTotal;
     

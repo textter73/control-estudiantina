@@ -38,10 +38,16 @@
           (change)="onUserSelected()"
           class="form-select">
           <option value="">-- Selecciona un miembro --</option>
-          <option *ngFor="let user of users" [value]="user.uid">
+          <option *ngFor="let user of availableUsers" [value]="user.uid">
             {{ user.name }} ({{ user.email }})
           </option>
         </select>
+        
+        <!-- Mensaje si no hay usuarios disponibles -->
+        <div *ngIf="!isLoadingUsers && availableUsers.length === 0 && batchEvaluations.length > 0" class="info-message">
+          <i class="fas fa-info-circle"></i>
+          <p>Todos los usuarios disponibles ya están en el lote de evaluación.</p>
+        </div>
         
         <!-- Mensaje si no hay usuarios -->
         <div *ngIf="!isLoadingUsers && users.length === 0" class="no-users-message">
@@ -56,6 +62,35 @@
         <!-- Info de usuarios cargados -->
         <div *ngIf="!isLoadingUsers && users.length > 0" class="users-info">
           <small class="text-muted">{{ users.length }} usuario{{ users.length !== 1 ? 's' : '' }} disponible{{ users.length !== 1 ? 's' : '' }} para evaluación</small>
+        </div>
+      </div>
+    </div>
+
+    <!-- Campo de Período de Evaluación -->
+    <div class="period-section">
+      <div class="form-group">
+        <label for="evaluationPeriod" class="form-label">📅 Período de Evaluación</label>
+        <input 
+          type="text" 
+          id="evaluationPeriod"
+          [(ngModel)]="evaluationPeriod"
+          class="form-input"
+          placeholder="Ej: Marzo - Abril 2026"
+          maxlength="50">
+        <small class="help-text">Este período identificará todas las evaluaciones del lote</small>
+      </div>
+
+      <!-- Indicador de lote actual -->
+      <div class="batch-indicator" *ngIf="batchEvaluations.length > 0">
+        <div class="batch-info">
+          <div class="batch-count">
+            <i class="fas fa-users"></i>
+            <strong>{{ batchEvaluations.length }}</strong> evaluación(es) preparadas en el lote
+          </div>
+          <div class="batch-hint">
+            <i class="fas fa-info-circle"></i>
+            El panel del lote está visible a la derecha →
+          </div>
         </div>
       </div>
     </div>
@@ -184,36 +219,76 @@
         </div>
       </div>
 
-      <!-- Sección Compromiso -->
+      <!-- Sección Compromiso (Calculado Automáticamente) -->
       <div class="evaluation-section">
-        <h4 class="section-title">🤝 Evaluación de Compromiso</h4>
+        <h4 class="section-title">🤝 Evaluación de Compromiso (Calculado Automáticamente)</h4>
+        <p class="auto-calc-info">
+          <i class="fas fa-info-circle"></i>
+          Los valores de compromiso se calculan automáticamente basándose en el historial de asistencia del usuario.
+        </p>
         
         <div class="criteria-grid">
-          <div class="criteria-item">
-            <label class="criteria-label">Asistencia a Ensayos</label>
-            <select [(ngModel)]="evaluationForm.compromiso.asistenciaEnsayos" class="criteria-select">
-              <option *ngFor="let level of evaluationCriteria['asistenciaEnsayos'].levels" [value]="level.value">
-                {{ level.label }} - {{ level.description }}
-              </option>
-            </select>
+          <!-- Ensayos -->
+          <div class="criteria-item auto-calculated">
+            <label class="criteria-label">Ensayos</label>
+            <div class="auto-calc-value">
+              <div class="calc-header">
+                <span class="level-badge" [class]="'level-' + userAttendanceStats.ensayos.nivel">
+                  Nivel {{ userAttendanceStats.ensayos.nivel }}
+                </span>
+                <span class="percentage-badge">{{ userAttendanceStats.ensayos.percentage }}%</span>
+              </div>
+              <div class="calc-details">
+                <span class="detail-text">
+                  {{ userAttendanceStats.ensayos.attended }} de {{ userAttendanceStats.ensayos.total }} ensayos
+                </span>
+              </div>
+              <div class="calc-description">
+                <small>{{ getAttendanceDescription(userAttendanceStats.ensayos.percentage) }}</small>
+              </div>
+            </div>
           </div>
           
-          <div class="criteria-item">
-            <label class="criteria-label">Participación en Eventos</label>
-            <select [(ngModel)]="evaluationForm.compromiso.participacionEventos" class="criteria-select">
-              <option *ngFor="let level of evaluationCriteria['participacionEventos'].levels" [value]="level.value">
-                {{ level.label }} - {{ level.description }}
-              </option>
-            </select>
+          <!-- Eventos -->
+          <div class="criteria-item auto-calculated">
+            <label class="criteria-label">Eventos</label>
+            <div class="auto-calc-value">
+              <div class="calc-header">
+                <span class="level-badge" [class]="'level-' + userAttendanceStats.eventos.nivel">
+                  Nivel {{ userAttendanceStats.eventos.nivel }}
+                </span>
+                <span class="percentage-badge">{{ userAttendanceStats.eventos.percentage }}%</span>
+              </div>
+              <div class="calc-details">
+                <span class="detail-text">
+                  {{ userAttendanceStats.eventos.attended }} de {{ userAttendanceStats.eventos.total }} eventos
+                </span>
+              </div>
+              <div class="calc-description">
+                <small>{{ getAttendanceDescription(userAttendanceStats.eventos.percentage) }}</small>
+              </div>
+            </div>
           </div>
           
-          <div class="criteria-item">
-            <label class="criteria-label">Colaboración</label>
-            <select [(ngModel)]="evaluationForm.compromiso.colaboracion" class="criteria-select">
-              <option *ngFor="let level of evaluationCriteria['colaboracion'].levels" [value]="level.value">
-                {{ level.label }} - {{ level.description }}
-              </option>
-            </select>
+          <!-- Misas -->
+          <div class="criteria-item auto-calculated">
+            <label class="criteria-label">Misas</label>
+            <div class="auto-calc-value">
+              <div class="calc-header">
+                <span class="level-badge" [class]="'level-' + userAttendanceStats.misas.nivel">
+                  Nivel {{ userAttendanceStats.misas.nivel }}
+                </span>
+                <span class="percentage-badge">{{ userAttendanceStats.misas.percentage }}%</span>
+              </div>
+              <div class="calc-details">
+                <span class="detail-text">
+                  {{ userAttendanceStats.misas.attended }} de {{ userAttendanceStats.misas.total }} misas
+                </span>
+              </div>
+              <div class="calc-description">
+                <small>{{ getAttendanceDescription(userAttendanceStats.misas.percentage) }}</small>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -222,7 +297,24 @@
       <div class="score-preview">
         <h4>📊 Vista Previa de Evaluación</h4>
         <div class="preview-content">
-          <div class="score-item">
+          <!-- Desglose detallado -->
+          <div class="score-breakdown">
+            <div class="breakdown-item">
+              <span class="breakdown-label">🎤 Canto:</span>
+              <span class="breakdown-value">{{ getCantoTotal() }}/16</span>
+            </div>
+            <div class="breakdown-item">
+              <span class="breakdown-label">🎸 Instrumento:</span>
+              <span class="breakdown-value">{{ getInstrumentoTotal() }}/16</span>
+            </div>
+            <div class="breakdown-item">
+              <span class="breakdown-label">🤝 Compromiso:</span>
+              <span class="breakdown-value">{{ getCompromisoTotal() }}/12</span>
+            </div>
+          </div>
+          
+          <!-- Total general -->
+          <div class="score-item total-score">
             <span class="score-label">Puntuación Total:</span>
             <span class="score-value">{{ calculatePreviewScore().total }}/44</span>
           </div>
@@ -254,11 +346,11 @@
       <!-- Botones de Acción -->
       <div class="action-buttons">
         <button 
-          class="save-btn" 
+          class="save-btn add-to-batch-btn" 
           (click)="saveEvaluation()"
-          [disabled]="isLoading">
-          <i class="fas fa-save"></i>
-          {{ isLoading ? 'Guardando...' : existingEvaluation ? 'Actualizar Evaluación' : 'Guardar Evaluación' }}
+          [disabled]="isLoading || !evaluationPeriod.trim()">
+          <i class="fas fa-plus-circle"></i>
+          Agregar al Lote
         </button>
         
         <button 
@@ -270,6 +362,118 @@
         </button>
       </div>
     </div>
+
+    <!-- Panel de Lote Flotante (siempre visible cuando hay evaluaciones) -->
+    <div class="batch-panel" *ngIf="batchEvaluations.length > 0" [class.hidden]="!showBatchPanel">
+      <div class="batch-panel-content">
+        <div class="batch-panel-header">
+          <h3>📦 Lote de Evaluaciones</h3>
+          <button class="close-panel-btn" (click)="toggleBatchPanel()" title="Ocultar panel temporalmente">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+
+        <div class="batch-period">
+          <strong>Período:</strong> {{ evaluationPeriod }}
+          <span class="batch-total-count">{{ batchEvaluations.length }} evaluación(es)</span>
+        </div>
+
+        <div class="batch-table-container">
+          <table class="batch-table">
+            <thead>
+              <tr>
+                <th class="col-integrante">Integrante</th>
+                <th class="col-nivel">Nivel</th>
+                <th class="col-section">🎸 Instrumento</th>
+                <th class="col-section">🎤 Canto</th>
+                <th class="col-section">🤝 Compromiso</th>
+                <th class="col-total">Total</th>
+                <th class="col-actions">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let evaluation of sortedBatchEvaluations" [class]="'level-row-' + evaluation.nivel">
+                <td class="integrante-cell">
+                  <strong>{{ evaluation.userName }}</strong>
+                  <span class="impuesto-badge">Impuesto: {{ evaluation.impuestoPorcentaje }}%</span>
+                </td>
+                <td class="nivel-cell">
+                  <span class="nivel-badge" [class]="getLevelBadgeClass(evaluation.nivel)">
+                    {{ evaluation.nivel }}
+                  </span>
+                </td>
+                <td class="section-cell">
+                  <div class="section-breakdown">
+                    <span class="criterion" title="Técnica">Téc: {{ evaluation.instrumento.tecnica }}</span>
+                    <span class="criterion" title="Precisión">Pre: {{ evaluation.instrumento.precision }}</span>
+                    <span class="criterion" title="Creatividad">Cre: {{ evaluation.instrumento.creatividad }}</span>
+                    <span class="criterion" title="Versatilidad">Ver: {{ evaluation.instrumento.versatilidad }}</span>
+                    <div class="section-total">Total: {{ getInstrumentoTotalForEval(evaluation) }}/16</div>
+                  </div>
+                </td>
+                <td class="section-cell">
+                  <div class="section-breakdown">
+                    <span class="criterion" title="Afinación">Afi: {{ evaluation.canto.afinacion }}</span>
+                    <span class="criterion" title="Rango Vocal">Ran: {{ evaluation.canto.rangoVocal }}</span>
+                    <span class="criterion" title="Control Vocal">Con: {{ evaluation.canto.controlVocal }}</span>
+                    <span class="criterion" title="Expresividad">Exp: {{ evaluation.canto.expresividad }}</span>
+                    <div class="section-total">Total: {{ getCantoTotalForEval(evaluation) }}/16</div>
+                  </div>
+                </td>
+                <td class="section-cell">
+                  <div class="section-breakdown">
+                    <span class="criterion" title="Asistencia a Ensayos">Ens: {{ evaluation.compromiso.ensayos }}</span>
+                    <span class="criterion" title="Asistencia a Eventos">Eve: {{ evaluation.compromiso.eventos }}</span>
+                    <span class="criterion" title="Asistencia a Misas">Mis: {{ evaluation.compromiso.misas }}</span>
+                    <div class="section-total">Total: {{ getCompromisoTotalForEval(evaluation) }}/12</div>
+                  </div>
+                </td>
+                <td class="total-cell">
+                  <strong>{{ evaluation.puntuacionTotal }}</strong>/44
+                </td>
+                <td class="actions-cell">
+                  <button class="icon-btn edit-btn" (click)="editBatchEvaluation(evaluation.userId)" title="Editar">
+                    <i class="fas fa-edit"></i>
+                  </button>
+                  <button class="icon-btn delete-btn" (click)="removeFromBatch(evaluation.userId)" title="Eliminar">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="batch-panel-footer">
+          <button class="save-draft-btn" (click)="saveDraftBatch()" [disabled]="isLoading" title="Guarda el progreso para continuar después">
+            <i class="fas fa-file-export"></i>
+            Guardar Borrador
+          </button>
+          <button class="export-pdf-btn" (click)="exportToPDF()" [disabled]="isLoading" title="Exportar evaluaciones a PDF">
+            <i class="fas fa-file-pdf"></i>
+            Exportar a PDF
+          </button>
+          <button class="save-batch-btn" (click)="saveBatch()" [disabled]="isLoading">
+            <i class="fas fa-save"></i>
+            Guardar Definitivo ({{ batchEvaluations.length }})
+          </button>
+          <button class="cancel-batch-btn" (click)="cancelBatch()" [disabled]="isLoading">
+            <i class="fas fa-times-circle"></i>
+            Cancelar Lote
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Botón flotante para mostrar el panel cuando está oculto -->
+    <button 
+      class="floating-batch-btn" 
+      *ngIf="batchEvaluations.length > 0 && !showBatchPanel"
+      (click)="toggleBatchPanel()"
+      title="Ver lote de evaluaciones">
+      <i class="fas fa-clipboard-list"></i>
+      <span class="batch-count-badge">{{ batchEvaluations.length }}</span>
+    </button>
 
     <!-- Lista de Todas las Evaluaciones -->
     <div class="evaluations-list" *ngIf="allEvaluations.length > 0">

@@ -1000,6 +1000,13 @@
     padding: 0.7rem;
   }
   
+  .mark-completed-btn {
+    width: 100%;
+    justify-content: center;
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+  }
+  
   .payment-header h4 {
     font-size: 0.95rem;
   }
@@ -2558,6 +2565,31 @@
 .payment-actions {
   display: flex;
   justify-content: flex-end;
+}
+
+.mark-completed-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1.2rem;
+  background: linear-gradient(135deg, #16a34a, #15803d);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.9rem;
+}
+
+.mark-completed-btn:hover {
+  background: linear-gradient(135deg, #15803d, #166534);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(22, 163, 74, 0.3);
+}
+
+.mark-completed-btn .btn-icon {
+  font-size: 1rem;
 }
 
 .payment-note {

@@ -689,6 +689,42 @@ export class DashboardComponent implements OnInit {
     });
   }
 
+  async markNotificationAsCompleted(notificationId: string) {
+    try {
+      const result = await Swal.fire({
+        title: '¿Marcar como completada?',
+        text: 'Esta notificación se marcará como completada y desaparecerá de tus pendientes',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Sí, marcar como completada',
+        cancelButtonText: 'Cancelar',
+        confirmButtonColor: '#16a34a'
+      });
+
+      if (result.isConfirmed) {
+        await this.firestore.collection('payment-notifications').doc(notificationId).update({
+          status: 'completed',
+          completedAt: new Date()
+        });
+
+        Swal.fire({
+          icon: 'success',
+          title: '¡Notificación completada!',
+          text: 'La notificación ha sido marcada como completada',
+          timer: 2000,
+          showConfirmButton: false
+        });
+      }
+    } catch (error) {
+      console.error('Error marking notification as completed:', error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'No se pudo marcar la notificación como completada'
+      });
+    }
+  }
+
   async markAsPaid(payment: any) {
     try {
       const result = await Swal.fire({

@@ -150,6 +150,14 @@
             <span class="btn-icon">👁️</span>
             <span class="btn-text">Ver Detalles</span>
           </button>
+          <button 
+            class="complete-btn" 
+            *ngIf="activeTab === 'pending' || (activeTab === 'completed' && request.status !== 'completed')"
+            (click)="markAsCompleted(request.id)"
+            title="Marcar como completada manualmente">
+            <span class="btn-icon">✅</span>
+            <span class="btn-text">Marcar Completada</span>
+          </button>
         </div>
       </div>
       
@@ -378,12 +386,12 @@
         </div>
 
         <!-- Pagos Pendientes -->
-        <div class="payments-section" *ngIf="pendingPayments.length > 0">
+        <div class="payments-section" *ngIf="detailPendingPayments.length > 0">
           <div class="section-header">
-            <h4>⏳ Pagos Pendientes ({{ pendingPayments.length }})</h4>
+            <h4>⏳ Pagos Pendientes ({{ detailPendingPayments.length }})</h4>
           </div>
           <div class="payments-list">
-            <div class="payment-item pending-partial" *ngFor="let payment of pendingPayments">
+            <div class="payment-item pending-partial" *ngFor="let payment of detailPendingPayments">
               <div class="payment-info">
                 <div class="payment-user">
                   <div class="user-avatar">{{ getUserName(payment.userId).charAt(0).toUpperCase() }}</div>
@@ -433,12 +441,12 @@
         </div>
 
         <!-- Pagos Completados -->
-        <div class="payments-section" *ngIf="completedPayments.length > 0">
+        <div class="payments-section" *ngIf="detailCompletedPayments.length > 0">
           <div class="section-header">
-            <h4>✅ Pagos Completados ({{ completedPayments.length }})</h4>
+            <h4>✅ Pagos Completados ({{ detailCompletedPayments.length }})</h4>
           </div>
           <div class="payments-list">
-            <div class="payment-item completed-detailed" *ngFor="let payment of completedPayments">
+            <div class="payment-item completed-detailed" *ngFor="let payment of detailCompletedPayments">
               <div class="payment-info">
                 <div class="payment-user">
                   <div class="user-avatar completed">{{ getUserName(payment.userId).charAt(0).toUpperCase() }}</div>
@@ -478,7 +486,7 @@
         </div>
 
         <!-- Estado cuando no hay pagos -->
-        <div class="no-payments" *ngIf="pendingPayments.length === 0 && completedPayments.length === 0">
+        <div class="no-payments" *ngIf="detailPendingPayments.length === 0 && detailCompletedPayments.length === 0">
           <div class="empty-icon">💸</div>
           <h4>No hay registros de pago</h4>
           <p>Aún no se han registrado pagos para esta solicitud</p>

@@ -20,8 +20,10 @@ export class PaymentRequestsComponent implements OnInit {
   showDetailsModal = false;
   selectedRequest: any = null;
   requestNotifications: any[] = [];
-  pendingPayments: any[] = [];
-  completedPayments: any[] = [];
+  pendingPayments: any[] = []; // Para lista principal de solicitudes pendientes
+  completedPayments: any[] = []; // Para lista principal de solicitudes completadas
+  detailPendingPayments: any[] = []; // Para modal de detalles - pagos pendientes
+  detailCompletedPayments: any[] = []; // Para modal de detalles - pagos completados
   allNotifications: any[] = []; // Para estadísticas generales
   partialPayments: any[] = []; // Para pagos parciales de cada usuario
   allPartialPayments: any[] = []; // Todos los pagos parciales para estadísticas
@@ -77,15 +79,23 @@ export class PaymentRequestsComponent implements OnInit {
   }
 
   loadPaymentRequests() {
-    this.firestore.collection('payment-requests', ref => 
-      ref.where('createdBy', '==', this.user.uid)
-    ).valueChanges({ idField: 'id' }).subscribe((requests: any[]) => {
+    this.firestore.collection('payment-requests').valueChanges({ idField: 'id' }).subscribe((requests: any[]) => {
       // Ordenar en el cliente por fecha de creación
-      this.paymentRequests = requests.sort((a, b) => {
+      const sortedRequests = requests.sort((a, b) => {
         const dateA = a.createdAt?.toDate() || new Date();
         const dateB = b.createdAt?.toDate() || new Date();
         return dateB.getTime() - dateA.getTime(); // desc order
       });
+      
+      // Deduplicar por concepto - mantener solo la más reciente de cada concepto
+      const uniqueRequests = new Map<string, any>();
+      for (const request of sortedRequests) {
+        if (!uniqueRequests.has(request.concept)) {
+          uniqueRequests.set(request.concept, request);
+        }
+      }
+      
+      this.paymentRequests = Array.from(uniqueRequests.values());
       
       // Separar pagos por estado
       this.separatePaymentsByStatus();
@@ -115,9 +125,7 @@ export class PaymentRequestsComponent implements OnInit {
   }
 
   loadAllNotifications() {
-    this.firestore.collection('payment-notifications', ref => 
-      ref.where('createdBy', '==', this.user.uid)
-    ).valueChanges({ idField: 'id' }).subscribe((notifications: any[]) => {
+    this.firestore.collection('payment-notifications').valueChanges({ idField: 'id' }).subscribe((notifications: any[]) => {
       this.allNotifications = notifications;
       // Actualizar separación cuando cambien las notificaciones
       this.separatePaymentsByStatus();
@@ -125,9 +133,7 @@ export class PaymentRequestsComponent implements OnInit {
   }
 
   loadAllPartialPayments() {
-    this.firestore.collection('partial-payments', ref => 
-      ref.where('createdBy', '==', this.user.uid)
-    ).valueChanges({ idField: 'id' }).subscribe((payments: any[]) => {
+    this.firestore.collection('partial-payments').valueChanges({ idField: 'id' }).subscribe((payments: any[]) => {
       this.allPartialPayments = payments.sort((a, b) => {
         const dateA = a.createdAt?.toDate() || new Date(0);
         const dateB = b.createdAt?.toDate() || new Date(0);
@@ -489,21 +495,21 @@ export class PaymentRequestsComponent implements OnInit {
       await this.loadPartialPayments(concept);
 
       // Separar en pendientes y completados basado en pagos parciales
-      this.pendingPayments = [];
-      this.completedPayments = [];
+      this.detailPendingPayments = [];
+      this.detailCompletedPayments = [];
 
       for (const notification of this.requestNotifications) {
         const totalPaid = this.getTotalPaidByUser(notification.userId, concept);
         const quotaAmount = notification.amount;
         
         if (totalPaid >= quotaAmount) {
-          this.completedPayments.push({
+          this.detailCompletedPayments.push({
             ...notification,
             totalPaid,
             isFullyPaid: true
           });
         } else {
-          this.pendingPayments.push({
+          this.detailPendingPayments.push({
             ...notification,
             totalPaid,
             remaining: quotaAmount - totalPaid,
@@ -513,7 +519,7 @@ export class PaymentRequestsComponent implements OnInit {
       }
 
       // Ordenar completados por fecha de último pago
-      this.completedPayments.sort((a, b) => {
+      this.detailCompletedPayments.sort((a, b) => {
         const lastPaymentA = this.getLastPaymentDate(a.userId, concept);
         const lastPaymentB = this.getLastPaymentDate(b.userId, concept);
         return lastPaymentB.getTime() - lastPaymentA.getTime();
@@ -585,8 +591,8 @@ export class PaymentRequestsComponent implements OnInit {
     this.showDetailsModal = false;
     this.selectedRequest = null;
     this.requestNotifications = [];
-    this.pendingPayments = [];
-    this.completedPayments = [];
+    this.detailPendingPayments = [];
+    this.detailCompletedPayments = [];
     this.partialPayments = [];
   }
 
@@ -797,29 +803,40 @@ export class PaymentRequestsComponent implements OnInit {
       });
 
       if (result.isConfirmed) {
+        // Obtener la solicitud para conseguir el concept
+        const requestDoc = await this.firestore.collection('payment-requests').doc(requestId).get().toPromise();
+        const requestData = requestDoc?.data() as any;
+        
+        if (!requestData) {
+          throw new Error('No se encontró la solicitud');
+        }
+
+        // Actualizar la solicitud principal
         await this.firestore.collection('payment-requests').doc(requestId).update({
           status: 'completed',
           completedAt: new Date()
         });
 
-        // También actualizar la notificación relacionada
-        const notifications = await this.firestore.firestore.collection('payment-notifications')
-          .where('paymentRequestId', '==', requestId)
-          .get();
+        // Actualizar todas las notificaciones relacionadas por concept
+        const notificationsSnapshot = await this.firestore.collection('payment-notifications', ref =>
+          ref.where('concept', '==', requestData.concept)
+        ).get().toPromise();
 
-        const batch = this.firestore.firestore.batch();
-        notifications.forEach((doc: any) => {
-          batch.update(doc.ref, { 
-            status: 'completed',
-            completedAt: new Date()
+        if (notificationsSnapshot && notificationsSnapshot.size > 0) {
+          const batch = this.firestore.firestore.batch();
+          notificationsSnapshot.forEach((doc: any) => {
+            batch.update(doc.ref, { 
+              status: 'completed',
+              completedAt: new Date()
+            });
           });
-        });
-        await batch.commit();
+          await batch.commit();
+        }
 
         Swal.fire({
           icon: 'success',
           title: '¡Solicitud completada!',
-          text: 'La solicitud ha sido marcada como pagada',
+          text: `Se actualizaron ${notificationsSnapshot?.size || 0} notificaciones`,
           timer: 2000,
           showConfirmButton: false
         });

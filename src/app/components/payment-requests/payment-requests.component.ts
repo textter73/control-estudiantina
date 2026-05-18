@@ -18,6 +18,7 @@ export class PaymentRequestsComponent implements OnInit {
   userSearchTerm: string = '';
   showCreateModal = false;
   showDetailsModal = false;
+  isCreating = false;
   selectedRequest: any = null;
   requestNotifications: any[] = [];
   pendingPayments: any[] = []; // Para lista principal de solicitudes pendientes
@@ -337,6 +338,12 @@ export class PaymentRequestsComponent implements OnInit {
       return;
     }
 
+    if (this.isCreating) {
+      return; // Prevenir doble clic
+    }
+
+    this.isCreating = true;
+
     try {
       const batch = this.firestore.firestore.batch();
       const paymentRequestIds: string[] = [];
@@ -399,6 +406,8 @@ export class PaymentRequestsComponent implements OnInit {
         title: 'Error',
         text: 'No se pudo crear la solicitud de pago. Inténtalo de nuevo.'
       });
+    } finally {
+      this.isCreating = false;
     }
   }
 
@@ -793,7 +802,7 @@ export class PaymentRequestsComponent implements OnInit {
     try {
       const result = await Swal.fire({
         title: '¿Marcar como pagada?',
-        text: 'Confirma que esta solicitud ha sido completamente pagada',
+        text: 'Esta acción marcará esta solicitud y todas las duplicadas con el mismo concepto como completadas',
         icon: 'question',
         showCancelButton: true,
         confirmButtonColor: '#16a34a',
@@ -811,32 +820,49 @@ export class PaymentRequestsComponent implements OnInit {
           throw new Error('No se encontró la solicitud');
         }
 
-        // Actualizar la solicitud principal
-        await this.firestore.collection('payment-requests').doc(requestId).update({
-          status: 'completed',
-          completedAt: new Date()
-        });
+        const concept = requestData.concept;
+
+        // Actualizar TODAS las solicitudes de pago con el mismo concept
+        const requestsSnapshot = await this.firestore.collection('payment-requests', ref =>
+          ref.where('concept', '==', concept)
+        ).get().toPromise();
+
+        const batch = this.firestore.firestore.batch();
+        let requestsUpdated = 0;
+        
+        if (requestsSnapshot && requestsSnapshot.size > 0) {
+          requestsSnapshot.forEach((doc: any) => {
+            batch.update(doc.ref, { 
+              status: 'completed',
+              completedAt: new Date()
+            });
+            requestsUpdated++;
+          });
+        }
 
         // Actualizar todas las notificaciones relacionadas por concept
         const notificationsSnapshot = await this.firestore.collection('payment-notifications', ref =>
-          ref.where('concept', '==', requestData.concept)
+          ref.where('concept', '==', concept)
         ).get().toPromise();
 
+        let notificationsUpdated = 0;
+        
         if (notificationsSnapshot && notificationsSnapshot.size > 0) {
-          const batch = this.firestore.firestore.batch();
           notificationsSnapshot.forEach((doc: any) => {
             batch.update(doc.ref, { 
               status: 'completed',
               completedAt: new Date()
             });
+            notificationsUpdated++;
           });
-          await batch.commit();
         }
+
+        await batch.commit();
 
         Swal.fire({
           icon: 'success',
           title: '¡Solicitud completada!',
-          text: `Se actualizaron ${notificationsSnapshot?.size || 0} notificaciones`,
+          text: `Se actualizaron ${requestsUpdated} solicitudes y ${notificationsUpdated} notificaciones`,
           timer: 2000,
           showConfirmButton: false
         });

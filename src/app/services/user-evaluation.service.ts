@@ -26,7 +26,6 @@ export class UserEvaluationService {
     }
 
     // NO actualizar el perfil del usuario - solo guardar la evaluación
-    console.log(`Evaluación guardada para usuario ${evaluation.userName} por ${evaluation.evaluatedBy}`);
   }
 
   // MÉTODO DESACTIVADO - No se actualiza el perfil automáticamente
@@ -46,14 +45,50 @@ export class UserEvaluationService {
   }
   */
 
-  // Obtener evaluación de un usuario
+  // Obtener evaluación de un usuario (última evaluación)
   getUserEvaluation(userId: string): Observable<UserEvaluation | undefined> {
     return this.firestore.collection('user-evaluations', ref => 
       ref.where('userId', '==', userId)
     ).valueChanges({ idField: 'id' }).pipe(
       map((evaluations: any[]) => {
         const typedEvaluations = evaluations as UserEvaluation[];
-        return typedEvaluations.length > 0 ? typedEvaluations[typedEvaluations.length - 1] : undefined;
+        
+        if (typedEvaluations.length === 0) {
+          return undefined;
+        }
+        
+        // Ordenar por fecha en el cliente (descendente - más reciente primero)
+        const sortedEvaluations = typedEvaluations.sort((a, b) => {
+          const dateA = a.evaluatedAt?.toDate ? a.evaluatedAt.toDate() : new Date(a.evaluatedAt);
+          const dateB = b.evaluatedAt?.toDate ? b.evaluatedAt.toDate() : new Date(b.evaluatedAt);
+          return dateB.getTime() - dateA.getTime();
+        });
+        
+        return sortedEvaluations[0];
+      })
+    );
+  }
+
+  // Obtener evaluación de un usuario por nombre (método alternativo)
+  getUserEvaluationByName(userName: string): Observable<UserEvaluation | undefined> {
+    return this.firestore.collection('user-evaluations', ref => 
+      ref.where('userName', '==', userName)
+    ).valueChanges({ idField: 'id' }).pipe(
+      map((evaluations: any[]) => {
+        const typedEvaluations = evaluations as UserEvaluation[];
+        
+        if (typedEvaluations.length === 0) {
+          return undefined;
+        }
+        
+        // Ordenar por fecha en el cliente (descendente - más reciente primero)
+        const sortedEvaluations = typedEvaluations.sort((a, b) => {
+          const dateA = a.evaluatedAt?.toDate ? a.evaluatedAt.toDate() : new Date(a.evaluatedAt);
+          const dateB = b.evaluatedAt?.toDate ? b.evaluatedAt.toDate() : new Date(b.evaluatedAt);
+          return dateB.getTime() - dateA.getTime();
+        });
+        
+        return sortedEvaluations[0];
       })
     );
   }
@@ -166,5 +201,67 @@ export class UserEvaluationService {
         })).sort((a, b) => (a.evaluationLevel || 99) - (b.evaluationLevel || 99));
       })
     );
+  }
+
+  // Función de utilidad para corregir userId en evaluaciones existentes
+  async fixUserIdInEvaluations(): Promise<{ updated: number, notFound: number, total: number }> {
+    try {
+      // Obtener todos los usuarios
+      const usersSnapshot = await this.firestore.collection('users').get().toPromise();
+      const users = usersSnapshot?.docs.map(doc => {
+        const data = doc.data() as any;
+        return {
+          uid: doc.id,
+          ...data
+        };
+      }) || [];
+
+      // Obtener todas las evaluaciones
+      const evaluationsSnapshot = await this.firestore.collection('user-evaluations').get().toPromise();
+      const evaluations = evaluationsSnapshot?.docs || [];
+
+      let updated = 0;
+      let notFound = 0;
+
+      for (const evalDoc of evaluations) {
+        const evalData = evalDoc.data() as any;
+        const userName = evalData.userName;
+
+        // Función helper para normalizar nombres (quitar espacios extras, poner en minúsculas)
+        const normalize = (str: string) => str?.trim().toLowerCase() || '';
+
+        // Buscar el usuario correspondiente - primero exacto, luego normalizado
+        let user = users.find(u => u['name'] === userName);
+        
+        if (!user) {
+          // Intentar búsqueda normalizada
+          user = users.find(u => normalize(u['name']) === normalize(userName));
+        }
+        
+        if (!user) {
+          // Intentar por nickname
+          user = users.find(u => normalize(u['nickname']) === normalize(userName));
+        }
+
+        if (user) {
+          if (evalData.userId !== user.uid) {
+            await this.firestore.collection('user-evaluations').doc(evalDoc.id).update({
+              userId: user.uid
+            });
+            updated++;
+          }
+        } else {
+          notFound++;
+        }
+      }
+
+      return {
+        updated,
+        notFound,
+        total: evaluations.length
+      };
+    } catch (error) {
+      throw error;
+    }
   }
 }

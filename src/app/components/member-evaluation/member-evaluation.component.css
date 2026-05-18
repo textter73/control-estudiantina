@@ -66,6 +66,8 @@ select option {
   margin-top: 1.5rem;
   display: flex;
   justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
 }
 
 .back-to-dashboard-btn {
@@ -101,6 +103,42 @@ select option {
 
 .back-to-dashboard-btn span {
   font-size: 1rem;
+}
+
+/* Botón de corrección de userId */
+.fix-userid-btn {
+  background: linear-gradient(135deg, #FF9800 0%, #F57C00 100%);
+  color: white;
+  border: none;
+  padding: 0.8rem 1.5rem;
+  border-radius: 25px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  box-shadow: 0 4px 15px rgba(255, 152, 0, 0.3);
+}
+
+.fix-userid-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 152, 0, 0.4);
+  background: linear-gradient(135deg, #F57C00 0%, #E65100 100%);
+}
+
+.fix-userid-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 3px 10px rgba(255, 152, 0, 0.3);
+}
+
+.fix-userid-btn i {
+  font-size: 0.9rem;
+}
+
+.fix-userid-btn span {
+  font-size: 0.9rem;
 }
 
 .evaluation-content {

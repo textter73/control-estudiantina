@@ -1100,4 +1100,65 @@ export class MemberEvaluationComponent implements OnInit {
   goToDashboard() {
     this.router.navigate(['/dashboard']);
   }
+
+  // ============= UTILIDAD: CORREGIR USERID EN EVALUACIONES =============
+  
+  /**
+   * Corrige el userId en todas las evaluaciones existentes
+   * para que coincidan con el uid real del usuario
+   */
+  async fixUserIdInAllEvaluations() {
+    const result = await Swal.fire({
+      icon: 'question',
+      title: 'Corregir userId en Evaluaciones',
+      html: `
+        <div style="text-align: left; padding: 10px;">
+          <p>Esta función actualizará el campo <code>userId</code> en todas las evaluaciones existentes para que coincidan con el UID real de cada usuario.</p>
+          <br>
+          <p><strong>⚠️ Esta operación modificará la base de datos.</strong></p>
+          <p>¿Deseas continuar?</p>
+        </div>
+      `,
+      showCancelButton: true,
+      confirmButtonText: 'Sí, corregir',
+      cancelButtonText: 'Cancelar',
+      confirmButtonColor: '#189d98'
+    });
+
+    if (!result.isConfirmed) return;
+
+    this.isLoading = true;
+
+    try {
+      const result = await this.evaluationService.fixUserIdInEvaluations();
+      
+      const alreadyCorrect = result.total - result.updated - result.notFound;
+      
+      Swal.fire({
+        icon: 'success',
+        title: '✅ Corrección Completada',
+        html: `
+          <div style="text-align: center;">
+            <p><strong>📊 Resultado:</strong></p>
+            <p>✅ Actualizadas: ${result.updated}</p>
+            <p>✓ Ya correctas: ${alreadyCorrect}</p>
+            ${result.notFound > 0 ? `<p>❌ Sin usuario: ${result.notFound}</p>` : ''}
+            <p class="text-muted">Total evaluaciones: ${result.total}</p>
+          </div>
+        `,
+        confirmButtonText: 'Entendido'
+      });
+
+      // Recargar evaluaciones
+      this.loadAllEvaluations();
+    } catch (error) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'No se pudieron corregir las evaluaciones. Por favor, intenta nuevamente.'
+      });
+    } finally {
+      this.isLoading = false;
+    }
+  }
 }

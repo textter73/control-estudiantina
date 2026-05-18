@@ -79,6 +79,7 @@
       </div>
     </div>
     <br><br>
+
     <!-- Acciones -->
     <div class="actions">
       <button class="action" routerLink="/attendance-tracking">
@@ -328,6 +329,208 @@
       
       <div class="no-events" *ngIf="activeEvents.length === 0">
         <p>No hay eventos próximos</p>
+      </div>
+    </div>
+
+    <!-- Mi Última Evaluación -->
+    <div class="evaluation-section" *ngIf="lastUserEvaluation">
+      <div class="evaluation-card">
+        <div class="evaluation-header">
+          <div class="evaluation-title-section">
+            <h3>🎭 Mi Última Evaluación</h3>
+            <span class="evaluation-date" *ngIf="getEvaluationDate()">
+              {{ getEvaluationDate() | date:'dd/MM/yyyy' }}
+            </span>
+          </div>
+          <div class="evaluation-summary">
+            <div class="summary-item">
+              <span class="summary-label">Nivel</span>
+              <span class="summary-value" [class]="getLevelBadgeClass(lastUserEvaluation.nivel)">
+                Nivel {{ lastUserEvaluation.nivel }}
+              </span>
+            </div>
+            <div class="summary-item">
+              <span class="summary-label">Puntuación Total</span>
+              <span class="summary-value score">{{ lastUserEvaluation.puntuacionTotal }}/44</span>
+            </div>
+            <div class="summary-item">
+              <span class="summary-label">Impuesto</span>
+              <span class="summary-value tax">{{ lastUserEvaluation.impuestoPorcentaje }}%</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="evaluation-content">
+          <!-- Canto -->
+          <div class="evaluation-category">
+            <div class="category-header">
+              <span class="category-icon">🎤</span>
+              <h4>Canto</h4>
+              <span class="category-total">{{ getCantoTotal() }}/16</span>
+            </div>
+            <div class="category-items">
+              <div class="evaluation-item">
+                <span class="item-label">Afinación</span>
+                <div class="item-value">
+                  <div class="stars">
+                    <span *ngFor="let star of [1,2,3,4]" 
+                          [class.filled]="star <= lastUserEvaluation.canto.afinacion">★</span>
+                  </div>
+                  <span class="item-text">{{ getEvaluationLevelText(lastUserEvaluation.canto.afinacion) }}</span>
+                </div>
+              </div>
+              <div class="evaluation-item">
+                <span class="item-label">Rango Vocal</span>
+                <div class="item-value">
+                  <div class="stars">
+                    <span *ngFor="let star of [1,2,3,4]" 
+                          [class.filled]="star <= lastUserEvaluation.canto.rangoVocal">★</span>
+                  </div>
+                  <span class="item-text">{{ getEvaluationLevelText(lastUserEvaluation.canto.rangoVocal) }}</span>
+                </div>
+              </div>
+              <div class="evaluation-item">
+                <span class="item-label">Control Vocal</span>
+                <div class="item-value">
+                  <div class="stars">
+                    <span *ngFor="let star of [1,2,3,4]" 
+                          [class.filled]="star <= lastUserEvaluation.canto.controlVocal">★</span>
+                  </div>
+                  <span class="item-text">{{ getEvaluationLevelText(lastUserEvaluation.canto.controlVocal) }}</span>
+                </div>
+              </div>
+              <div class="evaluation-item">
+                <span class="item-label">Expresividad</span>
+                <div class="item-value">
+                  <div class="stars">
+                    <span *ngFor="let star of [1,2,3,4]" 
+                          [class.filled]="star <= lastUserEvaluation.canto.expresividad">★</span>
+                  </div>
+                  <span class="item-text">{{ getEvaluationLevelText(lastUserEvaluation.canto.expresividad) }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Instrumento -->
+          <div class="evaluation-category">
+            <div class="category-header">
+              <span class="category-icon">🎸</span>
+              <h4>Instrumento</h4>
+              <span class="category-total">{{ getInstrumentoTotal() }}/16</span>
+            </div>
+            <div class="category-items">
+              <div class="evaluation-item">
+                <span class="item-label">Técnica</span>
+                <div class="item-value">
+                  <div class="stars">
+                    <span *ngFor="let star of [1,2,3,4]" 
+                          [class.filled]="star <= lastUserEvaluation.instrumento.tecnica">★</span>
+                  </div>
+                  <span class="item-text">{{ getEvaluationLevelText(lastUserEvaluation.instrumento.tecnica) }}</span>
+                </div>
+              </div>
+              <div class="evaluation-item">
+                <span class="item-label">Precisión</span>
+                <div class="item-value">
+                  <div class="stars">
+                    <span *ngFor="let star of [1,2,3,4]" 
+                          [class.filled]="star <= lastUserEvaluation.instrumento.precision">★</span>
+                  </div>
+                  <span class="item-text">{{ getEvaluationLevelText(lastUserEvaluation.instrumento.precision) }}</span>
+                </div>
+              </div>
+              <div class="evaluation-item">
+                <span class="item-label">Creatividad</span>
+                <div class="item-value">
+                  <div class="stars">
+                    <span *ngFor="let star of [1,2,3,4]" 
+                          [class.filled]="star <= lastUserEvaluation.instrumento.creatividad">★</span>
+                  </div>
+                  <span class="item-text">{{ getEvaluationLevelText(lastUserEvaluation.instrumento.creatividad) }}</span>
+                </div>
+              </div>
+              <div class="evaluation-item">
+                <span class="item-label">Versatilidad</span>
+                <div class="item-value">
+                  <div class="stars">
+                    <span *ngFor="let star of [1,2,3,4]" 
+                          [class.filled]="star <= lastUserEvaluation.instrumento.versatilidad">★</span>
+                  </div>
+                  <span class="item-text">{{ getEvaluationLevelText(lastUserEvaluation.instrumento.versatilidad) }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Compromiso -->
+          <div class="evaluation-category">
+            <div class="category-header">
+              <span class="category-icon">💪</span>
+              <h4>Compromiso</h4>
+              <span class="category-total">{{ getCompromisoTotal() }}/12</span>
+            </div>
+            <div class="category-items">
+              <div class="evaluation-item">
+                <span class="item-label">Ensayos</span>
+                <div class="item-value">
+                  <div class="stars">
+                    <span *ngFor="let star of [1,2,3,4]" 
+                          [class.filled]="star <= lastUserEvaluation.compromiso.ensayos">★</span>
+                  </div>
+                  <span class="item-text">{{ getEvaluationLevelText(lastUserEvaluation.compromiso.ensayos) }}</span>
+                </div>
+              </div>
+              <div class="evaluation-item">
+                <span class="item-label">Eventos</span>
+                <div class="item-value">
+                  <div class="stars">
+                    <span *ngFor="let star of [1,2,3,4]" 
+                          [class.filled]="star <= lastUserEvaluation.compromiso.eventos">★</span>
+                  </div>
+                  <span class="item-text">{{ getEvaluationLevelText(lastUserEvaluation.compromiso.eventos) }}</span>
+                </div>
+              </div>
+              <div class="evaluation-item">
+                <span class="item-label">Misas</span>
+                <div class="item-value">
+                  <div class="stars">
+                    <span *ngFor="let star of [1,2,3,4]" 
+                          [class.filled]="star <= lastUserEvaluation.compromiso.misas">★</span>
+                  </div>
+                  <span class="item-text">{{ getEvaluationLevelText(lastUserEvaluation.compromiso.misas) }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Comentarios -->
+          <div class="evaluation-comments" *ngIf="lastUserEvaluation.comentarios">
+            <h4>📝 Comentarios del Evaluador</h4>
+            <p>{{ lastUserEvaluation.comentarios }}</p>
+          </div>
+
+          <!-- Información adicional -->
+          <div class="evaluation-footer">
+            <div class="footer-item" *ngIf="lastUserEvaluation.evaluatedBy">
+              <span class="footer-label">Evaluado por:</span>
+              <span class="footer-value">{{ lastUserEvaluation.evaluatedBy }}</span>
+            </div>
+            <div class="footer-item" *ngIf="lastUserEvaluation.evaluationPeriod">
+              <span class="footer-label">Período:</span>
+              <span class="footer-value">{{ lastUserEvaluation.evaluationPeriod }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sin Evaluación -->
+    <div class="no-evaluation-message" *ngIf="!lastUserEvaluation">
+      <div class="message-card">
+        <span class="message-icon">📋</span>
+        <h3>Sin Evaluación</h3>
+        <p>Aún no has sido evaluado. Las evaluaciones te ayudarán a conocer tu nivel y áreas de mejora.</p>
       </div>
     </div>
 

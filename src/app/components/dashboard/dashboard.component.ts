@@ -17,6 +17,7 @@ export class DashboardComponent implements OnInit {
   user: any = null;
   userProfile: any = null;
   userLevel: {level: number, taxPercentage: number} | null = null;
+  lastUserEvaluation: any = null;
   attendancePercentage: number = 0;
   totalAttendances: number = 0;
   presentAttendances: number = 0;
@@ -178,6 +179,8 @@ export class DashboardComponent implements OnInit {
         const userDoc = await this.firestore.collection('users').doc(user.uid).get().toPromise();
         this.userProfile = userDoc?.data();
         this.loadUserLevel(user.uid); // Cargar nivel del usuario
+        // Cargar última evaluación - ahora con el nombre del perfil disponible
+        this.loadLastEvaluation(user.uid, this.userProfile?.name); 
         this.loadAttendanceData();
         this.loadActiveEvents();
         this.loadTransportRequests();
@@ -1073,6 +1076,22 @@ export class DashboardComponent implements OnInit {
     });
   }
 
+  // Cargar la última evaluación del usuario
+  loadLastEvaluation(userId: string, userName?: string) {
+    this.evaluationService.getUserEvaluation(userId).subscribe(evaluation => {
+      if (!evaluation && userName) {
+        // Si no se encuentra por userId, intentar buscar por nombre
+        this.evaluationService.getUserEvaluationByName(userName).subscribe(evalByName => {
+          if (evalByName) {
+            this.lastUserEvaluation = evalByName;
+          }
+        });
+      } else if (evaluation) {
+        this.lastUserEvaluation = evaluation;
+      }
+    });
+  }
+
   // Obtener clase CSS para el badge del nivel
   getLevelBadgeClass(nivel: number): string {
     switch(nivel) {
@@ -1084,5 +1103,52 @@ export class DashboardComponent implements OnInit {
       case 6: return 'level-6';
       default: return 'level-6';
     }
+  }
+
+  // Obtener la etiqueta de texto para un valor de evaluación
+  getEvaluationLevelText(value: number): string {
+    switch(value) {
+      case 1: return 'Básico';
+      case 2: return 'Aceptable';
+      case 3: return 'Bueno';
+      case 4: return 'Excelente';
+      default: return 'N/A';
+    }
+  }
+
+  // Calcular totales por categoría
+  getCantoTotal(): number {
+    if (!this.lastUserEvaluation) return 0;
+    const c = this.lastUserEvaluation.canto;
+    return c.afinacion + c.rangoVocal + c.controlVocal + c.expresividad;
+  }
+
+  getInstrumentoTotal(): number {
+    if (!this.lastUserEvaluation) return 0;
+    const i = this.lastUserEvaluation.instrumento;
+    return i.tecnica + i.precision + i.creatividad + i.versatilidad;
+  }
+
+  getCompromisoTotal(): number {
+    if (!this.lastUserEvaluation) return 0;
+    const c = this.lastUserEvaluation.compromiso;
+    return c.ensayos + c.eventos + c.misas;
+  }
+
+  // Convertir Firestore Timestamp a Date
+  getEvaluationDate(): Date | null {
+    if (!this.lastUserEvaluation || !this.lastUserEvaluation.evaluatedAt) return null;
+    
+    // Si es un Timestamp de Firestore
+    if (this.lastUserEvaluation.evaluatedAt.toDate) {
+      return this.lastUserEvaluation.evaluatedAt.toDate();
+    }
+    
+    // Si ya es un Date
+    if (this.lastUserEvaluation.evaluatedAt instanceof Date) {
+      return this.lastUserEvaluation.evaluatedAt;
+    }
+    
+    return null;
   }
 }

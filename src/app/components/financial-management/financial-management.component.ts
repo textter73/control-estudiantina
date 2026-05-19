@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
 import Swal from 'sweetalert2';
+import * as jsPDF from 'jspdf';
 
 @Component({
   selector: 'app-financial-management',
@@ -30,6 +31,11 @@ export class FinancialManagementComponent implements OnInit {
   filteredMovements: any[] = [];
   movementFilter: string = 'all';
   usersMap: { [key: string]: string } = {};
+  
+  // Modal de estado de cuenta
+  showStatementModal = false;
+  statementData: any = null;
+  statementMovements: any[] = [];
 
   constructor(
     private firestore: AngularFirestore,
@@ -92,6 +98,23 @@ export class FinancialManagementComponent implements OnInit {
         account.cardNumber?.toLowerCase().includes(searchTermLower)
       );
     }
+  }
+
+  getTotalBalance(): number {
+    return this.accounts.reduce((total, account) => total + (account.balance || 0), 0);
+  }
+
+  getAverageBalance(): number {
+    if (this.accounts.length === 0) return 0;
+    return this.getTotalBalance() / this.accounts.length;
+  }
+
+  getEstudiantinaBalance(): number {
+    const estudiantinaAccount = this.accounts.find(account => 
+      account.userName?.toLowerCase().includes('estudiantina tonantzin') ||
+      account.userName === 'Estudiantina Tonantzin Guadalupe'
+    );
+    return estudiantinaAccount ? (estudiantinaAccount.balance || 0) : 0;
   }
 
   onSearchChange() {
@@ -359,6 +382,175 @@ export class FinancialManagementComponent implements OnInit {
     this.filteredMovements = [];
     this.movementFilter = 'all';
     this.selectedAccount = null;
+  }
+
+  async downloadAccountStatement(account: any) {
+    try {
+      // Obtener movimientos de la cuenta
+      const movementsSnapshot = await this.firestore.collection('financial-transactions', ref =>
+        ref.where('accountId', '==', account.id)
+      ).get().toPromise();
+
+      const movements = movementsSnapshot?.docs.map(doc => doc.data()) || [];
+      const sortedMovements = movements.sort((a: any, b: any) => {
+        const timestampA = a.createdAt?.toDate() || new Date(0);
+        const timestampB = b.createdAt?.toDate() || new Date(0);
+        return timestampB.getTime() - timestampA.getTime();
+      });
+
+      // Preparar datos para el modal de previsualización
+      const currentDate = new Date().toLocaleDateString('es-MX', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+
+      this.statementData = {
+        account: account,
+        emissionDate: currentDate,
+        status: account.status === 'active' ? 'Activa' : 'Inactiva'
+      };
+      this.statementMovements = sortedMovements;
+      this.showStatementModal = true;
+    } catch (error) {
+      console.error('Error loading account statement:', error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'No se pudo cargar el estado de cuenta'
+      });
+    }
+  }
+
+  closeStatementModal() {
+    this.showStatementModal = false;
+    this.statementData = null;
+    this.statementMovements = [];
+  }
+
+  downloadAsPDF() {
+    try {
+      const doc = new jsPDF.default();
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const pageHeight = doc.internal.pageSize.getHeight();
+      let yPos = 20;
+
+      // Encabezado
+      doc.setFontSize(16);
+      doc.setFont('helvetica', 'bold');
+      doc.text('ESTUDIANTINA TONANTZIN GUADALUPE', pageWidth / 2, yPos, { align: 'center' });
+      yPos += 8;
+      
+      doc.setFontSize(14);
+      doc.text('ESTADO DE CUENTA', pageWidth / 2, yPos, { align: 'center' });
+      yPos += 10;
+
+      // Línea separadora
+      doc.setLineWidth(0.5);
+      doc.line(15, yPos, pageWidth - 15, yPos);
+      yPos += 10;
+
+      // Fecha de emisión
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
+      doc.text(`Fecha de emisión: ${this.statementData.emissionDate}`, 15, yPos);
+      yPos += 10;
+
+      // Información de la cuenta
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'bold');
+      doc.text('INFORMACIÓN DE LA CUENTA', 15, yPos);
+      yPos += 8;
+
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
+      doc.text(`Titular: ${this.statementData.account.userName}`, 15, yPos);
+      yPos += 6;
+      doc.text(`Número de cuenta: ${this.statementData.account.accountNumber}`, 15, yPos);
+      yPos += 6;
+      doc.text(`Número de tarjeta: ${this.statementData.account.cardNumber}`, 15, yPos);
+      yPos += 6;
+      doc.text(`Saldo disponible: $${this.statementData.account.balance.toFixed(2)}`, 15, yPos);
+      yPos += 6;
+      doc.text(`Estado: ${this.statementData.status}`, 15, yPos);
+      yPos += 12;
+
+      // Movimientos
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'bold');
+      doc.text('MOVIMIENTOS', 15, yPos);
+      yPos += 8;
+
+      if (this.statementMovements.length === 0) {
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'italic');
+        doc.text('No hay movimientos registrados', 15, yPos);
+      } else {
+        doc.setFontSize(9);
+        doc.setFont('helvetica', 'normal');
+
+        this.statementMovements.forEach((movement: any, index: number) => {
+          // Verificar si necesitamos nueva página
+          if (yPos > pageHeight - 30) {
+            doc.addPage();
+            yPos = 20;
+          }
+
+          const date = movement.createdAt?.toDate()?.toLocaleString('es-MX') || 'Fecha no disponible';
+          const type = movement.type === 'deposit' ? 'DEPÓSITO' : 'RETIRO';
+          const amount = movement.type === 'deposit' ? `+$${movement.amount.toFixed(2)}` : `-$${movement.amount.toFixed(2)}`;
+          const balance = movement.balanceAfter ? `$${movement.balanceAfter.toFixed(2)}` : 'N/A';
+
+          doc.setFont('helvetica', 'bold');
+          doc.text(`${index + 1}. ${date}`, 15, yPos);
+          yPos += 5;
+          
+          doc.setFont('helvetica', 'normal');
+          doc.text(`   Tipo: ${type}`, 15, yPos);
+          yPos += 5;
+          doc.text(`   Monto: ${amount}`, 15, yPos);
+          yPos += 5;
+          doc.text(`   Concepto: ${movement.concept || 'Sin concepto'}`, 15, yPos);
+          yPos += 5;
+          doc.text(`   Saldo después: ${balance}`, 15, yPos);
+          yPos += 8;
+        });
+      }
+
+      // Pie de página
+      if (yPos > pageHeight - 20) {
+        doc.addPage();
+        yPos = 20;
+      }
+      yPos = pageHeight - 15;
+      doc.setLineWidth(0.5);
+      doc.line(15, yPos - 5, pageWidth - 15, yPos - 5);
+      doc.setFontSize(8);
+      doc.setFont('helvetica', 'italic');
+      doc.text('Documento generado automáticamente', pageWidth / 2, yPos, { align: 'center' });
+      doc.text('Estudiantina Tonantzin Guadalupe', pageWidth / 2, yPos + 4, { align: 'center' });
+
+      // Guardar PDF
+      const fileName = `Estado_Cuenta_${this.statementData.account.accountNumber}_${new Date().getTime()}.pdf`;
+      doc.save(fileName);
+
+      Swal.fire({
+        icon: 'success',
+        title: '¡PDF descargado!',
+        text: 'El estado de cuenta ha sido descargado exitosamente',
+        timer: 2000,
+        showConfirmButton: false
+      });
+
+      this.closeStatementModal();
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'No se pudo generar el PDF'
+      });
+    }
   }
 
   getMovementIcon(type: string): string {

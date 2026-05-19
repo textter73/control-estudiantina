@@ -35,6 +35,34 @@
       </div>
     </div>
 
+    <!-- Indicadores Financieros -->
+    <div class="financial-indicators" *ngIf="accounts.length > 0">
+      <div class="indicator-card estudiantina">
+        <div class="indicator-icon">🎵</div>
+        <div class="indicator-content">
+          <span class="indicator-label">Cuenta Estudiantina</span>
+          <span class="indicator-value">${{ getEstudiantinaBalance().toLocaleString('es-MX', {minimumFractionDigits: 2, maximumFractionDigits: 2}) }}</span>
+          <span class="indicator-subtitle">Tonantzin Guadalupe</span>
+        </div>
+      </div>
+      <div class="indicator-card total">
+        <div class="indicator-icon">💰</div>
+        <div class="indicator-content">
+          <span class="indicator-label">Total en Cuentas</span>
+          <span class="indicator-value">${{ getTotalBalance().toLocaleString('es-MX', {minimumFractionDigits: 2, maximumFractionDigits: 2}) }}</span>
+          <span class="indicator-subtitle">{{ accounts.length }} cuentas</span>
+        </div>
+      </div>
+      <div class="indicator-card average">
+        <div class="indicator-icon">📊</div>
+        <div class="indicator-content">
+          <span class="indicator-label">Promedio por Cuenta</span>
+          <span class="indicator-value">${{ getAverageBalance().toLocaleString('es-MX', {minimumFractionDigits: 2, maximumFractionDigits: 2}) }}</span>
+          <span class="indicator-subtitle">Basado en {{ accounts.length }} cuentas</span>
+        </div>
+      </div>
+    </div>
+
     <!-- Cuentas existentes -->
     <div class="accounts-section">
       <div class="accounts-header">
@@ -104,6 +132,9 @@
             </button>
             <button class="action-btn withdraw" (click)="openTransactionModal(account, 'withdrawal'); $event.stopPropagation()">
               💸 Retirar
+            </button>
+            <button class="action-btn download" (click)="downloadAccountStatement(account); $event.stopPropagation()">
+              💾 Estado de Cuenta
             </button>
           </div>
         </div>
@@ -246,6 +277,105 @@
       
       <div class="modal-footer">
         <button class="close-btn-footer" (click)="closeMovementsModal()">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Estado de Cuenta -->
+  <div class="statement-modal" *ngIf="showStatementModal" (click)="closeStatementModal()">
+    <div class="modal-content statement-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h4>📄 Estado de Cuenta</h4>
+        <button class="close-btn" (click)="closeStatementModal()">✕</button>
+      </div>
+      
+      <div class="modal-body statement-body">
+        <!-- Encabezado del documento -->
+        <div class="statement-header">
+          <h2>ESTUDIANTINA TONANTZIN GUADALUPE</h2>
+          <h3>ESTADO DE CUENTA</h3>
+          <p class="emission-date">Fecha de emisión: {{ statementData?.emissionDate }}</p>
+        </div>
+
+        <!-- Información de la cuenta -->
+        <div class="statement-section">
+          <h4>INFORMACIÓN DE LA CUENTA</h4>
+          <div class="info-grid">
+            <div class="info-row">
+              <span class="info-label">Titular:</span>
+              <span class="info-value">{{ statementData?.account?.userName }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Número de cuenta:</span>
+              <span class="info-value">{{ statementData?.account?.accountNumber }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Número de tarjeta:</span>
+              <span class="info-value">{{ statementData?.account?.cardNumber }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Saldo disponible:</span>
+              <span class="info-value balance">${{ statementData?.account?.balance?.toFixed(2) }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Estado:</span>
+              <span class="info-value">{{ statementData?.status }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Movimientos -->
+        <div class="statement-section">
+          <h4>MOVIMIENTOS</h4>
+          <div class="table-container" *ngIf="statementMovements.length > 0">
+            <table class="movements-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Fecha</th>
+                  <th>Tipo</th>
+                  <th>Concepto</th>
+                  <th class="text-right">Monto</th>
+                  <th class="text-right">Saldo Después</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let movement of statementMovements; let i = index" 
+                    [class.row-deposit]="movement.type === 'deposit'" 
+                    [class.row-withdrawal]="movement.type === 'withdrawal'">
+                  <td class="number-col">{{ i + 1 }}</td>
+                  <td class="date-col">{{ movement.createdAt?.toDate() | date:'dd/MM/yyyy HH:mm' }}</td>
+                  <td class="type-col">
+                    <span class="type-badge" [class.badge-deposit]="movement.type === 'deposit'" [class.badge-withdrawal]="movement.type === 'withdrawal'">
+                      {{ movement.type === 'deposit' ? 'DEPÓSITO' : 'RETIRO' }}
+                    </span>
+                  </td>
+                  <td class="concept-col">{{ movement.concept || 'Sin concepto' }}</td>
+                  <td class="amount-col text-right" [class.amount-deposit]="movement.type === 'deposit'" [class.amount-withdrawal]="movement.type === 'withdrawal'">
+                    {{ movement.type === 'deposit' ? '+' : '-' }}${{ movement.amount?.toFixed(2) }}
+                  </td>
+                  <td class="balance-col text-right">{{ movement.balanceAfter ? '$' + movement.balanceAfter.toFixed(2) : 'N/A' }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="no-movements-statement" *ngIf="statementMovements.length === 0">
+            <p>No hay movimientos registrados</p>
+          </div>
+        </div>
+
+        <!-- Pie del documento -->
+        <div class="statement-footer">
+          <p>Documento generado automáticamente</p>
+          <p>Estudiantina Tonantzin Guadalupe</p>
+        </div>
+      </div>
+      
+      <div class="modal-footer statement-footer-actions">
+        <button class="cancel-btn" (click)="closeStatementModal()">Cerrar</button>
+        <button class="download-pdf-btn" (click)="downloadAsPDF()">
+          📥 Descargar PDF
+        </button>
       </div>
     </div>
   </div>

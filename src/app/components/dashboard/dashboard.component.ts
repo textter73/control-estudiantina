@@ -109,6 +109,7 @@ export class DashboardComponent implements OnInit {
 
   // Lista de todos los integrantes con sus estadísticas
   membersAttendanceList: any[] = [];
+  rankingStartDate: Date | null = null;
 
   getPercentage(count: number): number {
     return this.totalAttendances > 0 ? Math.round((count / this.totalAttendances) * 100) : 0;
@@ -887,6 +888,11 @@ export class DashboardComponent implements OnInit {
   }
 
   loadAllMembersAttendance() {
+    // Calcular fecha de inicio (10 meses atrás)
+    const tenMonthsAgo = new Date();
+    tenMonthsAgo.setMonth(tenMonthsAgo.getMonth() - 10);
+    this.rankingStartDate = tenMonthsAgo;
+
     // Cargar usuarios y asistencias para calcular estadísticas de todos
     Promise.all([
       this.firestore.collection('users').get().toPromise(),
@@ -905,7 +911,12 @@ export class DashboardComponent implements OnInit {
         user.email !== 'estudiantina@tonantzin.com'
       );
       
-      const attendances = attendanceSnapshot?.docs.map(doc => doc.data()) || [];
+      // Filtrar asistencias de los últimos 10 meses
+      const allAttendances = attendanceSnapshot?.docs.map(doc => doc.data()) || [];
+      const attendances = allAttendances.filter((attendance: any) => {
+        const attendanceDate = attendance.date?.toDate ? attendance.date.toDate() : new Date(attendance.date);
+        return attendanceDate >= tenMonthsAgo;
+      });
       
       const memberStats = users.map(user => {
         let eventTotal = 0, eventAttended = 0;

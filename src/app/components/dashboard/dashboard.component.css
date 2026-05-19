@@ -4017,6 +4017,24 @@
   font-style: italic;
 }
 
+.ranking-period {
+  margin: 10px 0 0 0;
+  padding: 8px 12px;
+  background: #f0f9ff;
+  border-left: 3px solid #189d98;
+  border-radius: 4px;
+  color: #0f6b68;
+  font-size: 0.85rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ranking-period .period-icon {
+  font-size: 1rem;
+}
+
 .ranking-modal-body {
   flex: 1;
   padding: 20px 30px;
@@ -4054,6 +4072,11 @@
   
   .ranking-modal-content .modal-header {
     padding: 20px;
+  }
+  
+  .ranking-period {
+    font-size: 0.75rem;
+    padding: 6px 10px;
   }
   
   .ranking-modal-body {

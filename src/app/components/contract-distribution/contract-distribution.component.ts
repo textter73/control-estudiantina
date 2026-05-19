@@ -378,6 +378,74 @@ export class ContractDistributionComponent implements OnInit {
     }
   }
 
+  async deleteValidationPayroll(payroll?: any) {
+    try {
+      // Si no se proporciona payroll, usar la actual cargada
+      const payrollToDelete = payroll || { 
+        id: this.currentPayrollId, 
+        contractName: this.contractName 
+      };
+
+      if (!payrollToDelete.id) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'No hay nómina para eliminar'
+        });
+        return;
+      }
+
+      // Confirmar eliminación
+      const result = await Swal.fire({
+        title: '🗑️ Eliminar Nómina en Validación',
+        html: `
+          <p>¿Estás seguro de eliminar esta nómina?</p>
+          <br>
+          <p><strong>Contrato:</strong> ${payrollToDelete.contractName || this.contractName}</p>
+          <br>
+          <p style="color: #dc2626; font-weight: bold;">⚠️ Esta acción no se puede deshacer.</p>
+          <p style="color: #666;">No se han registrado transacciones aún, solo se eliminará el registro de validación.</p>
+        `,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Sí, eliminar',
+        confirmButtonColor: '#dc2626',
+        cancelButtonText: 'Cancelar'
+      });
+
+      if (!result.isConfirmed) return;
+
+      // Eliminar documento de Firestore
+      await this.firestore.collection('payrolls').doc(payrollToDelete.id).delete();
+      
+      console.log(`🗑️ Nómina eliminada - ID: ${payrollToDelete.id}`);
+
+      // Recargar lista de validaciones
+      await this.loadValidationPayrolls();
+
+      // Si era la nómina actual, limpiar formulario
+      if (payrollToDelete.id === this.currentPayrollId) {
+        this.resetForm();
+      }
+
+      Swal.fire({
+        icon: 'success',
+        title: '✅ Nómina Eliminada',
+        text: 'La nómina en validación ha sido eliminada exitosamente',
+        timer: 2500,
+        confirmButtonColor: '#10b981'
+      });
+
+    } catch (error) {
+      console.error('❌ Error deleting payroll:', error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'No se pudo eliminar la nómina'
+      });
+    }
+  }
+
   calculateDistribution() {
     if (!this.contractAmount || this.contractAmount <= 0) {
       Swal.fire({

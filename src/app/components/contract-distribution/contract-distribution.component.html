@@ -143,6 +143,12 @@
           {{ payrollStatus === 'nuevo' ? '📋 Enviar a Validación' : '🔄 Actualizar Validación' }}
         </button>
         <button 
+          class="cancel-btn" 
+          (click)="deleteValidationPayroll()" 
+          *ngIf="payrollStatus === 'validacion'">
+          🗑️ Cancelar Nómina
+        </button>
+        <button 
           class="generate-btn" 
           (click)="saveAndGeneratePDFs()" 
           [disabled]="attendees === 0">
@@ -347,6 +353,9 @@
             </div>
             <div class="validation-card-footer">
               <button class="load-btn" (click)="loadPayroll(payroll)">📂 Seleccionar esta Nómina</button>
+              <button class="delete-btn" (click)="deleteValidationPayroll(payroll); $event.stopPropagation()" title="Eliminar nómina">
+                🗑️ Eliminar
+              </button>
             </div>
           </div>
         </div>

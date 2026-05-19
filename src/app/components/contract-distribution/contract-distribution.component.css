@@ -436,6 +436,16 @@
   box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
 }
 
+.cancel-btn {
+  background: linear-gradient(135deg, #dc2626, #b91c1c);
+  color: white;
+}
+
+.cancel-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(220, 38, 38, 0.4);
+}
+
 .calculate-btn:disabled,
 .preview-btn:disabled,
 .generate-btn:disabled,
@@ -967,6 +977,34 @@
   box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
 }
 
+.delete-btn {
+  padding: 0.75rem;
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.9rem;
+}
+
+.delete-btn:hover {
+  background: linear-gradient(135deg, #dc2626, #b91c1c);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+}
+
+.validation-card-footer {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.validation-card-footer .load-btn {
+  flex: 1;
+}
+
 .empty-state {
   grid-column: 1 / -1;
   text-align: center;
@@ -1007,6 +1045,7 @@
   .preview-btn,
   .generate-btn,
   .validation-btn,
+  .cancel-btn,
   .toggle-all-btn,
   .toggle-none-btn {
     width: 100%;

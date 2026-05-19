@@ -718,6 +718,55 @@ export class DashboardComponent implements OnInit {
     }
   }
 
+  // Helper para descargar PDFs compatible con iOS
+  private downloadPDF(doc: any, filename: string) {
+    try {
+      // Detectar si es iOS/Safari
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+      const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+      
+      if (isIOS || isSafari) {
+        // Método compatible con iOS
+        const blob = doc.output('blob');
+        const url = URL.createObjectURL(blob);
+        
+        // Crear enlace temporal
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = filename;
+        link.style.display = 'none';
+        
+        // Agregar al DOM, hacer click y remover
+        document.body.appendChild(link);
+        link.click();
+        
+        // Limpiar después de un delay
+        setTimeout(() => {
+          document.body.removeChild(link);
+          URL.revokeObjectURL(url);
+        }, 100);
+      } else {
+        // Método estándar para otros navegadores
+        doc.save(filename);
+      }
+    } catch (error) {
+      console.error('Error downloading PDF:', error);
+      // Intentar método alternativo
+      try {
+        const blob = doc.output('blob');
+        const url = URL.createObjectURL(blob);
+        window.open(url, '_blank');
+      } catch (fallbackError) {
+        console.error('Fallback method also failed:', fallbackError);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error al descargar PDF',
+          text: 'No se pudo descargar el archivo. Intenta desde otro navegador.'
+        });
+      }
+    }
+  }
+
   closeStatementModal() {
     this.showStatementModal = false;
     this.statementData = null;
@@ -896,9 +945,9 @@ export class DashboardComponent implements OnInit {
         doc.text('Estudiantina Tonantzin Guadalupe', pageWidth / 2, footerY + 4, { align: 'center' });
       }
 
-      // Guardar PDF
+      // Guardar PDF (compatible con iOS)
       const fileName = `Estado_Cuenta_${this.statementData.account.accountNumber}_${new Date().getTime()}.pdf`;
-      doc.save(fileName);
+      this.downloadPDF(doc, fileName);
 
       Swal.fire({
         icon: 'success',

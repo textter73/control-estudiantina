@@ -1,0 +1,365 @@
+<div class="payroll-container">
+  <header class="payroll-header">
+    <div class="header-content">
+      <div class="logo-section">
+        <img src="assets/estonantzin.jpeg" alt="Logo Estudiantina" class="logo">
+        <h4>Estudiantina Tonantzin Guadalupe</h4>
+      </div>
+      <div class="user-info">
+        <button class="back-btn" (click)="goBack()">
+          ← Dashboard
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="payroll-main">
+    <div class="page-title">
+      <div class="title-content">
+        <div>
+          <h2>💰 Distribución de Nómina</h2>
+          <p>Sistema de reparto de pagos de contratos</p>
+        </div>
+        <button 
+          class="load-validation-btn" 
+          (click)="openValidationList()"
+          *ngIf="payrollStatus === 'nuevo'">
+          📂 Cargar Nómina en Validación
+          <span class="badge" *ngIf="validationPayrolls.length > 0">{{ validationPayrolls.length }}</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Mensaje informativo del flujo -->
+    <div class="workflow-info" *ngIf="payrollStatus === 'nuevo'">
+      <div class="workflow-step">
+        <span class="step-number">1</span>
+        <span class="step-text">Completa datos y marca asistentes</span>
+      </div>
+      <span class="workflow-arrow">→</span>
+      <div class="workflow-step">
+        <span class="step-number">2</span>
+        <span class="step-text">Envía a validación (genera PDF preliminar)</span>
+      </div>
+      <span class="workflow-arrow">→</span>
+      <div class="workflow-step">
+        <span class="step-number">3</span>
+        <span class="step-text">Genera nómina final (transacciones + PDFs)</span>
+      </div>
+    </div>
+
+    <!-- Formulario de contrato -->
+    <div class="contract-form-card">
+      <div class="card-header">
+        <h3>📋 Datos del Contrato</h3>
+        <span class="status-badge" [ngClass]="{
+          'status-nuevo': payrollStatus === 'nuevo',
+          'status-validacion': payrollStatus === 'validacion',
+          'status-completada': payrollStatus === 'completada'
+        }">
+          {{ payrollStatus === 'nuevo' ? '✨ Nueva Nómina' : 
+             payrollStatus === 'validacion' ? '📋 En Validación' : 
+             '✅ Completada' }}
+        </span>
+      </div>
+      
+      <!-- Información de última actualización -->
+      <div class="update-info" *ngIf="lastUpdatedAt">
+        <span class="update-label">🔄 Última actualización:</span>
+        <span class="update-date">{{ lastUpdatedAt | date:'dd/MM/yyyy HH:mm' }}</span>
+      </div>
+      
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="contractName">Nombre del Contrato</label>
+          <input 
+            type="text" 
+            id="contractName" 
+            [(ngModel)]="contractName" 
+            placeholder="Ej: Contrato cumpleaños, Toluca"
+            class="form-input">
+        </div>
+
+        <div class="form-group">
+          <label for="contractAmount">Monto Total del Contrato</label>
+          <div class="input-with-prefix">
+            <span class="prefix">$</span>
+            <input 
+              type="number" 
+              id="contractAmount" 
+              [(ngModel)]="contractAmount" 
+              placeholder="0.00"
+              min="0"
+              step="0.01"
+              class="form-input with-prefix">
+          </div>
+        </div>
+      </div>
+
+      <div class="summary-box" *ngIf="attendees > 0">
+        <div class="summary-item">
+          <span class="summary-label">Asistentes:</span>
+          <span class="summary-value">{{ attendees }}</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">Monto Unitario:</span>
+          <span class="summary-value">${{ unitAmount }}</span>
+        </div>
+        <div class="summary-item">
+          <span class="summary-label">Total Bruto:</span>
+          <span class="summary-value">${{ totalGross }}</span>
+        </div>
+        <div class="summary-item highlight">
+          <span class="summary-label">Total Impuestos:</span>
+          <span class="summary-value">${{ totalTax }}</span>
+        </div>
+        <div class="info-message">
+          <small>💰 El impuesto recaudado será depositado a la caja de Estudiantina Tonantzin</small>
+        </div>
+        <div class="summary-item success">
+          <span class="summary-label">Total Neto:</span>
+          <span class="summary-value">${{ totalNet }}</span>
+        </div>
+      </div>
+
+      <div class="action-buttons">
+        <button class="calculate-btn" (click)="calculateDistribution()">
+          🧮 Calcular Distribución
+        </button>
+        <button class="toggle-all-btn" (click)="markAllAttendance(true)">
+          ✅ Marcar Todos
+        </button>
+        <button class="toggle-none-btn" (click)="markAllAttendance(false)">
+          ❌ Desmarcar Todos
+        </button>
+        <button class="preview-btn" (click)="openPreview()" [disabled]="attendees === 0">
+          👁️ Previsualizar
+        </button>
+        <button 
+          class="validation-btn" 
+          (click)="sendToValidation()" 
+          [disabled]="attendees === 0"
+          *ngIf="payrollStatus !== 'completada'">
+          {{ payrollStatus === 'nuevo' ? '📋 Enviar a Validación' : '🔄 Actualizar Validación' }}
+        </button>
+        <button 
+          class="generate-btn" 
+          (click)="saveAndGeneratePDFs()" 
+          [disabled]="attendees === 0">
+          🎯 Generar Nómina Final
+        </button>
+      </div>
+    </div>
+
+    <!-- Tabla de empleados -->
+    <div class="employees-table-card">
+      <h3>👥 Lista de Integrantes</h3>
+      <p class="table-subtitle">Marca quiénes asistieron y edita los datos si es necesario</p>
+
+      <div class="table-container">
+        <table class="employees-table">
+          <thead>
+            <tr>
+              <th class="th-narrow">N.P.</th>
+              <th class="th-wide">Nombre</th>
+              <th class="th-narrow">Nivel</th>
+              <th class="th-narrow">IMP %</th>
+              <th class="th-narrow">ASIS</th>
+              <th class="th-medium">BRUTO</th>
+              <th class="th-medium">IMP</th>
+              <th class="th-medium">NETO</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let employee of allEmployees; let i = index" 
+                [class.attended-row]="employee.attended"
+                [class.not-attended-row]="!employee.attended">
+              <td class="text-center">{{ i + 1 }}</td>
+              <td class="employee-name">{{ employee.name }}</td>
+              <td class="text-center">
+                <span class="level-badge" [class]="'level-' + employee.level">
+                  {{ employee.level }}
+                </span>
+              </td>
+              <td class="text-center">
+                <input 
+                  type="number" 
+                  [(ngModel)]="employee.taxPercentage" 
+                  (change)="updateEmployeeData(employee, 'taxPercentage', employee.taxPercentage)"
+                  class="small-input"
+                  min="0"
+                  max="100"
+                  [disabled]="!employee.attended">
+              </td>
+              <td class="text-center">
+                <button 
+                  class="attendance-toggle" 
+                  [class.attended]="employee.attended"
+                  (click)="toggleAttendance(employee)">
+                  {{ employee.attended ? '✓' : '✗' }}
+                </button>
+              </td>
+              <td class="text-right">
+                <input 
+                  type="number" 
+                  [(ngModel)]="employee.gross" 
+                  (change)="updateEmployeeData(employee, 'gross', employee.gross)"
+                  class="small-input"
+                  step="0.01"
+                  [disabled]="!employee.attended">
+              </td>
+              <td class="text-right tax-value">
+                ${{ employee.tax }}
+              </td>
+              <td class="text-right net-value">
+                ${{ employee.net }}
+              </td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr class="totals-row">
+              <td colspan="5" class="text-right"><strong>TOTALES:</strong></td>
+              <td class="text-right"><strong>${{ totalGross }}</strong></td>
+              <td class="text-right"><strong>${{ totalTax }}</strong></td>
+              <td class="text-right"><strong>${{ totalNet }}</strong></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <!-- Modal de Previsualización -->
+  <div class="preview-modal" *ngIf="showPreviewModal" (click)="closePreview()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h4>👁️ Previsualización de Nómina</h4>
+        <button class="close-btn" (click)="closePreview()">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <!-- Resumen del contrato -->
+        <div class="preview-section">
+          <h5>📋 {{ contractName }}</h5>
+          <div class="preview-grid">
+            <div class="preview-item">
+              <span class="label">Monto del contrato:</span>
+              <span class="value">${{ contractAmount.toFixed(2) }}</span>
+            </div>
+            <div class="preview-item">
+              <span class="label">Asistentes:</span>
+              <span class="value">{{ attendees }}</span>
+            </div>
+            <div class="preview-item">
+              <span class="label">Monto unitario:</span>
+              <span class="value">${{ unitAmount.toFixed(2) }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Totales -->
+        <div class="preview-section totals-section">
+          <h5>💵 Totales</h5>
+          <div class="totals-preview-grid">
+            <div class="total-item">
+              <span class="label">Total Bruto:</span>
+              <span class="value">${{ totalGross }}</span>
+            </div>
+            <div class="total-item highlight">
+              <span class="label">Total Impuestos (→ Estudiantina):</span>
+              <span class="value">${{ totalTax }}</span>
+            </div>
+            <div class="total-item success">
+              <span class="label">Total Neto (→ Integrantes):</span>
+              <span class="value">${{ totalNet }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Lista de asistentes -->
+        <div class="preview-section">
+          <h5>👥 Asistentes ({{ attendees }})</h5>
+          <div class="attendees-list">
+            <div class="attendee-card" *ngFor="let employee of attendedEmployees">
+              <div class="attendee-name">
+                <strong>{{ employee.name }}</strong>
+                <span class="level-tag">Nivel {{ employee.level }}</span>
+              </div>
+              <div class="attendee-amounts">
+                <span class="amount-item">Bruto: ${{ employee.gross }}</span>
+                <span class="amount-item tax">Imp ({{ employee.taxPercentage }}%): ${{ employee.tax }}</span>
+                <span class="amount-item net">Neto: ${{ employee.net }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="cancel-btn" (click)="closePreview()">Cerrar</button>
+        <button class="confirm-btn" (click)="saveAndGeneratePDFs()">
+          📥 Confirmar y Generar PDFs
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Lista de Nóminas en Validación -->
+  <div class="modal-overlay" *ngIf="showValidationListModal" (click)="closeValidationList()">
+    <div class="modal-content validation-list-modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>📋 Nóminas en Validación ({{ validationPayrolls.length }})</h3>
+        <button class="close-btn" (click)="closeValidationList()">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <p class="modal-description">
+          Selecciona una nómina para continuar el proceso de validación y generar la nómina final.
+        </p>
+
+        <div class="validation-list" *ngIf="validationPayrolls.length > 0">
+          <div class="validation-card" *ngFor="let payroll of validationPayrolls; let i = index">
+            <div class="validation-card-header">
+              <h4>{{ payroll.contractName || 'Sin nombre' }}</h4>
+              <span class="validation-badge">En Validación</span>
+            </div>
+            <div class="validation-card-body">
+              <div class="validation-info">
+                <span class="info-label">💵 Monto:</span>
+                <span class="info-value">${{ payroll.contractAmount || 0 }}</span>
+              </div>
+              <div class="validation-info">
+                <span class="info-label">👥 Asistentes:</span>
+                <span class="info-value">{{ payroll.attendees || 0 }}</span>
+              </div>
+              <div class="validation-info">
+                <span class="info-label">📅 Creada:</span>
+                <span class="info-value">{{ payroll.createdAt?.toDate ? payroll.createdAt.toDate().toLocaleDateString('es-MX') : 'N/A' }}</span>
+              </div>
+              <div class="validation-info">
+                <span class="info-label">💰 Total Neto:</span>
+                <span class="info-value success">${{ payroll.totalNet || 0 }}</span>
+              </div>
+              <div class="validation-info">
+                <span class="info-label">🏦 Impuestos:</span>
+                <span class="info-value highlight">${{ payroll.totalTax || 0 }}</span>
+              </div>
+            </div>
+            <div class="validation-card-footer">
+              <button class="load-btn" (click)="loadPayroll(payroll)">📂 Seleccionar esta Nómina</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="empty-state" *ngIf="validationPayrolls.length === 0">
+          <p>😔 No hay nóminas en validación</p>
+          <p style="font-size: 0.9rem; margin-top: 0.5rem;">Las nóminas aparecerán aquí después de enviarlas a validación.</p>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="cancel-btn" (click)="closeValidationList()">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>

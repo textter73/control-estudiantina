@@ -138,6 +138,11 @@
         <span class="action-text">Finanzas</span>
       </button>
       
+      <button class="action" routerLink="/contract-distribution" *ngIf="isAdmin || canManagePayments">
+        <span class="action-icon">💵</span>
+        <span class="action-text">Nómina</span>
+      </button>
+      
       <button class="action" routerLink="/payment-requests" *ngIf="canManagePayments">
         <span class="action-icon">💰</span>
         <span class="action-text">Solicitudes de Pago</span>

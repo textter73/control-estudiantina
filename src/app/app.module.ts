@@ -34,6 +34,7 @@ import { MisDocumentosComponent } from './components/mis-documentos/mis-document
 import { InventoryManagementComponent } from './components/inventory-management/inventory-management.component';
 import { SupplyRequestComponent } from './components/supply-request/supply-request.component';
 import { MemberEvaluationComponent } from './components/member-evaluation/member-evaluation.component';
+import { ContractDistributionComponent } from './components/contract-distribution/contract-distribution.component';
 import { InsumoService } from './services/insumo.service';
 import { UserEvaluationService } from './services/user-evaluation.service';
 
@@ -59,7 +60,8 @@ import { UserEvaluationService } from './services/user-evaluation.service';
     MisDocumentosComponent,
     InventoryManagementComponent,
     SupplyRequestComponent,
-    MemberEvaluationComponent
+    MemberEvaluationComponent,
+    ContractDistributionComponent
   ],
   imports: [
     BrowserModule,

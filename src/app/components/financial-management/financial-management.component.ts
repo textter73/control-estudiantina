@@ -3,7 +3,7 @@ import { Router } from '@angular/router';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
 import Swal from 'sweetalert2';
-import * as jsPDF from 'jspdf';
+import jsPDF from 'jspdf';
 
 @Component({
   selector: 'app-financial-management',
@@ -430,9 +430,9 @@ export class FinancialManagementComponent implements OnInit {
 
   downloadAsPDF() {
     try {
-      const doc = new jsPDF.default();
-      const pageWidth = doc.internal.pageSize.getWidth();
-      const pageHeight = doc.internal.pageSize.getHeight();
+      const doc = new jsPDF();
+      const pageWidth = doc.internal.pageSize.width || doc.internal.pageSize.getWidth();
+      const pageHeight = doc.internal.pageSize.height || doc.internal.pageSize.getHeight();
       let yPos = 20;
 
       // Encabezado
@@ -473,9 +473,9 @@ export class FinancialManagementComponent implements OnInit {
       doc.text(`Saldo disponible: $${this.statementData.account.balance.toFixed(2)}`, 15, yPos);
       yPos += 6;
       doc.text(`Estado: ${this.statementData.status}`, 15, yPos);
-      yPos += 12;
+      yPos += 15;
 
-      // Movimientos
+      // Movimientos - Tabla Manual
       doc.setFontSize(12);
       doc.setFont('helvetica', 'bold');
       doc.text('MOVIMIENTOS', 15, yPos);
@@ -485,50 +485,120 @@ export class FinancialManagementComponent implements OnInit {
         doc.setFontSize(10);
         doc.setFont('helvetica', 'italic');
         doc.text('No hay movimientos registrados', 15, yPos);
+        yPos += 10;
       } else {
-        doc.setFontSize(9);
+        // Definir columnas de la tabla
+        const tableX = 15;
+        const tableWidth = pageWidth - 30;
+        const col1 = tableX; // #
+        const col2 = col1 + 12; // Fecha
+        const col3 = col2 + 40; // Tipo
+        const col4 = col3 + 25; // Concepto
+        const col5 = col4 + 55; // Monto
+        const col6 = col5 + 30; // Saldo
+        const rowHeight = 7;
+
+        // Función para dibujar encabezados de tabla
+        const drawTableHeader = (startY: number) => {
+          doc.setFillColor(24, 157, 152); // Color turquesa
+          doc.rect(tableX, startY, tableWidth, 8, 'F');
+          
+          doc.setTextColor(255, 255, 255);
+          doc.setFontSize(8);
+          doc.setFont('helvetica', 'bold');
+          
+          doc.text('#', col1 + 2, startY + 5.5);
+          doc.text('Fecha', col2 + 2, startY + 5.5);
+          doc.text('Tipo', col3 + 2, startY + 5.5);
+          doc.text('Concepto', col4 + 2, startY + 5.5);
+          doc.text('Monto', col5 + 2, startY + 5.5);
+          doc.text('Saldo Después', col6 + 2, startY + 5.5);
+          
+          doc.setTextColor(0, 0, 0);
+          return startY + 8;
+        };
+
+        // Dibujar encabezado inicial
+        yPos = drawTableHeader(yPos);
+
+        // Dibujar filas de datos
+        doc.setFontSize(8);
         doc.setFont('helvetica', 'normal');
 
         this.statementMovements.forEach((movement: any, index: number) => {
           // Verificar si necesitamos nueva página
-          if (yPos > pageHeight - 30) {
+          if (yPos > pageHeight - 35) {
             doc.addPage();
             yPos = 20;
+            yPos = drawTableHeader(yPos);
           }
 
-          const date = movement.createdAt?.toDate()?.toLocaleString('es-MX') || 'Fecha no disponible';
+          const date = movement.createdAt?.toDate()?.toLocaleDateString('es-MX', {
+            year: '2-digit',
+            month: '2-digit',
+            day: '2-digit'
+          }) || 'N/A';
+          const time = movement.createdAt?.toDate()?.toLocaleTimeString('es-MX', {
+            hour: '2-digit',
+            minute: '2-digit'
+          }) || '';
           const type = movement.type === 'deposit' ? 'DEPÓSITO' : 'RETIRO';
+          const concept = movement.concept || 'Sin concepto';
           const amount = movement.type === 'deposit' ? `+$${movement.amount.toFixed(2)}` : `-$${movement.amount.toFixed(2)}`;
           const balance = movement.balanceAfter ? `$${movement.balanceAfter.toFixed(2)}` : 'N/A';
 
-          doc.setFont('helvetica', 'bold');
-          doc.text(`${index + 1}. ${date}`, 15, yPos);
-          yPos += 5;
-          
+          // Fondo de fila alternado
+          if (index % 2 === 0) {
+            doc.setFillColor(245, 245, 245);
+            doc.rect(tableX, yPos, tableWidth, rowHeight, 'F');
+          }
+
+          // Dibujar datos
           doc.setFont('helvetica', 'normal');
-          doc.text(`   Tipo: ${type}`, 15, yPos);
-          yPos += 5;
-          doc.text(`   Monto: ${amount}`, 15, yPos);
-          yPos += 5;
-          doc.text(`   Concepto: ${movement.concept || 'Sin concepto'}`, 15, yPos);
-          yPos += 5;
-          doc.text(`   Saldo después: ${balance}`, 15, yPos);
-          yPos += 8;
+          doc.text((index + 1).toString(), col1 + 2, yPos + 5);
+          doc.text(date, col2 + 2, yPos + 3.5);
+          doc.text(time, col2 + 2, yPos + 6, { maxWidth: 35 });
+          doc.text(type, col3 + 2, yPos + 5);
+          
+          // Concepto con límite de ancho
+          const conceptLines = doc.splitTextToSize(concept, 50);
+          doc.text(conceptLines[0], col4 + 2, yPos + 5);
+          
+          doc.text(amount, col5 + 2, yPos + 5);
+          doc.text(balance, col6 + 2, yPos + 5);
+
+          // Línea divisoria
+          doc.setDrawColor(200, 200, 200);
+          doc.setLineWidth(0.1);
+          doc.line(tableX, yPos + rowHeight, tableX + tableWidth, yPos + rowHeight);
+
+          yPos += rowHeight;
         });
+        
+        yPos += 5;
       }
 
       // Pie de página
-      if (yPos > pageHeight - 20) {
+      const finalY = yPos || 20;
+      const footerY = pageHeight - 15;
+      
+      // Si hay espacio suficiente en la página actual, usar esa página, si no, agregar nueva
+      if (finalY > pageHeight - 30) {
         doc.addPage();
-        yPos = 20;
+        doc.setLineWidth(0.5);
+        doc.line(15, pageHeight - 20, pageWidth - 15, pageHeight - 20);
+        doc.setFontSize(8);
+        doc.setFont('helvetica', 'italic');
+        doc.text('Documento generado automáticamente', pageWidth / 2, pageHeight - 15, { align: 'center' });
+        doc.text('Estudiantina Tonantzin Guadalupe', pageWidth / 2, pageHeight - 11, { align: 'center' });
+      } else {
+        doc.setLineWidth(0.5);
+        doc.line(15, footerY - 5, pageWidth - 15, footerY - 5);
+        doc.setFontSize(8);
+        doc.setFont('helvetica', 'italic');
+        doc.text('Documento generado automáticamente', pageWidth / 2, footerY, { align: 'center' });
+        doc.text('Estudiantina Tonantzin Guadalupe', pageWidth / 2, footerY + 4, { align: 'center' });
       }
-      yPos = pageHeight - 15;
-      doc.setLineWidth(0.5);
-      doc.line(15, yPos - 5, pageWidth - 15, yPos - 5);
-      doc.setFontSize(8);
-      doc.setFont('helvetica', 'italic');
-      doc.text('Documento generado automáticamente', pageWidth / 2, yPos, { align: 'center' });
-      doc.text('Estudiantina Tonantzin Guadalupe', pageWidth / 2, yPos + 4, { align: 'center' });
 
       // Guardar PDF
       const fileName = `Estado_Cuenta_${this.statementData.account.accountNumber}_${new Date().getTime()}.pdf`;

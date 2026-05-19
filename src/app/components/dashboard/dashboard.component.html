@@ -76,6 +76,17 @@
             <span class="balance-amount">${{ userAccount.balance.toFixed(2) }}</span>
           </div>
         </div>
+        <!--
+        
+        <div class="card-actions" style="margin-top: 15px; display: flex; gap: 10px; justify-content: center;">
+          <button class="action-btn" (click)="downloadAccountStatement(); $event.stopPropagation()" 
+                  style="background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 8px; transition: transform 0.2s;"
+                  onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+            💾 Descargar Estado de Cuenta
+          </button>
+        </div>
+
+        -->
       </div>
     </div>
     <br><br>
@@ -923,6 +934,109 @@
       
       <div class="modal-footer">
         <button class="close-btn-footer" (click)="closeMovementsModal()">Cerrar</button>
+        <button class="download-statement-btn" (click)="downloadAccountStatement()" 
+                style="background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; margin-left: 10px;">
+          💾 Descargar Estado de Cuenta
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Estado de Cuenta -->
+  <div class="statement-modal" *ngIf="showStatementModal" (click)="closeStatementModal()">
+    <div class="modal-content statement-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h4>📄 Estado de Cuenta</h4>
+        <button class="close-btn" (click)="closeStatementModal()">✕</button>
+      </div>
+      
+      <div class="modal-body statement-body">
+        <!-- Encabezado del documento -->
+        <div class="statement-header">
+          <h2>ESTUDIANTINA TONANTZIN GUADALUPE</h2>
+          <h3>ESTADO DE CUENTA</h3>
+          <p class="emission-date">Fecha de emisión: {{ statementData?.emissionDate }}</p>
+        </div>
+
+        <!-- Información de la cuenta -->
+        <div class="statement-section">
+          <h4>INFORMACIÓN DE LA CUENTA</h4>
+          <div class="info-grid">
+            <div class="info-row">
+              <span class="info-label">Titular:</span>
+              <span class="info-value">{{ statementData?.account?.userName }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Número de cuenta:</span>
+              <span class="info-value">{{ statementData?.account?.accountNumber }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Número de tarjeta:</span>
+              <span class="info-value">{{ statementData?.account?.cardNumber }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Saldo disponible:</span>
+              <span class="info-value balance">${{ statementData?.account?.balance?.toFixed(2) }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Estado:</span>
+              <span class="info-value">{{ statementData?.status }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Movimientos -->
+        <div class="statement-section">
+          <h4>MOVIMIENTOS</h4>
+          <div class="table-container" *ngIf="statementMovements.length > 0">
+            <table class="movements-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Fecha</th>
+                  <th>Tipo</th>
+                  <th>Concepto</th>
+                  <th class="text-right">Monto</th>
+                  <th class="text-right">Saldo Después</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let movement of statementMovements; let i = index" 
+                    [class.row-deposit]="movement.type === 'deposit'" 
+                    [class.row-withdrawal]="movement.type === 'withdrawal'">
+                  <td class="number-col">{{ i + 1 }}</td>
+                  <td class="date-col">{{ movement.createdAt?.toDate() | date:'dd/MM/yyyy HH:mm' }}</td>
+                  <td class="type-col">
+                    <span class="type-badge" [class.badge-deposit]="movement.type === 'deposit'" [class.badge-withdrawal]="movement.type === 'withdrawal'">
+                      {{ movement.type === 'deposit' ? 'DEPÓSITO' : 'RETIRO' }}
+                    </span>
+                  </td>
+                  <td class="concept-col">{{ movement.concept || 'Sin concepto' }}</td>
+                  <td class="amount-col text-right" [class.amount-deposit]="movement.type === 'deposit'" [class.amount-withdrawal]="movement.type === 'withdrawal'">
+                    {{ movement.type === 'deposit' ? '+' : '-' }}${{ movement.amount?.toFixed(2) }}
+                  </td>
+                  <td class="balance-col text-right">{{ movement.balanceAfter ? '$' + movement.balanceAfter.toFixed(2) : 'N/A' }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="no-movements-statement" *ngIf="statementMovements.length === 0">
+            <p>No hay movimientos registrados</p>
+          </div>
+        </div>
+
+        <!-- Pie del documento -->
+        <div class="statement-footer">
+          <p>Documento generado automáticamente</p>
+          <p>Estudiantina Tonantzin Guadalupe</p>
+        </div>
+      </div>
+      
+      <div class="modal-footer statement-footer-actions">
+        <button class="cancel-btn" (click)="closeStatementModal()">Cerrar</button>
+        <button class="download-pdf-btn" (click)="downloadAsPDF()">
+          📥 Descargar PDF
+        </button>
       </div>
     </div>
   </div>

@@ -6,7 +6,7 @@ import { AuthService } from '../../services/auth.service';
 import { UserEvaluation, EVALUATION_CRITERIA, LEVEL_CONFIGURATIONS } from '../../models/user-evaluation.model';
 import Swal from 'sweetalert2';
 import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
+import 'jspdf-autotable';
 
 @Component({
   selector: 'app-member-evaluation',
@@ -855,7 +855,7 @@ export class MemberEvaluationComponent implements OnInit {
       });
 
       // Generar tabla
-      autoTable(doc, {
+      (doc as any).autoTable({
         startY: 25,
         head: [[
           'Nombre',

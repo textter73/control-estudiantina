@@ -7,6 +7,7 @@ import { UserEvaluationService } from '../../services/user-evaluation.service';
 import { InsumoService } from '../../services/insumo.service';
 import { Insumo } from '../../models/insumo.model';
 import Swal from 'sweetalert2';
+import jsPDF from 'jspdf';
 
 @Component({
   selector: 'app-dashboard',
@@ -37,6 +38,11 @@ export class DashboardComponent implements OnInit {
   cardMovements: any[] = [];
   filteredMovements: any[] = [];
   movementFilter: string = 'all';
+  
+  // Modal de estado de cuenta
+  showStatementModal = false;
+  statementData: any = null;
+  statementMovements: any[] = [];
   
   // Variables para editar perfil
   profileForm = {
@@ -669,6 +675,247 @@ export class DashboardComponent implements OnInit {
       case 'deposit': return 'movement-deposit';
       case 'withdrawal': return 'movement-withdrawal';
       default: return '';
+    }
+  }
+
+  async downloadAccountStatement() {
+    if (!this.userAccount) return;
+
+    try {
+      // Obtener movimientos de la cuenta
+      const movementsSnapshot = await this.firestore.collection('financial-transactions', ref =>
+        ref.where('accountId', '==', this.userAccount.id)
+      ).get().toPromise();
+
+      const movements = movementsSnapshot?.docs.map(doc => doc.data()) || [];
+      const sortedMovements = movements.sort((a: any, b: any) => {
+        const timestampA = a.createdAt?.toDate() || new Date(0);
+        const timestampB = b.createdAt?.toDate() || new Date(0);
+        return timestampB.getTime() - timestampA.getTime();
+      });
+
+      // Preparar datos para el modal de previsualización
+      const currentDate = new Date().toLocaleDateString('es-MX', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+
+      this.statementData = {
+        account: this.userAccount,
+        emissionDate: currentDate,
+        status: this.userAccount.status === 'active' ? 'Activa' : 'Inactiva'
+      };
+      this.statementMovements = sortedMovements;
+      this.showStatementModal = true;
+    } catch (error) {
+      console.error('Error loading account statement:', error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'No se pudo cargar el estado de cuenta'
+      });
+    }
+  }
+
+  closeStatementModal() {
+    this.showStatementModal = false;
+    this.statementData = null;
+    this.statementMovements = [];
+  }
+
+  downloadAsPDF() {
+    try {
+      const doc = new jsPDF();
+      const pageWidth = doc.internal.pageSize.width || doc.internal.pageSize.getWidth();
+      const pageHeight = doc.internal.pageSize.height || doc.internal.pageSize.getHeight();
+      let yPos = 20;
+
+      // Encabezado
+      doc.setFontSize(16);
+      doc.setFont('helvetica', 'bold');
+      doc.text('ESTUDIANTINA TONANTZIN GUADALUPE', pageWidth / 2, yPos, { align: 'center' });
+      yPos += 8;
+      
+      doc.setFontSize(14);
+      doc.text('ESTADO DE CUENTA', pageWidth / 2, yPos, { align: 'center' });
+      yPos += 10;
+
+      // Línea separadora
+      doc.setLineWidth(0.5);
+      doc.line(15, yPos, pageWidth - 15, yPos);
+      yPos += 10;
+
+      // Fecha de emisión
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
+      doc.text(`Fecha de emisión: ${this.statementData.emissionDate}`, 15, yPos);
+      yPos += 10;
+
+      // Información de la cuenta
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'bold');
+      doc.text('INFORMACIÓN DE LA CUENTA', 15, yPos);
+      yPos += 8;
+
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
+      doc.text(`Titular: ${this.statementData.account.userName}`, 15, yPos);
+      yPos += 6;
+      doc.text(`Número de cuenta: ${this.statementData.account.accountNumber}`, 15, yPos);
+      yPos += 6;
+      doc.text(`Número de tarjeta: ${this.statementData.account.cardNumber}`, 15, yPos);
+      yPos += 6;
+      doc.text(`Saldo disponible: $${this.statementData.account.balance.toFixed(2)}`, 15, yPos);
+      yPos += 6;
+      doc.text(`Estado: ${this.statementData.status}`, 15, yPos);
+      yPos += 15;
+
+      // Movimientos - Tabla Manual
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'bold');
+      doc.text('MOVIMIENTOS', 15, yPos);
+      yPos += 8;
+
+      if (this.statementMovements.length === 0) {
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'italic');
+        doc.text('No hay movimientos registrados', 15, yPos);
+        yPos += 10;
+      } else {
+        // Definir columnas de la tabla
+        const tableX = 15;
+        const tableWidth = pageWidth - 30;
+        const col1 = tableX; // #
+        const col2 = col1 + 12; // Fecha
+        const col3 = col2 + 40; // Tipo
+        const col4 = col3 + 25; // Concepto
+        const col5 = col4 + 55; // Monto
+        const col6 = col5 + 30; // Saldo
+        const rowHeight = 7;
+
+        // Función para dibujar encabezados de tabla
+        const drawTableHeader = (startY: number) => {
+          doc.setFillColor(24, 157, 152); // Color turquesa
+          doc.rect(tableX, startY, tableWidth, 8, 'F');
+          
+          doc.setTextColor(255, 255, 255);
+          doc.setFontSize(8);
+          doc.setFont('helvetica', 'bold');
+          
+          doc.text('#', col1 + 2, startY + 5.5);
+          doc.text('Fecha', col2 + 2, startY + 5.5);
+          doc.text('Tipo', col3 + 2, startY + 5.5);
+          doc.text('Concepto', col4 + 2, startY + 5.5);
+          doc.text('Monto', col5 + 2, startY + 5.5);
+          doc.text('Saldo Después', col6 + 2, startY + 5.5);
+          
+          doc.setTextColor(0, 0, 0);
+          return startY + 8;
+        };
+
+        // Dibujar encabezado inicial
+        yPos = drawTableHeader(yPos);
+
+        // Dibujar filas de datos
+        doc.setFontSize(8);
+        doc.setFont('helvetica', 'normal');
+
+        this.statementMovements.forEach((movement: any, index: number) => {
+          // Verificar si necesitamos nueva página
+          if (yPos > pageHeight - 35) {
+            doc.addPage();
+            yPos = 20;
+            yPos = drawTableHeader(yPos);
+          }
+
+          const date = movement.createdAt?.toDate()?.toLocaleDateString('es-MX', {
+            year: '2-digit',
+            month: '2-digit',
+            day: '2-digit'
+          }) || 'N/A';
+          const time = movement.createdAt?.toDate()?.toLocaleTimeString('es-MX', {
+            hour: '2-digit',
+            minute: '2-digit'
+          }) || '';
+          const type = movement.type === 'deposit' ? 'DEPÓSITO' : 'RETIRO';
+          const concept = movement.concept || 'Sin concepto';
+          const amount = movement.type === 'deposit' ? `+$${movement.amount.toFixed(2)}` : `-$${movement.amount.toFixed(2)}`;
+          const balance = movement.balanceAfter ? `$${movement.balanceAfter.toFixed(2)}` : 'N/A';
+
+          // Fondo de fila alternado
+          if (index % 2 === 0) {
+            doc.setFillColor(245, 245, 245);
+            doc.rect(tableX, yPos, tableWidth, rowHeight, 'F');
+          }
+
+          // Dibujar datos
+          doc.setFont('helvetica', 'normal');
+          doc.text((index + 1).toString(), col1 + 2, yPos + 5);
+          doc.text(date, col2 + 2, yPos + 3.5);
+          doc.text(time, col2 + 2, yPos + 6, { maxWidth: 35 });
+          doc.text(type, col3 + 2, yPos + 5);
+          
+          // Concepto con límite de ancho
+          const conceptLines = doc.splitTextToSize(concept, 50);
+          doc.text(conceptLines[0], col4 + 2, yPos + 5);
+          
+          doc.text(amount, col5 + 2, yPos + 5);
+          doc.text(balance, col6 + 2, yPos + 5);
+
+          // Línea divisoria
+          doc.setDrawColor(200, 200, 200);
+          doc.setLineWidth(0.1);
+          doc.line(tableX, yPos + rowHeight, tableX + tableWidth, yPos + rowHeight);
+
+          yPos += rowHeight;
+        });
+        
+        yPos += 5;
+      }
+
+      // Pie de página
+      const finalY = yPos || 20;
+      const footerY = pageHeight - 15;
+      
+      // Si hay espacio suficiente en la página actual, usar esa página, si no, agregar nueva
+      if (finalY > pageHeight - 30) {
+        doc.addPage();
+        doc.setLineWidth(0.5);
+        doc.line(15, pageHeight - 20, pageWidth - 15, pageHeight - 20);
+        doc.setFontSize(8);
+        doc.setFont('helvetica', 'italic');
+        doc.text('Documento generado automáticamente', pageWidth / 2, pageHeight - 15, { align: 'center' });
+        doc.text('Estudiantina Tonantzin Guadalupe', pageWidth / 2, pageHeight - 11, { align: 'center' });
+      } else {
+        doc.setLineWidth(0.5);
+        doc.line(15, footerY - 5, pageWidth - 15, footerY - 5);
+        doc.setFontSize(8);
+        doc.setFont('helvetica', 'italic');
+        doc.text('Documento generado automáticamente', pageWidth / 2, footerY, { align: 'center' });
+        doc.text('Estudiantina Tonantzin Guadalupe', pageWidth / 2, footerY + 4, { align: 'center' });
+      }
+
+      // Guardar PDF
+      const fileName = `Estado_Cuenta_${this.statementData.account.accountNumber}_${new Date().getTime()}.pdf`;
+      doc.save(fileName);
+
+      Swal.fire({
+        icon: 'success',
+        title: '¡PDF descargado!',
+        text: 'Tu estado de cuenta ha sido descargado exitosamente',
+        timer: 2000,
+        showConfirmButton: false
+      });
+
+      this.closeStatementModal();
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'No se pudo generar el PDF. Por favor intenta nuevamente.'
+      });
     }
   }
 

@@ -304,6 +304,10 @@ export class ContractDistributionComponent implements OnInit {
     this.showValidationListModal = false;
   }
 
+  goToHistory() {
+    this.router.navigate(['/payroll-history']);
+  }
+
   async loadPayroll(payroll: any) {
     try {
       // Confirmar carga

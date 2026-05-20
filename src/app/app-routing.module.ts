@@ -28,6 +28,7 @@ import { InventoryManagementComponent } from './components/inventory-management/
 import { SupplyRequestComponent } from './components/supply-request/supply-request.component';
 import { MemberEvaluationComponent } from './components/member-evaluation/member-evaluation.component';
 import { ContractDistributionComponent } from './components/contract-distribution/contract-distribution.component';
+import { PayrollHistoryComponent } from './components/payroll-history/payroll-history.component';
 
 const routes: Routes = [
   { path: '', component: LoginComponent },
@@ -51,6 +52,7 @@ const routes: Routes = [
   { path: 'supply-request', component: SupplyRequestComponent, canActivate: [AuthGuard] },
   { path: 'member-evaluation', component: MemberEvaluationComponent, canActivate: [AdminGuard] },
   { path: 'contract-distribution', component: ContractDistributionComponent, canActivate: [AdminGuard] },
+  { path: 'payroll-history', component: PayrollHistoryComponent, canActivate: [AdminGuard] },
   { path: '**', redirectTo: '' }
 ];
 

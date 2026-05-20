@@ -35,6 +35,7 @@ import { InventoryManagementComponent } from './components/inventory-management/
 import { SupplyRequestComponent } from './components/supply-request/supply-request.component';
 import { MemberEvaluationComponent } from './components/member-evaluation/member-evaluation.component';
 import { ContractDistributionComponent } from './components/contract-distribution/contract-distribution.component';
+import { PayrollHistoryComponent } from './components/payroll-history/payroll-history.component';
 import { InsumoService } from './services/insumo.service';
 import { UserEvaluationService } from './services/user-evaluation.service';
 
@@ -61,7 +62,8 @@ import { UserEvaluationService } from './services/user-evaluation.service';
     InventoryManagementComponent,
     SupplyRequestComponent,
     MemberEvaluationComponent,
-    ContractDistributionComponent
+    ContractDistributionComponent,
+    PayrollHistoryComponent
   ],
   imports: [
     BrowserModule,

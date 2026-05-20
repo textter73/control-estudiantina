@@ -20,13 +20,20 @@
           <h2>💰 Distribución de Nómina</h2>
           <p>Sistema de reparto de pagos de contratos</p>
         </div>
-        <button 
-          class="load-validation-btn" 
-          (click)="openValidationList()"
-          *ngIf="payrollStatus === 'nuevo'">
-          📂 Cargar Nómina en Validación
-          <span class="badge" *ngIf="validationPayrolls.length > 0">{{ validationPayrolls.length }}</span>
-        </button>
+        <div class="title-buttons">
+          <button 
+            class="load-validation-btn" 
+            (click)="openValidationList()"
+            *ngIf="payrollStatus === 'nuevo'">
+            📂 Cargar Nómina en Validación
+            <span class="badge" *ngIf="validationPayrolls.length > 0">{{ validationPayrolls.length }}</span>
+          </button>
+          <button 
+            class="history-btn" 
+            (click)="goToHistory()">
+            📜 Historial de Nóminas
+          </button>
+        </div>
       </div>
     </div>
 

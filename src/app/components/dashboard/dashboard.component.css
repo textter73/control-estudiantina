@@ -4618,6 +4618,45 @@
   text-align: right;
 }
 
+.movements-table .text-center {
+  text-align: center;
+}
+
+.movements-table .action-col {
+  white-space: nowrap;
+  padding: 8px 12px !important;
+}
+
+.receipt-btn {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+  box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);
+}
+
+.receipt-btn:hover {
+  background: linear-gradient(135deg, #059669, #047857);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(16, 185, 129, 0.3);
+}
+
+.receipt-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);
+}
+
+.no-action {
+  color: #d1d5db;
+  font-size: 0.9rem;
+}
+
 .no-movements-statement {
   text-align: center;
   padding: 2rem;

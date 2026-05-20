@@ -1,0 +1,115 @@
+<div class="history-container">
+  <header class="history-header">
+    <button class="back-btn" (click)="goBack()">
+      ← Volver
+    </button>
+    <div class="header-content">
+      <h1>📜 Historial de Nóminas</h1>
+      <p>Consulta y descarga los recibos de nómina general de contratos finalizados</p>
+    </div>
+  </header>
+
+  <main class="history-main">
+    <!-- Loading State -->
+    <div class="loading-state" *ngIf="loading">
+      <div class="spinner"></div>
+      <p>Cargando nóminas...</p>
+    </div>
+
+    <!-- Content -->
+    <div class="history-content" *ngIf="!loading">
+      <!-- Stats Card -->
+      <div class="stats-card">
+        <div class="stat-item">
+          <span class="stat-icon">📊</span>
+          <div class="stat-info">
+            <span class="stat-label">Total de nóminas</span>
+            <span class="stat-value">{{ completedPayrolls.length }}</span>
+          </div>
+        </div>
+        <div class="stat-item">
+          <span class="stat-icon">💰</span>
+          <div class="stat-info">
+            <span class="stat-label">Total pagado</span>
+            <span class="stat-value">${{ totalPaid }}</span>
+          </div>
+        </div>
+        <div class="stat-item">
+          <span class="stat-icon">👥</span>
+          <div class="stat-info">
+            <span class="stat-label">Total asistentes</span>
+            <span class="stat-value">{{ totalAttendees }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Payrolls Grid -->
+      <div class="payrolls-grid" *ngIf="completedPayrolls.length > 0">
+        <div class="payroll-card" *ngFor="let payroll of completedPayrolls; let i = index">
+          <div class="card-header">
+            <div class="card-title">
+              <h3>{{ payroll.contractName || 'Sin nombre' }}</h3>
+              <span class="completed-badge">✅ Completada</span>
+            </div>
+            <span class="card-number">#{{ completedPayrolls.length - i }}</span>
+          </div>
+
+          <div class="card-body">
+            <div class="info-row">
+              <span class="info-icon">💵</span>
+              <div class="info-content">
+                <span class="info-label">Monto Total</span>
+                <span class="info-value">${{ payroll.contractAmount || 0 }}</span>
+              </div>
+            </div>
+
+            <div class="info-row">
+              <span class="info-icon">👥</span>
+              <div class="info-content">
+                <span class="info-label">Asistentes</span>
+                <span class="info-value">{{ payroll.attendees || 0 }}</span>
+              </div>
+            </div>
+
+            <div class="info-row">
+              <span class="info-icon">📅</span>
+              <div class="info-content">
+                <span class="info-label">Fecha de Finalización</span>
+                <span class="info-value">{{ payroll.validatedAt?.toDate ? payroll.validatedAt.toDate().toLocaleDateString('es-MX', { year: 'numeric', month: 'long', day: 'numeric' }) : 'N/A' }}</span>
+              </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="totals-section">
+              <div class="total-item">
+                <span class="total-label">💰 Total Neto</span>
+                <span class="total-value success">${{ payroll.totalNet || 0 }}</span>
+              </div>
+              <div class="total-item">
+                <span class="total-label">🏦 Impuestos</span>
+                <span class="total-value highlight">${{ payroll.totalTax || 0 }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="card-footer">
+            <button class="download-btn" (click)="viewPayrollPDF(payroll)">
+              📄 Descargar Nómina General
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Empty State -->
+      <div class="empty-state" *ngIf="completedPayrolls.length === 0">
+        <div class="empty-icon">📭</div>
+        <h3>No hay nóminas completadas</h3>
+        <p>Las nóminas aparecerán aquí después de completar el proceso final.</p>
+        <button class="create-btn" (click)="goBack()">
+          ➕ Crear Nueva Nómina
+        </button>
+      </div>
+    </div>
+  </main>
+</div>

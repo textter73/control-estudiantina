@@ -707,6 +707,15 @@ export class DashboardComponent implements OnInit {
         status: this.userAccount.status === 'active' ? 'Activa' : 'Inactiva'
       };
       this.statementMovements = sortedMovements;
+      
+      // Debug: Verificar movimientos de nómina
+      console.log('📊 Total de movimientos:', sortedMovements.length);
+      const payrollMovements = sortedMovements.filter((m: any) => this.isPayrollTransaction(m));
+      console.log('💰 Movimientos de nómina encontrados:', payrollMovements.length);
+      if (payrollMovements.length > 0) {
+        console.log('📝 Conceptos de nómina:', payrollMovements.map((m: any) => m.concept));
+      }
+      
       this.showStatementModal = true;
     } catch (error) {
       console.error('Error loading account statement:', error);
@@ -1493,5 +1502,204 @@ export class DashboardComponent implements OnInit {
     }
     
     return null;
+  }
+
+  // Verificar si un movimiento es de nómina
+  isPayrollTransaction(movement: any): boolean {
+    if (movement.type !== 'deposit') return false;
+    if (!movement.concept) return false;
+    
+    // Buscar palabras clave relacionadas con nómina (con y sin acento)
+    const concept = movement.concept.toLowerCase();
+    return concept.includes('nómina') || 
+           concept.includes('nomina') || 
+           concept.includes('pago nómina') ||
+           concept.includes('pago nomina');
+  }
+
+  // Ver recibo de nómina individual
+  async viewPayrollReceipt(movement: any) {
+    try {
+      let payrollDoc: any = null;
+
+      // Intento 1: Buscar por payrollId si existe
+      if (movement.payrollId) {
+        payrollDoc = await this.firestore.collection('payrolls').doc(movement.payrollId).get().toPromise();
+      }
+
+      // Intento 2: Si no hay payrollId, buscar por concepto y fecha aproximada
+      if (!payrollDoc || !payrollDoc.exists) {
+        console.log('🔍 Buscando nómina por concepto...');
+        
+        // Extraer nombre del contrato del concepto
+        const conceptMatch = movement.concept.match(/(?:Pago nómina|Pago nomina):\s*(.+)/i);
+        if (!conceptMatch) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'No se pudo identificar el nombre del contrato en este pago'
+          });
+          return;
+        }
+
+        const contractName = conceptMatch[1].trim();
+        console.log('📝 Contrato identificado:', contractName);
+
+        // Buscar nómina completada con ese nombre de contrato
+        const payrollsSnapshot = await this.firestore.collection('payrolls', ref =>
+          ref.where('status', '==', 'completada')
+             .where('contractName', '==', contractName)
+        ).get().toPromise();
+
+        if (!payrollsSnapshot || payrollsSnapshot.empty) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Nómina no encontrada',
+            text: 'No se encontró la nómina asociada a este pago. Es posible que sea un pago antiguo sin registro de nómina.'
+          });
+          return;
+        }
+
+        // Si hay múltiples, usar la más reciente
+        const payrolls = payrollsSnapshot.docs.sort((a, b) => {
+          const dataA = a.data() as any;
+          const dataB = b.data() as any;
+          const dateA = dataA.validatedAt?.toDate() || new Date(0);
+          const dateB = dataB.validatedAt?.toDate() || new Date(0);
+          return dateB.getTime() - dateA.getTime();
+        });
+
+        payrollDoc = payrolls[0];
+        console.log('✅ Nómina encontrada:', payrollDoc.id);
+      }
+
+      if (!payrollDoc || !payrollDoc.exists) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'No se encontró la nómina asociada'
+        });
+        return;
+      }
+
+      const payrollData = payrollDoc.data() as any;
+      
+      // Buscar al empleado en la nómina
+      const employee = payrollData.employees.find((e: any) => e.id === this.user.uid);
+      
+      if (!employee) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'No se encontraron tus datos en esta nómina'
+        });
+        return;
+      }
+
+      // Generar PDF individual
+      this.generatePayrollReceiptPDF(employee, payrollData);
+
+      Swal.fire({
+        icon: 'success',
+        title: '✅ Recibo Generado',
+        text: 'Tu comprobante de pago ha sido descargado',
+        timer: 2000,
+        confirmButtonColor: '#10b981'
+      });
+
+    } catch (error) {
+      console.error('❌ Error loading payroll receipt:', error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'No se pudo cargar el recibo de nómina'
+      });
+    }
+  }
+
+  // Generar PDF de recibo individual
+  generatePayrollReceiptPDF(employee: any, payrollData: any) {
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.width;
+    let yPos = 20;
+
+    // Encabezado
+    doc.setFontSize(16);
+    doc.setFont('helvetica', 'bold');
+    doc.text('ESTUDIANTINA TONANTZIN GUADALUPE', pageWidth / 2, yPos, { align: 'center' });
+    yPos += 8;
+
+    doc.setFontSize(14);
+    doc.text('COMPROBANTE DE PAGO', pageWidth / 2, yPos, { align: 'center' });
+    yPos += 15;
+
+    // Info del empleado
+    doc.setFontSize(12);
+    doc.text(`Integrante: ${employee.name}`, 15, yPos);
+    yPos += 8;
+
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Nivel: ${employee.level}`, 15, yPos);
+    yPos += 6;
+    doc.text(`Porcentaje de impuesto: ${employee.taxPercentage}%`, 15, yPos);
+    yPos += 12;
+
+    // Info del contrato
+    doc.setFont('helvetica', 'bold');
+    doc.text('Contrato:', 15, yPos);
+    yPos += 6;
+    doc.setFont('helvetica', 'normal');
+    doc.text(payrollData.contractName, 15, yPos);
+    yPos += 6;
+    doc.text(`Monto total del contrato: $${payrollData.contractAmount}`, 15, yPos);
+    yPos += 6;
+    doc.text(`Asistentes: ${payrollData.attendees}`, 15, yPos);
+    yPos += 6;
+    doc.text(`Monto por persona: $${payrollData.unitAmount}`, 15, yPos);
+    yPos += 15;
+
+    // Desglose
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(12);
+    doc.text('DESGLOSE DE PAGO', 15, yPos);
+    yPos += 10;
+
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    
+    doc.text('Monto bruto:', 15, yPos);
+    doc.text(`$${employee.gross}`, 150, yPos);
+    yPos += 8;
+
+    doc.text(`Impuesto (${employee.taxPercentage}%):`, 15, yPos);
+    doc.text(`- $${employee.tax}`, 150, yPos);
+    yPos += 8;
+
+    doc.setLineWidth(0.5);
+    doc.line(15, yPos, pageWidth - 15, yPos);
+    yPos += 8;
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(12);
+    doc.text('Monto neto a recibir:', 15, yPos);
+    doc.text(`$${employee.net}`, 150, yPos);
+    yPos += 15;
+
+    // Nota
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'italic');
+    doc.text('El impuesto se destina a la cuenta de Estudiantina Tonantzin Guadalupe', pageWidth / 2, yPos, { align: 'center' });
+    yPos += 10;
+
+    doc.text(`Fecha de generación: ${new Date().toLocaleDateString('es-MX')}`, pageWidth / 2, yPos, { align: 'center' });
+
+    // Footer
+    const footerY = doc.internal.pageSize.height - 15;
+    doc.setFontSize(8);
+    doc.text('Estudiantina Tonantzin Guadalupe', pageWidth / 2, footerY, { align: 'center' });
+
+    // Descargar (compatible con iOS)
+    this.downloadPDF(doc, `Recibo_Nomina_${employee.name.replace(/\s/g, '_')}_${Date.now()}.pdf`);
   }
 }

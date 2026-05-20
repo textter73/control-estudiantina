@@ -1003,6 +1003,7 @@
                   <th>Concepto</th>
                   <th class="text-right">Monto</th>
                   <th class="text-right">Saldo Después</th>
+                  <th class="text-center">Acción</th>
                 </tr>
               </thead>
               <tbody>
@@ -1021,6 +1022,16 @@
                     {{ movement.type === 'deposit' ? '+' : '-' }}${{ movement.amount?.toFixed(2) }}
                   </td>
                   <td class="balance-col text-right">{{ movement.balanceAfter ? '$' + movement.balanceAfter.toFixed(2) : 'N/A' }}</td>
+                  <td class="action-col text-center">
+                    <button 
+                      *ngIf="isPayrollTransaction(movement)" 
+                      class="receipt-btn"
+                      (click)="viewPayrollReceipt(movement)"
+                      title="Ver recibo de nómina">
+                      📄 Ver Recibo
+                    </button>
+                    <span *ngIf="!isPayrollTransaction(movement)" class="no-action">-</span>
+                  </td>
                 </tr>
               </tbody>
             </table>

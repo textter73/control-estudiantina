@@ -44,6 +44,12 @@ export class DashboardComponent implements OnInit {
   statementData: any = null;
   statementMovements: any[] = [];
   
+  // Modal de recibo de nómina
+  showReceiptModal = false;
+  receiptEmployee: any = null;
+  receiptPayroll: any = null;
+  receiptPdfUrl: string = '';
+  
   // Variables para editar perfil
   profileForm = {
     name: '',
@@ -780,6 +786,30 @@ export class DashboardComponent implements OnInit {
     this.showStatementModal = false;
     this.statementData = null;
     this.statementMovements = [];
+  }
+
+  closeReceiptModal() {
+    // Limpiar URL del blob
+    if (this.receiptPdfUrl) {
+      URL.revokeObjectURL(this.receiptPdfUrl);
+      this.receiptPdfUrl = '';
+    }
+    
+    this.showReceiptModal = false;
+    this.receiptEmployee = null;
+    this.receiptPayroll = null;
+  }
+
+  downloadReceiptPDF() {
+    if (!this.receiptEmployee || !this.receiptPayroll) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'No hay datos de recibo para descargar'
+      });
+      return;
+    }
+    this.generatePayrollReceiptPDF(this.receiptEmployee, this.receiptPayroll);
   }
 
   downloadAsPDF() {
@@ -1596,16 +1626,21 @@ export class DashboardComponent implements OnInit {
         return;
       }
 
-      // Generar PDF individual
-      this.generatePayrollReceiptPDF(employee, payrollData);
-
-      Swal.fire({
-        icon: 'success',
-        title: '✅ Recibo Generado',
-        text: 'Tu comprobante de pago ha sido descargado',
-        timer: 2000,
-        confirmButtonColor: '#10b981'
-      });
+      // Generar PDF y crear URL para previsualización
+      const pdfBlob = this.generatePayrollReceiptPDFBlob(employee, payrollData);
+      
+      // Limpiar URL anterior si existe
+      if (this.receiptPdfUrl) {
+        URL.revokeObjectURL(this.receiptPdfUrl);
+      }
+      
+      // Crear nueva URL del blob
+      this.receiptPdfUrl = URL.createObjectURL(pdfBlob);
+      
+      // Abrir modal de previsualización
+      this.receiptEmployee = employee;
+      this.receiptPayroll = payrollData;
+      this.showReceiptModal = true;
 
     } catch (error) {
       console.error('❌ Error loading payroll receipt:', error);
@@ -1617,8 +1652,8 @@ export class DashboardComponent implements OnInit {
     }
   }
 
-  // Generar PDF de recibo individual
-  generatePayrollReceiptPDF(employee: any, payrollData: any) {
+  // Generar PDF como Blob para previsualización
+  generatePayrollReceiptPDFBlob(employee: any, payrollData: any): Blob {
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.width;
     let yPos = 20;
@@ -1699,7 +1734,35 @@ export class DashboardComponent implements OnInit {
     doc.setFontSize(8);
     doc.text('Estudiantina Tonantzin Guadalupe', pageWidth / 2, footerY, { align: 'center' });
 
-    // Descargar (compatible con iOS)
-    this.downloadPDF(doc, `Recibo_Nomina_${employee.name.replace(/\s/g, '_')}_${Date.now()}.pdf`);
+    // Retornar como blob
+    return doc.output('blob');
+  }
+
+  // Generar y descargar PDF de recibo individual
+  generatePayrollReceiptPDF(employee: any, payrollData: any) {
+    const blob = this.generatePayrollReceiptPDFBlob(employee, payrollData);
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `Recibo_Nomina_${employee.name.replace(/\s/g, '_')}_${Date.now()}.pdf`;
+    link.click();
+    URL.revokeObjectURL(url);
+  }
+
+  // Formatear montos de manera compacta (sin decimales si son .00)
+  formatAmount(amount: number): string {
+    if (!amount && amount !== 0) return '0';
+    
+    // Si el número es entero o tiene solo .00, no mostrar decimales
+    if (amount % 1 === 0) {
+      return amount.toLocaleString('es-MX');
+    }
+    
+    // Si tiene decimales, mostrar 2 decimales
+    return amount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  }
+
+  get currentDate(): Date {
+    return new Date();
   }
 }

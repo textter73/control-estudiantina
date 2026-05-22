@@ -913,9 +913,18 @@
                 <span class="movement-date">{{ movement.createdAt?.toDate() | date:'dd/MM/yyyy HH:mm' }}</span>
                 <span class="movement-user" *ngIf="movement.createdBy">Por: {{ getUserName(movement.createdBy) }}</span>
               </div>
-              <span class="movement-amount" [class]="movement.type">
-                {{ movement.type === 'deposit' ? '+' : '-' }}${{ movement.amount.toFixed(2) }}
-              </span>
+              <div class="movement-right">
+                <span class="movement-amount" [class]="movement.type">
+                  {{ movement.type === 'deposit' ? '+' : '-' }}${{ formatAmount(movement.amount) }}
+                </span>
+                <button 
+                  *ngIf="isPayrollTransaction(movement)" 
+                  class="receipt-icon-btn"
+                  (click)="viewPayrollReceipt(movement)"
+                  title="Ver recibo de nómina">
+                  📄
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -1019,9 +1028,9 @@
                   </td>
                   <td class="concept-col">{{ movement.concept || 'Sin concepto' }}</td>
                   <td class="amount-col text-right" [class.amount-deposit]="movement.type === 'deposit'" [class.amount-withdrawal]="movement.type === 'withdrawal'">
-                    {{ movement.type === 'deposit' ? '+' : '-' }}${{ movement.amount?.toFixed(2) }}
+                    {{ movement.type === 'deposit' ? '+' : '-' }}${{ formatAmount(movement.amount) }}
                   </td>
-                  <td class="balance-col text-right">{{ movement.balanceAfter ? '$' + movement.balanceAfter.toFixed(2) : 'N/A' }}</td>
+                  <td class="balance-col text-right">{{ movement.balanceAfter ? '$' + formatAmount(movement.balanceAfter) : 'N/A' }}</td>
                   <td class="action-col text-center">
                     <button 
                       *ngIf="isPayrollTransaction(movement)" 
@@ -1051,6 +1060,32 @@
       <div class="modal-footer statement-footer-actions">
         <button class="cancel-btn" (click)="closeStatementModal()">Cerrar</button>
         <button class="download-pdf-btn" (click)="downloadAsPDF()">
+          📥 Descargar PDF
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Recibo de Nómina -->
+  <div class="receipt-modal" *ngIf="showReceiptModal" (click)="closeReceiptModal()">
+    <div class="modal-content receipt-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h4>📄 Recibo de Nómina</h4>
+        <button class="close-btn" (click)="closeReceiptModal()">✕</button>
+      </div>
+      
+      <div class="modal-body receipt-body-pdf">
+        <iframe 
+          *ngIf="receiptPdfUrl" 
+          [src]="receiptPdfUrl | safe:'resourceUrl'" 
+          class="pdf-viewer"
+          frameborder="0">
+        </iframe>
+      </div>
+      
+      <div class="modal-footer receipt-footer-actions">
+        <button class="cancel-btn" (click)="closeReceiptModal()">Cerrar</button>
+        <button class="download-pdf-btn" (click)="downloadReceiptPDF()">
           📥 Descargar PDF
         </button>
       </div>

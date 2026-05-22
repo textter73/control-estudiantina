@@ -1,12 +1,7 @@
 <div class="history-container">
   <header class="history-header">
-    <button class="back-btn" (click)="goBack()">
-      ← Volver
-    </button>
-    <div class="header-content">
-      <h1>📜 Historial de Nóminas</h1>
-      <p>Consulta y descarga los recibos de nómina general de contratos finalizados</p>
-    </div>
+    <button class="back-btn" (click)="goBack()">← Volver</button>
+    <h1>📜 Historial de Nóminas</h1>
   </header>
 
   <main class="history-main">
@@ -18,86 +13,63 @@
 
     <!-- Content -->
     <div class="history-content" *ngIf="!loading">
-      <!-- Stats Card -->
-      <div class="stats-card">
+      <!-- Stats Summary -->
+      <div class="stats-summary">
         <div class="stat-item">
           <span class="stat-icon">📊</span>
-          <div class="stat-info">
-            <span class="stat-label">Total de nóminas</span>
-            <span class="stat-value">{{ completedPayrolls.length }}</span>
-          </div>
+          <span class="stat-text"><strong>{{ completedPayrolls.length }}</strong> nóminas</span>
         </div>
         <div class="stat-item">
           <span class="stat-icon">💰</span>
-          <div class="stat-info">
-            <span class="stat-label">Total pagado</span>
-            <span class="stat-value">${{ totalPaid }}</span>
-          </div>
+          <span class="stat-text"><strong>${{ totalPaid }}</strong> pagado</span>
         </div>
         <div class="stat-item">
           <span class="stat-icon">👥</span>
-          <div class="stat-info">
-            <span class="stat-label">Total asistentes</span>
-            <span class="stat-value">{{ totalAttendees }}</span>
-          </div>
+          <span class="stat-text"><strong>{{ totalAttendees }}</strong> asistentes</span>
         </div>
       </div>
 
-      <!-- Payrolls Grid -->
-      <div class="payrolls-grid" *ngIf="completedPayrolls.length > 0">
-        <div class="payroll-card" *ngFor="let payroll of completedPayrolls; let i = index">
-          <div class="card-header">
-            <div class="card-title">
-              <h3>{{ payroll.contractName || 'Sin nombre' }}</h3>
-              <span class="completed-badge">✅ Completada</span>
-            </div>
-            <span class="card-number">#{{ completedPayrolls.length - i }}</span>
+      <!-- Payrolls List -->
+      <div class="payrolls-list" *ngIf="completedPayrolls.length > 0">
+        <div class="payroll-item" *ngFor="let payroll of completedPayrolls; let i = index">
+          <div class="payroll-header">
+            <span class="item-number">#{{ completedPayrolls.length - i }}</span>
+            <h3 class="item-title">{{ payroll.contractName || 'Sin nombre' }}</h3>
+            <span class="status-badge">✅</span>
           </div>
 
-          <div class="card-body">
-            <div class="info-row">
-              <span class="info-icon">💵</span>
-              <div class="info-content">
-                <span class="info-label">Monto Total</span>
-                <span class="info-value">${{ payroll.contractAmount || 0 }}</span>
+          <div class="payroll-details">
+            <div class="detail-group">
+              <div class="detail-item">
+                <span class="detail-label">💵 Contrato</span>
+                <span class="detail-value">${{ payroll.contractAmount || 0 }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">👥 Asistentes</span>
+                <span class="detail-value">{{ payroll.attendees || 0 }}</span>
               </div>
             </div>
 
-            <div class="info-row">
-              <span class="info-icon">👥</span>
-              <div class="info-content">
-                <span class="info-label">Asistentes</span>
-                <span class="info-value">{{ payroll.attendees || 0 }}</span>
+            <div class="detail-group">
+              <div class="detail-item">
+                <span class="detail-label">💰 Neto</span>
+                <span class="detail-value success">${{ payroll.totalNet || 0 }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">🏦 Impuestos</span>
+                <span class="detail-value tax">${{ payroll.totalTax || 0 }}</span>
               </div>
             </div>
 
-            <div class="info-row">
-              <span class="info-icon">📅</span>
-              <div class="info-content">
-                <span class="info-label">Fecha de Finalización</span>
-                <span class="info-value">{{ payroll.validatedAt?.toDate ? payroll.validatedAt.toDate().toLocaleDateString('es-MX', { year: 'numeric', month: 'long', day: 'numeric' }) : 'N/A' }}</span>
-              </div>
-            </div>
-
-            <div class="divider"></div>
-
-            <div class="totals-section">
-              <div class="total-item">
-                <span class="total-label">💰 Total Neto</span>
-                <span class="total-value success">${{ payroll.totalNet || 0 }}</span>
-              </div>
-              <div class="total-item">
-                <span class="total-label">🏦 Impuestos</span>
-                <span class="total-value highlight">${{ payroll.totalTax || 0 }}</span>
-              </div>
+            <div class="detail-date">
+              <span class="detail-label">📅</span>
+              <span class="detail-value">{{ payroll.validatedAt?.toDate ? payroll.validatedAt.toDate().toLocaleDateString('es-MX', { year: 'numeric', month: 'short', day: 'numeric' }) : 'N/A' }}</span>
             </div>
           </div>
 
-          <div class="card-footer">
-            <button class="download-btn" (click)="viewPayrollPDF(payroll)">
-              📄 Descargar Nómina General
-            </button>
-          </div>
+          <button class="download-btn" (click)="viewPayrollPDF(payroll)">
+            📄 Descargar
+          </button>
         </div>
       </div>
 

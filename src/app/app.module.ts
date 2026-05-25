@@ -39,6 +39,8 @@ import { PayrollHistoryComponent } from './components/payroll-history/payroll-hi
 import { SafePipe } from './pipes/safe.pipe';
 import { InsumoService } from './services/insumo.service';
 import { UserEvaluationService } from './services/user-evaluation.service';
+import { ServiceWorkerModule } from '@angular/service-worker';
+import { environment } from '../environments/environment';
 
 @NgModule({
   declarations: [
@@ -74,7 +76,11 @@ import { UserEvaluationService } from './services/user-evaluation.service';
     AppRoutingModule,
     AngularFireModule.initializeApp(firebaseConfig),
     AngularFireAuthModule,
-    AngularFirestoreModule
+    AngularFirestoreModule,
+    ServiceWorkerModule.register('ngsw-worker.js', {
+      enabled: environment.production,
+      registrationStrategy: 'registerWhenStable:30000'
+    })
   ],
   providers: [
     SongbookService,

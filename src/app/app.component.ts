@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { PwaService } from './services/pwa.service';
 
 @Component({
   selector: 'app-root',
@@ -7,4 +8,8 @@ import { Component } from '@angular/core';
 })
 export class AppComponent {
   title = 'Control Estudiantina';
+  
+  constructor(private pwaService: PwaService) {
+    // Inicializar servicio PWA
+  }
 }

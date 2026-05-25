@@ -81,6 +81,9 @@ export class DashboardComponent implements OnInit {
   users: any[] = [];
   usersMap: { [key: string]: string } = {};
   
+  // Usuarios con faltas consecutivas
+  usersWithConsecutiveAbsences: any[] = [];
+  
   // Documentos pendientes
   pendingDocuments: any[] = [];
   pendingDocumentsCount: number = 0;
@@ -209,6 +212,7 @@ export class DashboardComponent implements OnInit {
         this.loadPendingDocuments();
         this.loadInsumosData();
         this.loadAllMembersAttendance();
+        this.loadUsersWithConsecutiveAbsences();
       } else {
         this.router.navigate(['/']);
       }
@@ -1307,6 +1311,97 @@ export class DashboardComponent implements OnInit {
         .sort((a, b) => b.totalPercentage - a.totalPercentage);
     }).catch(error => {
       console.error('Error loading members attendance:', error);
+    });
+  }
+
+  loadUsersWithConsecutiveAbsences() {
+    Promise.all([
+      this.firestore.collection('users').get().toPromise(),
+      this.firestore.collection('attendance').get().toPromise()
+    ]).then(([usersSnapshot, attendanceSnapshot]) => {
+      const allUsers = usersSnapshot?.docs.map(doc => ({ 
+        uid: doc.id, 
+        ...(doc.data() as any) 
+      })) || [];
+      
+      // Filtrar solo usuarios activos
+      const users = allUsers.filter(user => 
+        !user.deleted && 
+        user.name !== 'Estudiantina Tonantzin Guadalupe'
+      );
+      
+      // Obtener todas las asistencias y ordenarlas por fecha descendente (más reciente primero)
+      const allAttendances = attendanceSnapshot?.docs.map(doc => ({
+        id: doc.id,
+        ...(doc.data() as any)
+      })) || [];
+      
+      console.log('Total asistencias encontradas:', allAttendances.length);
+      
+      const attendances = allAttendances
+        .filter((att: any) => {
+          // Solo filtrar asistencias completadas si el campo status existe
+          // Si no existe el campo, incluir la asistencia
+          return !att.status || att.status === 'completed';
+        })
+        .sort((a: any, b: any) => {
+          const dateA = a.date?.toDate ? a.date.toDate() : new Date(a.date);
+          const dateB = b.date?.toDate ? b.date.toDate() : new Date(b.date);
+          return dateB.getTime() - dateA.getTime(); // Más reciente primero
+        });
+      
+      console.log('Asistencias después de filtrar:', attendances.length);
+      
+      // Para cada usuario, contar faltas consecutivas desde la asistencia más reciente
+      const usersWithAbsences: any[] = [];
+      
+      users.forEach(user => {
+        let consecutiveAbsences = 0;
+        let lastActivities: any[] = [];
+        
+        // Revisar las asistencias en orden (más reciente primero)
+        for (const attendance of attendances) {
+          const userRecord = attendance.records?.find((record: any) => record.userId === user.uid);
+          
+          if (userRecord) {
+            const isFalta = userRecord.status === 'falta';
+            
+            if (isFalta) {
+              consecutiveAbsences++;
+              lastActivities.push({
+                date: attendance.date?.toDate ? attendance.date.toDate() : new Date(attendance.date),
+                type: attendance.type,
+                status: 'falta'
+              });
+            } else {
+              // Si encuentra una asistencia que no es falta, termina el conteo
+              break;
+            }
+          }
+          // Si no hay registro del usuario en esta asistencia, no se cuenta como falta
+          // y se rompe la secuencia consecutiva
+        }
+        
+        // Si tiene 3 o más faltas consecutivas, agregarlo a la lista
+        if (consecutiveAbsences >= 3) {
+          usersWithAbsences.push({
+            uid: user.uid,
+            name: user.name || 'Usuario sin nombre',
+            consecutiveAbsences,
+            lastActivities: lastActivities.slice(0, 5) // Máximo 5 actividades
+          });
+        }
+      });
+      
+      // Ordenar por número de faltas consecutivas (de mayor a menor)
+      this.usersWithConsecutiveAbsences = usersWithAbsences.sort((a, b) => 
+        b.consecutiveAbsences - a.consecutiveAbsences
+      );
+      
+      console.log('Usuarios con faltas consecutivas (3+):', this.usersWithConsecutiveAbsences);
+      console.log('Total usuarios con faltas:', this.usersWithConsecutiveAbsences.length);
+    }).catch(error => {
+      console.error('Error loading users with consecutive absences:', error);
     });
   }
 

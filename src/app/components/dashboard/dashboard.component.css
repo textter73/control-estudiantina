@@ -2404,6 +2404,152 @@
   margin-bottom: 2rem;
 }
 
+/* Absence Notifications Styles */
+.absence-notifications {
+  margin-bottom: 2rem;
+}
+
+.notification-card.alert-danger {
+  border-color: #ff6b35;
+  background: linear-gradient(135deg, rgba(255, 107, 53, 0.05), rgba(255, 255, 255, 1));
+}
+
+.notification-card.alert-danger .notification-icon {
+  background: linear-gradient(135deg, #ff6b35, #ff4757);
+}
+
+.notification-card.alert-danger .notification-title h3 {
+  color: #ff4757;
+}
+
+.absences-list {
+  border-top: 1px solid rgba(255, 107, 53, 0.2);
+  padding-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.absence-item {
+  padding: 1rem;
+  background: rgba(255, 107, 53, 0.05);
+  border-radius: 8px;
+  border-left: 4px solid #ff6b35;
+  transition: all 0.3s ease;
+}
+
+.absence-item:hover {
+  background: rgba(255, 107, 53, 0.1);
+  transform: translateX(5px);
+}
+
+.member-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.member-name {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.name-text {
+  font-weight: 600;
+  color: #333;
+  font-size: 1rem;
+}
+
+.absence-badge {
+  background: linear-gradient(135deg, #ffa502, #ff6348);
+  color: white;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.absence-badge.critical {
+  background: linear-gradient(135deg, #ff4757, #c23616);
+  animation: pulse-badge 2s ease-in-out infinite;
+}
+
+@keyframes pulse-badge {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 2px 8px rgba(255, 71, 87, 0.3);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 4px 16px rgba(255, 71, 87, 0.5);
+  }
+}
+
+.recent-activities {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.activity-label {
+  font-size: 0.85rem;
+  color: #666;
+  font-weight: 500;
+}
+
+.activity-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.activity-tag {
+  background: white;
+  color: #ff6b35;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  border: 1px solid #ff6b35;
+}
+
+.more-absences {
+  text-align: center;
+  color: #666;
+  font-style: italic;
+  font-size: 0.9rem;
+  padding: 8px;
+  background: rgba(255, 107, 53, 0.05);
+  border-radius: 6px;
+}
+
+.btn-secondary {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 25px;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+}
+
+.btn-secondary:hover {
+  background: linear-gradient(135deg, #5568d3, #6941a5);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
 .notification-card {
   background: white;
   border-radius: 12px;
@@ -5642,5 +5788,43 @@
   
   .message-card p {
     font-size: 0.85rem;
+  }
+  
+  /* Absence notifications responsive */
+  .absence-item {
+    padding: 0.8rem;
+  }
+  
+  .member-name {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .absence-badge {
+    font-size: 0.75rem;
+    padding: 3px 10px;
+  }
+  
+  .activity-label {
+    font-size: 0.8rem;
+  }
+  
+  .activity-tag {
+    font-size: 0.75rem;
+    padding: 3px 8px;
+  }
+  
+  .notification-icon {
+    font-size: 2rem;
+    width: 50px;
+    height: 50px;
+  }
+  
+  .notification-title h3 {
+    font-size: 1.1rem;
+  }
+  
+  .notification-title p {
+    font-size: 0.9rem;
   }
 }

@@ -757,6 +757,51 @@
       </button>
     </div>
 
+    <!-- Alerta de Usuarios con Faltas Consecutivas -->
+    <div class="absence-notifications" *ngIf="usersWithConsecutiveAbsences.length > 0">
+      <div class="notification-card alert-danger">
+        <div class="notification-header">
+          <div class="notification-icon">⚠️</div>
+          <div class="notification-title">
+            <h3>Integrantes con 3+ Faltas Consecutivas</h3>
+            <p>{{ usersWithConsecutiveAbsences.length }} integrante{{ usersWithConsecutiveAbsences.length > 1 ? 's' : '' }} con ausencias consecutivas recientes</p>
+          </div>
+        </div>
+        
+        <div class="absences-list">
+          <div class="absence-item" *ngFor="let member of usersWithConsecutiveAbsences.slice(0, 5)">
+            <div class="member-info">
+              <div class="member-name">
+                <span class="name-text">{{ member.name }}</span>
+                <span class="absence-badge" [class.critical]="member.consecutiveAbsences >= 5">
+                  {{ member.consecutiveAbsences }} falta{{ member.consecutiveAbsences > 1 ? 's' : '' }} consecutiva{{ member.consecutiveAbsences > 1 ? 's' : '' }}
+                </span>
+              </div>
+              <div class="recent-activities">
+                <span class="activity-label">Últimas actividades:</span>
+                <div class="activity-tags">
+                  <span class="activity-tag" *ngFor="let activity of member.lastActivities.slice(0, 3)">
+                    {{ activity.type }} ({{ activity.date | date:'dd/MM' }})
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="more-absences" *ngIf="usersWithConsecutiveAbsences.length > 5">
+            <span>+{{ usersWithConsecutiveAbsences.length - 5 }} integrante{{ usersWithConsecutiveAbsences.length - 5 > 1 ? 's' : '' }} más</span>
+          </div>
+        </div>
+        
+        <div class="notification-actions">
+          <button class="btn-secondary" routerLink="/attendance-summary">
+            <span class="btn-icon">📊</span>
+            Ver Resumen de Asistencia
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- Indicador de Insumos -->
     <div class="inventory-summary">
       <div class="summary-card">

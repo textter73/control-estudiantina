@@ -218,7 +218,7 @@ export class DashboardComponent implements OnInit {
         this.loadInsumosData();
         this.loadAllMembersAttendance();
         this.loadUsersWithConsecutiveAbsences();
-        this.checkNotificationStatus(); // Verificar estado de notificaciones
+        await this.checkNotificationStatus(); // Verificar estado de notificaciones
       } else {
         this.router.navigate(['/']);
       }
@@ -1940,12 +1940,30 @@ export class DashboardComponent implements OnInit {
   /**
    * Verifica si las notificaciones están habilitadas
    */
-  checkNotificationStatus() {
-    this.notificationsEnabled = this.notificationService.isNotificationEnabled();
+  async checkNotificationStatus() {
+    // Verificar permiso del navegador Y estado en Firestore
+    const browserPermission = this.notificationService.isNotificationEnabled();
     
-    // Verificar si el usuario tiene notificaciones habilitadas en Firestore
     if (this.user && this.userProfile) {
-      this.notificationsEnabled = this.userProfile.notificationsEnabled || false;
+      // Si el navegador tiene permiso Y el usuario lo activó en Firestore
+      this.notificationsEnabled = browserPermission && (this.userProfile.notificationsEnabled || false);
+      
+      // Si el navegador tiene permiso pero Firestore no está sincronizado, actualizar Firestore
+      if (browserPermission && !this.userProfile.notificationsEnabled) {
+        try {
+          const user = await this.afAuth.currentUser;
+          if (user) {
+            await this.firestore.collection('users').doc(user.uid).update({
+              notificationsEnabled: true
+            });
+            this.notificationsEnabled = true;
+          }
+        } catch (error) {
+          console.error('Error al sincronizar estado de notificaciones:', error);
+        }
+      }
+    } else {
+      this.notificationsEnabled = browserPermission;
     }
   }
 
@@ -1956,10 +1974,8 @@ export class DashboardComponent implements OnInit {
     const result = await this.notificationService.requestPermission();
     if (result) {
       this.notificationsEnabled = true;
-      // Mostrar notificación de prueba
-      setTimeout(() => {
-        this.notificationService.getDailyEventsNotification();
-      }, 2000);
+      // Recargar el estado para asegurar sincronización
+      await this.checkNotificationStatus();
     }
   }
 

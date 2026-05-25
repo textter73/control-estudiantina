@@ -90,7 +90,7 @@ export class NotificationService {
       await Swal.fire({
         icon: 'success',
         title: '¡Listo!',
-        text: 'Recibirás notificaciones diarias sobre los eventos del mes',
+        text: 'Ahora recibirás notificaciones en este dispositivo',
         confirmButtonColor: '#189d98',
         timer: 3000
       });

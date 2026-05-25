@@ -8,6 +8,7 @@
   "start_url": "./",
   "orientation": "portrait-primary",
   "description": "Sistema de gestión para Estudiantina Tonantzin Guadalupe",
+  "gcm_sender_id": "197145425496",
   "icons": [
     {
       "src": "assets/icons/icon-72x72.png",

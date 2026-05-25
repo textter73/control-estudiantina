@@ -180,6 +180,46 @@
       <!---->
     </div>
 
+    <!-- Notificaciones Push -->
+    <div class="notification-setup-card">
+      <div class="push-notification-header">
+        <div class="push-notification-icon">🔔</div>
+        <div class="push-notification-info">
+          <h3>Notificaciones Diarias de Eventos</h3>
+          <p>Recibe alertas sobre los eventos del mes directamente en tu dispositivo</p>
+        </div>
+      </div>
+      
+      <div class="push-notification-controls">
+        <div class="push-notification-status" [class.active]="notificationsEnabled">
+          <span class="push-status-indicator"></span>
+          <span class="push-status-text">{{ notificationsEnabled ? 'Activadas' : 'Desactivadas' }}</span>
+        </div>
+        
+        <div class="push-notification-buttons">
+          <button class="btn-enable" (click)="enableNotifications()" *ngIf="!notificationsEnabled">
+            <span class="btn-icon">🔔</span>
+            Activar Notificaciones
+          </button>
+          
+          <button class="btn-disable" (click)="disableNotifications()" *ngIf="notificationsEnabled">
+            <span class="btn-icon">🔕</span>
+            Desactivar
+          </button>
+          
+          <button class="btn-test" (click)="testNotification()" *ngIf="notificationsEnabled">
+            <span class="btn-icon">🧪</span>
+            Probar Ahora
+          </button>
+        </div>
+      </div>
+      
+      <div class="push-notification-info-box" *ngIf="notificationsEnabled">
+        <span class="push-info-icon">ℹ️</span>
+        <p>Recibirás una notificación cada día con los eventos programados del mes actual.</p>
+      </div>
+    </div>
+
     <!-- Documentos Pendientes de Firmar -->
     <div class="document-notifications" *ngIf="pendingDocumentsCount > 0">
       <div class="notification-card urgent">

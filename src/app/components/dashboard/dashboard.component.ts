@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { UserEvaluationService } from '../../services/user-evaluation.service';
 import { InsumoService } from '../../services/insumo.service';
+import { NotificationService } from '../../services/notification.service';
 import { Insumo } from '../../models/insumo.model';
 import Swal from 'sweetalert2';
 import jsPDF from 'jspdf';
@@ -92,6 +93,9 @@ export class DashboardComponent implements OnInit {
   insumosConStock: Insumo[] = [];
   totalInsumosConStock: number = 0;
   insumosStockBajo: Insumo[] = [];
+  
+  // Notificaciones
+  notificationsEnabled: boolean = false;
   
   attendanceStats = {
     presente: 0,
@@ -189,7 +193,8 @@ export class DashboardComponent implements OnInit {
     private router: Router,
     private authService: AuthService,
     private insumoService: InsumoService,
-    private evaluationService: UserEvaluationService
+    private evaluationService: UserEvaluationService,
+    private notificationService: NotificationService
   ) {}
 
   ngOnInit() {
@@ -213,6 +218,7 @@ export class DashboardComponent implements OnInit {
         this.loadInsumosData();
         this.loadAllMembersAttendance();
         this.loadUsersWithConsecutiveAbsences();
+        this.checkNotificationStatus(); // Verificar estado de notificaciones
       } else {
         this.router.navigate(['/']);
       }
@@ -1927,5 +1933,58 @@ export class DashboardComponent implements OnInit {
         text: 'No se pudo descargar el código QR'
       });
     }
+  }
+
+  // ========== NOTIFICACIONES PUSH ==========
+
+  /**
+   * Verifica si las notificaciones están habilitadas
+   */
+  checkNotificationStatus() {
+    this.notificationsEnabled = this.notificationService.isNotificationEnabled();
+    
+    // Verificar si el usuario tiene notificaciones habilitadas en Firestore
+    if (this.user && this.userProfile) {
+      this.notificationsEnabled = this.userProfile.notificationsEnabled || false;
+    }
+  }
+
+  /**
+   * Activa las notificaciones push
+   */
+  async enableNotifications() {
+    const result = await this.notificationService.requestPermission();
+    if (result) {
+      this.notificationsEnabled = true;
+      // Mostrar notificación de prueba
+      setTimeout(() => {
+        this.notificationService.getDailyEventsNotification();
+      }, 2000);
+    }
+  }
+
+  /**
+   * Desactiva las notificaciones push
+   */
+  async disableNotifications() {
+    await this.notificationService.disableNotifications();
+    this.notificationsEnabled = false;
+  }
+
+  /**
+   * Envía notificación de prueba con eventos del mes
+   */
+  async testNotification() {
+    if (!this.notificationsEnabled) {
+      await Swal.fire({
+        icon: 'warning',
+        title: 'Notificaciones desactivadas',
+        text: 'Primero activa las notificaciones para recibir alertas',
+        confirmButtonColor: '#189d98'
+      });
+      return;
+    }
+
+    await this.notificationService.getDailyEventsNotification();
   }
 }

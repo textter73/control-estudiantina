@@ -4315,6 +4315,64 @@
   gap: 5px;
 }
 
+/* Sección de código QR */
+.qr-section {
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  border: 2px solid #189d98;
+  border-radius: 12px;
+  padding: 1.5rem;
+  text-align: center;
+}
+
+.qr-section .form-label {
+  font-size: 1.1rem;
+  color: #189d98;
+  margin-bottom: 0.5rem;
+}
+
+.qr-info-text {
+  margin-bottom: 1rem;
+}
+
+.qr-info-text p {
+  color: #4a5568;
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.qr-code-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1rem;
+  background: white;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+#qr-canvas {
+  max-width: 100%;
+  height: auto;
+}
+
+.download-qr-btn {
+  background: linear-gradient(135deg, #189d98, #147571);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.95rem;
+}
+
+.download-qr-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(24, 157, 152, 0.3);
+}
+
 /* Botones del modal */
 .modal-footer {
   padding: 20px 30px;

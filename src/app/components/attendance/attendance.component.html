@@ -18,7 +18,7 @@
       <div class="setup-row">
         <div class="field-group">
           <label>📅 Fecha</label>
-          <input type="date" [(ngModel)]="attendanceDate" class="date-input">
+          <input type="date" [(ngModel)]="attendanceDate" (change)="onDateChange()" class="date-input">
         </div>
         
         <div class="field-group">
@@ -28,7 +28,7 @@
               *ngFor="let type of attendanceTypes" 
               class="type-btn"
               [class.active]="attendanceType === type.value"
-              (click)="attendanceType = type.value">
+              (click)="selectType(type.value)">
               <span class="type-icon">{{ type.icon }}</span>
               <span class="type-label">{{ type.label.split(' ').slice(1).join(' ') }}</span>
             </button>
@@ -97,7 +97,36 @@
     <!-- Lista de asistencia estilo escolar -->
     <div class="class-list">
       <div class="list-header">
-        <h3>👥 Lista de Integrantes ({{ getFilteredUsers().length }})</h3>
+        <div class="list-header-left">
+          <h3>👥 Lista de Integrantes ({{ getFilteredUsers().length }})</h3>
+        </div>
+        <div class="list-header-right">
+          <!-- Indicador de auto-guardado -->
+          <div class="autosave-controls">
+            <button 
+              class="autosave-toggle" 
+              [class.active]="autoSaveEnabled"
+              (click)="toggleAutoSave()"
+              title="{{ autoSaveEnabled ? 'Desactivar auto-guardado' : 'Activar auto-guardado' }}">
+              <span class="toggle-icon">{{ autoSaveEnabled ? '✓' : '✕' }}</span>
+              <span class="toggle-text">Auto-guardar</span>
+            </button>
+            
+            <!-- Indicador de guardado -->
+            <div class="save-status" *ngIf="lastSaved">
+              <span class="save-icon" *ngIf="!isSaving">✓</span>
+              <span class="save-icon saving" *ngIf="isSaving">⏳</span>
+              <span class="save-text">
+                {{ isSaving ? 'Guardando...' : 'Último guardado: ' + (lastSaved | date:'HH:mm:ss') }}
+              </span>
+            </div>
+            
+            <div class="save-status pending" *ngIf="unsavedChanges && !isSaving">
+              <span class="save-icon">⚠</span>
+              <span class="save-text">Cambios sin guardar</span>
+            </div>
+          </div>
+        </div>
       </div>
       
       <div class="student-list">
@@ -109,6 +138,12 @@
           <div class="student-info">
             <span class="student-number">{{ i + 1 }}.</span>
             <span class="student-name">{{ user.name }}</span>
+            <span class="save-indicator" [class.saved]="getRecordStatus(user.uid) === 'saved'" 
+                  [class.modified]="getRecordStatus(user.uid) === 'modified'"
+                  [class.pending]="getRecordStatus(user.uid) === 'pending'"
+                  [title]="getRecordStatus(user.uid) === 'saved' ? 'Guardado' : getRecordStatus(user.uid) === 'modified' ? 'Modificado' : 'Pendiente'">
+              {{ getStatusIndicator(user.uid) }}
+            </span>
             <span class="status-indicator" [innerHTML]="getStatusIcon(getUserStatus(user.uid))"></span>
           </div>
           
@@ -134,13 +169,49 @@
         (click)="saveAttendance()"
         [disabled]="!attendanceType || !attendanceDate">
         <span class="save-icon">💾</span>
-        <span class="save-text">Guardar Lista de Asistencia</span>
+        <span class="save-text">Finalizar y Guardar</span>
         <span class="save-count">({{ attendanceStats.total }} integrantes)</span>
       </button>
       
-      <button class="reset-btn" (click)="resetForm()" type="button">
-        🔄 Reiniciar
+      <button 
+        class="reset-btn" 
+        (click)="confirmDeleteDraft()" 
+        type="button"
+        [class.has-session]="currentSessionId"
+        [title]="currentSessionId ? 'Eliminar asistencia guardada' : 'Reiniciar formulario'">
+        <span *ngIf="!currentSessionId">🔄 Reiniciar</span>
+        <span *ngIf="currentSessionId">🗑️ Borrar Guardado</span>
       </button>
     </div>
   </main>
+
+  <!-- Botón flotante de escaneo QR -->
+  <button class="qr-fab" (click)="openQrScanner()" title="Escanear código QR">
+    <span class="qr-icon">📷</span>
+    <span class="qr-text">Escanear QR</span>
+  </button>
+
+  <!-- Modal del escáner QR -->
+  <div class="qr-modal" *ngIf="showQrScanner" (click)="closeQrScanner()">
+    <div class="qr-modal-content" (click)="$event.stopPropagation()">
+      <div class="qr-modal-header">
+        <h3>📷 Escanear Código QR</h3>
+        <button class="qr-close-btn" (click)="closeQrScanner()">✕</button>
+      </div>
+      
+      <div class="qr-scanner-container">
+        <div id="qr-reader"></div>
+        <div class="scanner-overlay">
+          <div class="scanner-frame"></div>
+          <p class="scanner-instruction">Coloca el código QR dentro del marco</p>
+        </div>
+      </div>
+      
+      <div class="qr-modal-footer">
+        <p class="qr-help-text">
+          💡 Cada integrante tiene un código QR único en su perfil
+        </p>
+      </div>
+    </div>
+  </div>
 </div>

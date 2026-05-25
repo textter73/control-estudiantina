@@ -9,6 +9,10 @@ import { Insumo } from '../../models/insumo.model';
 import Swal from 'sweetalert2';
 import jsPDF from 'jspdf';
 
+// Declaración de módulo para qrcode
+declare const require: any;
+const QRCode = require('qrcode');
+
 @Component({
   selector: 'app-dashboard',
   templateUrl: './dashboard.component.html',
@@ -1326,6 +1330,11 @@ export class DashboardComponent implements OnInit {
       birthMonth: this.userProfile?.birthMonth || ''
     };
     this.showProfileModal = true;
+    
+    // Generar QR después de que se abra el modal
+    setTimeout(() => {
+      this.generateQrCode();
+    }, 100);
   }
 
   closeProfileModal() {
@@ -1764,5 +1773,64 @@ export class DashboardComponent implements OnInit {
 
   get currentDate(): Date {
     return new Date();
+  }
+
+  // Métodos para código QR
+  async generateQrCode() {
+    if (!this.user) return;
+    
+    try {
+      const canvas = document.getElementById('qr-canvas') as HTMLCanvasElement;
+      if (!canvas) return;
+
+      // Generar QR con el UID del usuario
+      await QRCode.toCanvas(canvas, this.user.uid, {
+        width: 200,
+        margin: 2,
+        color: {
+          dark: '#189d98',
+          light: '#ffffff'
+        }
+      });
+    } catch (error) {
+      console.error('Error generando QR:', error);
+    }
+  }
+
+  async downloadQrCode() {
+    if (!this.user || !this.userProfile) return;
+
+    try {
+      const canvas = document.getElementById('qr-canvas') as HTMLCanvasElement;
+      if (!canvas) return;
+
+      // Convertir canvas a blob
+      canvas.toBlob((blob) => {
+        if (blob) {
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          const userName = this.userProfile?.name || 'usuario';
+          link.download = `QR_${userName.replace(/\s/g, '_')}.png`;
+          link.href = url;
+          link.click();
+          URL.revokeObjectURL(url);
+
+          Swal.fire({
+            icon: 'success',
+            title: '✅ QR Descargado',
+            text: 'Tu código QR se ha descargado correctamente',
+            timer: 2000,
+            showConfirmButton: false
+          });
+        }
+      });
+    } catch (error) {
+      console.error('Error descargando QR:', error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'No se pudo descargar el código QR'
+      });
+    }
   }
 }

@@ -1327,6 +1327,20 @@
             </div>
           </div>
 
+          <!-- Código QR para Asistencia -->
+          <div class="form-group qr-section">
+            <label class="form-label">📱 Tu Código QR</label>
+            <div class="qr-info-text">
+              <p>Usa este código para registrar tu asistencia rápidamente</p>
+            </div>
+            <div class="qr-code-container">
+              <canvas #qrCanvas id="qr-canvas" width="200" height="200"></canvas>
+            </div>
+            <button type="button" class="download-qr-btn" (click)="downloadQrCode()">
+              📥 Descargar mi QR
+            </button>
+          </div>
+
         </form>
       </div>
       

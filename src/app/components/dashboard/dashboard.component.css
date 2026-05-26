@@ -5341,6 +5341,16 @@
   background: #0d7773;
 }
 
+.btn-test-all {
+  background: #8b5cf6;
+  color: white;
+  font-weight: 500;
+}
+
+.btn-test-all:hover {
+  background: #7c3aed;
+}
+
 .btn-icon {
   font-size: 1rem;
 }

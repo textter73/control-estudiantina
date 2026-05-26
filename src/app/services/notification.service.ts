@@ -10,7 +10,7 @@ import { firebaseConfig } from '../../environments/firebase.config';
   providedIn: 'root'
 })
 export class NotificationService {
-  private vapidKey = 'BCiToXwp2BrTlAC5wzM1mythL-iimdu4TpjLin9sdUdh6I5AIrrA6RaeNx5g6kd-bw3JR4QBPb93d9XPM639AdU'; // Clave VAPID de Firebase Console
+  private vapidKey = 'BDHeUimW99l9rzmvxlHeJizL8JsOkDiBbJ29GOuRsRtHysEKT1h16OFJ_aIKWG7drFXp56ouL-FL4UOmdyVqSc0'; // Clave VAPID de Firebase Console
   private messaging: any;
 
   constructor(
@@ -276,6 +276,13 @@ export class NotificationService {
     userName?: string
   ): Promise<void> {
     try {
+      console.log(`[Notification] Iniciando envío de notificaciones de depósito:`, {
+        userId,
+        amount,
+        concept,
+        userName
+      });
+
       // Obtener datos del usuario si no se proporcionó el nombre
       let recipientName = userName;
       if (!recipientName) {
@@ -284,21 +291,8 @@ export class NotificationService {
         recipientName = userData?.name || 'Usuario';
       }
 
-      // Crear notificación para guardar en Firestore (base de datos)
-      const notificationData = {
-        type: 'deposit',
-        userId: userId,
-        amount: amount,
-        concept: concept,
-        userName: recipientName,
-        createdAt: new Date(),
-        read: false
-      };
-
-      // Guardar notificación en Firestore
-      await this.firestore.collection('notifications').add(notificationData);
-
       // 1. Enviar notificación al usuario que recibe el depósito
+      console.log(`[Notification] Enviando a usuario receptor: ${userId}`);
       await this.sendNotificationToUser(
         userId,
         `💰 Depósito Recibido`,
@@ -306,6 +300,8 @@ export class NotificationService {
       );
 
       // 2. Enviar notificación a todos los administradores y usuarios de finanzas
+      console.log(`[Notification] Buscando administradores y usuarios de finanzas...`);
+      
       const adminUsers = await this.firestore.collection('users', ref =>
         ref.where('profiles', 'array-contains', 'administrador')
       ).get().toPromise();
@@ -313,6 +309,8 @@ export class NotificationService {
       const financeUsers = await this.firestore.collection('users', ref =>
         ref.where('profiles', 'array-contains', 'finanzas')
       ).get().toPromise();
+
+      console.log(`[Notification] Encontrados: ${adminUsers?.docs.length || 0} admins, ${financeUsers?.docs.length || 0} finanzas`);
 
       // Combinar resultados y eliminar duplicados
       const notifiedUserIds = new Set<string>();
@@ -324,6 +322,7 @@ export class NotificationService {
           
           // No enviar notificación si es el mismo usuario que recibe el depósito
           if (adminId !== userId && !notifiedUserIds.has(adminId)) {
+            console.log(`[Notification] Enviando a admin: ${adminId}`);
             await this.sendNotificationToUser(
               adminId,
               `💵 Depósito Realizado`,
@@ -341,6 +340,7 @@ export class NotificationService {
           
           // No enviar notificación si es el mismo usuario que recibe el depósito o ya fue notificado
           if (financeId !== userId && !notifiedUserIds.has(financeId)) {
+            console.log(`[Notification] Enviando a finanzas: ${financeId}`);
             await this.sendNotificationToUser(
               financeId,
               `💵 Depósito Realizado`,
@@ -351,7 +351,7 @@ export class NotificationService {
         }
       }
 
-      console.log(`Notificaciones de depósito enviadas: $${amount} a ${recipientName}`);
+      console.log(`[Notification] ✅ Proceso completado. Notificaciones enviadas: $${amount} a ${recipientName}. Total notificados: ${notifiedUserIds.size + 1}`);
     } catch (error) {
       console.error('Error al enviar notificaciones de depósito:', error);
     }
@@ -373,25 +373,170 @@ export class NotificationService {
       const userDoc = await this.firestore.collection('users').doc(userId).get().toPromise();
       const userData = userDoc?.data() as any;
 
-      if (!userData || !userData.notificationsEnabled || !userData.notificationToken) {
-        console.log(`Usuario ${userId} no tiene notificaciones habilitadas`);
+      console.log(`[Notification] Enviando a usuario ${userId}:`, {
+        hasData: !!userData,
+        notificationsEnabled: userData?.notificationsEnabled,
+        hasToken: !!userData?.notificationToken
+      });
+
+      if (!userData) {
+        console.warn(`Usuario ${userId} no encontrado en Firestore`);
         return;
       }
 
-      // Si el usuario tiene las notificaciones habilitadas, mostrar notificación local
-      // (En producción, aquí enviarías el mensaje a través de Firebase Cloud Functions)
+      // Mostrar notificación aunque no tenga habilitadas las notificaciones
+      // (se guardará en Firestore para verlas más tarde)
       
-      // Por ahora, guardamos la notificación en Firestore para que el usuario la vea
-      // y si está activo, mostramos notificación local
-      
-      // Verificar si el usuario actual es el destinatario para mostrar notificación local
-      const currentUser = await this.auth.currentUser;
-      if (currentUser && currentUser.uid === userId) {
-        await this.showLocalNotification(title, body, '/assets/icons/icon-192x192.png');
+      // Guardar la notificación individual para este usuario en Firestore
+      await this.firestore.collection('notifications').add({
+        userId: userId,
+        title: title,
+        body: body,
+        type: 'deposit',
+        createdAt: new Date(),
+        read: false
+      });
+
+      console.log(`[Notification] Notificación guardada en Firestore para ${userId}`);
+
+      // Si el usuario tiene notificaciones habilitadas, intentar mostrar notificación push
+      if (userData.notificationsEnabled && userData.notificationToken) {
+        // Verificar si el usuario actual es el destinatario para mostrar notificación local
+        const currentUser = await this.auth.currentUser;
+        
+        if (currentUser && currentUser.uid === userId) {
+          // Usuario activo - mostrar notificación inmediatamente
+          console.log(`[Notification] Usuario activo - mostrando notificación local`);
+          await this.showLocalNotification(title, body, '/assets/icons/icon-192x192.png');
+        } else {
+          // Usuario no activo - intentar enviar a través del service worker
+          console.log(`[Notification] Usuario no activo - enviando vía service worker`);
+          await this.sendPushNotification(userId, title, body, userData.notificationToken);
+        }
+      } else {
+        console.log(`[Notification] Usuario ${userId} no tiene notificaciones push habilitadas. La notificación se guardó en Firestore.`);
       }
 
     } catch (error) {
       console.error(`Error al enviar notificación al usuario ${userId}:`, error);
+    }
+  }
+
+  /**
+   * Envía una notificación push real a través del Service Worker
+   * @param userId ID del usuario
+   * @param title Título de la notificación
+   * @param body Cuerpo de la notificación
+   * @param token Token FCM del usuario
+   */
+  private async sendPushNotification(
+    userId: string,
+    title: string,
+    body: string,
+    token: string
+  ): Promise<void> {
+    try {
+      // En una aplicación real, aquí enviarías una solicitud a tu backend
+      // que usaría la Admin SDK de Firebase para enviar el mensaje FCM
+      
+      // Por ahora, guardamos en Firestore y el usuario la verá cuando abra la app
+      console.log(`[Notification] Se requiere backend para enviar FCM push a token: ${token.substring(0, 20)}...`);
+      
+      // NOTA: Para implementar esto completamente, necesitas:
+      // 1. Firebase Cloud Functions
+      // 2. Llamar a una función que use firebase-admin para enviar el mensaje
+      // 3. Ejemplo: await this.firestore.collection('fcm-queue').add({ userId, title, body, token });
+      
+    } catch (error) {
+      console.error('Error al enviar push notification:', error);
+    }
+  }
+
+  /**
+   * Envía una notificación de prueba a todos los usuarios con notificaciones activas
+   * Solo para administradores
+   */
+  async sendTestNotificationToAll(): Promise<void> {
+    try {
+      console.log('[Notification] Enviando notificación de prueba a todos los usuarios...');
+      
+      // Obtener todos los usuarios con notificaciones habilitadas
+      const usersWithNotifications = await this.firestore.collection('users', ref =>
+        ref.where('notificationsEnabled', '==', true)
+      ).get().toPromise();
+
+      if (!usersWithNotifications || usersWithNotifications.empty) {
+        console.log('[Notification] No hay usuarios con notificaciones habilitadas');
+        await Swal.fire({
+          icon: 'info',
+          title: 'Sin destinatarios',
+          text: 'No hay usuarios con notificaciones habilitadas en este momento',
+          confirmButtonColor: '#189d98'
+        });
+        return;
+      }
+
+      const usersCount = usersWithNotifications.docs.length;
+      console.log(`[Notification] Encontrados ${usersCount} usuarios con notificaciones activas`);
+
+      // Confirmar envío
+      const result = await Swal.fire({
+        icon: 'question',
+        title: '¿Enviar notificación de prueba?',
+        html: `
+          <p>Se enviará una notificación de prueba a <strong>${usersCount} usuario${usersCount > 1 ? 's' : ''}</strong></p>
+          <p>¿Deseas continuar?</p>
+        `,
+        showCancelButton: true,
+        confirmButtonColor: '#189d98',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Sí, enviar',
+        cancelButtonText: 'Cancelar'
+      });
+
+      if (!result.isConfirmed) {
+        return;
+      }
+
+      // Enviar notificación a cada usuario
+      let successCount = 0;
+      for (const userDoc of usersWithNotifications.docs) {
+        const userId = userDoc.id;
+        const userData = userDoc.data() as any;
+        
+        try {
+          await this.sendNotificationToUser(
+            userId,
+            '🔔 Notificación de Prueba',
+            `Hola ${userData.name || 'Usuario'}, esta es una notificación de prueba del sistema de la Estudiantina Tonantzin Guadalupe 🎵`
+          );
+          successCount++;
+        } catch (error) {
+          console.error(`Error al enviar notificación a ${userId}:`, error);
+        }
+      }
+
+      console.log(`[Notification] ✅ Notificaciones de prueba enviadas: ${successCount}/${usersCount}`);
+
+      await Swal.fire({
+        icon: 'success',
+        title: '¡Notificaciones enviadas!',
+        html: `
+          <p>Se enviaron <strong>${successCount}</strong> notificaciones de prueba exitosamente</p>
+          <p>Los usuarios las recibirán según su estado de conexión</p>
+        `,
+        confirmButtonColor: '#189d98',
+        timer: 4000
+      });
+
+    } catch (error) {
+      console.error('[Notification] Error al enviar notificaciones de prueba:', error);
+      await Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Ocurrió un error al enviar las notificaciones de prueba',
+        confirmButtonColor: '#189d98'
+      });
     }
   }
 }

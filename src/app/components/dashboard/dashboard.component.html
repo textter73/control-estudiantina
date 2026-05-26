@@ -207,6 +207,10 @@
             Desactivar
           </button>
           
+          <button class="btn-test-all" (click)="sendTestNotificationToAll()" *ngIf="isAdmin">
+            <span class="btn-icon">📢</span>
+            Enviar Prueba a Todos
+          </button>
         </div>
       </div>
       

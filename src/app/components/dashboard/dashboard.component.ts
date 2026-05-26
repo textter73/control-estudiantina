@@ -2003,4 +2003,12 @@ export class DashboardComponent implements OnInit {
 
     await this.notificationService.getDailyEventsNotification();
   }
+
+  /**
+   * Envía notificación de prueba a todos los usuarios con notificaciones activas
+   * Solo para administradores
+   */
+  async sendTestNotificationToAll() {
+    await this.notificationService.sendTestNotificationToAll();
+  }
 }

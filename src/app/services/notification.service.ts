@@ -31,7 +31,7 @@ export class NotificationService {
         this.listenToForegroundMessages();
       }
     } catch (error) {
-      console.error('Error al inicializar Firebase Messaging:', error);
+      // Error al inicializar Firebase Messaging
     }
   }
 
@@ -41,8 +41,6 @@ export class NotificationService {
   private listenToForegroundMessages(): void {
     if (this.messaging) {
       onMessage(this.messaging, (payload) => {
-        console.log('Mensaje recibido en primer plano:', payload);
-        
         // Mostrar notificación personalizada
         if (payload.notification) {
           this.showLocalNotification(
@@ -119,8 +117,6 @@ export class NotificationService {
         });
 
         if (token) {
-          console.log('Token FCM obtenido:', token);
-          
           // Guardar el token en Firestore
           await this.firestore.collection('users').doc(user.uid).update({
             notificationsEnabled: true,
@@ -132,15 +128,9 @@ export class NotificationService {
             },
             lastTokenUpdate: new Date()
           });
-
-          console.log('Token de notificación guardado en Firestore');
-        } else {
-          console.warn('No se pudo obtener el token de FCM');
         }
       }
     } catch (error) {
-      console.error('Error al guardar token:', error);
-      
       // Si hay error de permisos, intentar con notificaciones locales
       if (error && typeof error === 'object' && 'code' in error && error.code === 'messaging/permission-blocked') {
         await Swal.fire({
@@ -174,7 +164,7 @@ export class NotificationService {
         timer: 2000
       });
     } catch (error) {
-      console.error('Error al desactivar notificaciones:', error);
+      // Error al desactivar notificaciones
     }
   }
 
@@ -190,7 +180,6 @@ export class NotificationService {
    */
   async showLocalNotification(title: string, body: string, icon?: string): Promise<void> {
     if (!this.isNotificationEnabled()) {
-      console.log('Notificaciones no habilitadas');
       return;
     }
 
@@ -258,7 +247,7 @@ export class NotificationService {
         );
       }
     } catch (error) {
-      console.error('Error al obtener eventos:', error);
+      // Error al obtener eventos
     }
   }
 
@@ -276,13 +265,6 @@ export class NotificationService {
     userName?: string
   ): Promise<void> {
     try {
-      console.log(`[Notification] Iniciando envío de notificaciones de depósito:`, {
-        userId,
-        amount,
-        concept,
-        userName
-      });
-
       // Obtener datos del usuario si no se proporcionó el nombre
       let recipientName = userName;
       if (!recipientName) {
@@ -292,7 +274,6 @@ export class NotificationService {
       }
 
       // 1. Enviar notificación al usuario que recibe el depósito
-      console.log(`[Notification] Enviando a usuario receptor: ${userId}`);
       await this.sendNotificationToUser(
         userId,
         `💰 Depósito Recibido`,
@@ -300,8 +281,6 @@ export class NotificationService {
       );
 
       // 2. Enviar notificación a todos los administradores y usuarios de finanzas
-      console.log(`[Notification] Buscando administradores y usuarios de finanzas...`);
-      
       const adminUsers = await this.firestore.collection('users', ref =>
         ref.where('profiles', 'array-contains', 'administrador')
       ).get().toPromise();
@@ -309,8 +288,6 @@ export class NotificationService {
       const financeUsers = await this.firestore.collection('users', ref =>
         ref.where('profiles', 'array-contains', 'finanzas')
       ).get().toPromise();
-
-      console.log(`[Notification] Encontrados: ${adminUsers?.docs.length || 0} admins, ${financeUsers?.docs.length || 0} finanzas`);
 
       // Combinar resultados y eliminar duplicados
       const notifiedUserIds = new Set<string>();
@@ -322,7 +299,6 @@ export class NotificationService {
           
           // No enviar notificación si es el mismo usuario que recibe el depósito
           if (adminId !== userId && !notifiedUserIds.has(adminId)) {
-            console.log(`[Notification] Enviando a admin: ${adminId}`);
             await this.sendNotificationToUser(
               adminId,
               `💵 Depósito Realizado`,
@@ -340,7 +316,6 @@ export class NotificationService {
           
           // No enviar notificación si es el mismo usuario que recibe el depósito o ya fue notificado
           if (financeId !== userId && !notifiedUserIds.has(financeId)) {
-            console.log(`[Notification] Enviando a finanzas: ${financeId}`);
             await this.sendNotificationToUser(
               financeId,
               `💵 Depósito Realizado`,
@@ -350,10 +325,87 @@ export class NotificationService {
           }
         }
       }
-
-      console.log(`[Notification] ✅ Proceso completado. Notificaciones enviadas: $${amount} a ${recipientName}. Total notificados: ${notifiedUserIds.size + 1}`);
     } catch (error) {
-      console.error('Error al enviar notificaciones de depósito:', error);
+      // Error al enviar notificaciones de depósito
+    }
+  }
+
+  /**
+   * Envía notificaciones de retiro al usuario, administradores y usuarios de finanzas
+   * @param userId ID del usuario del cual se retira
+   * @param amount Monto del retiro
+   * @param concept Concepto del retiro
+   * @param userName Nombre del usuario (opcional, se obtiene de Firestore si no se proporciona)
+   */
+  async sendWithdrawalNotifications(
+    userId: string,
+    amount: number,
+    concept: string,
+    userName?: string
+  ): Promise<void> {
+    try {
+      // Obtener datos del usuario si no se proporcionó el nombre
+      let recipientName = userName;
+      if (!recipientName) {
+        const userDoc = await this.firestore.collection('users').doc(userId).get().toPromise();
+        const userData = userDoc?.data() as any;
+        recipientName = userData?.name || 'Usuario';
+      }
+
+      // 1. Enviar notificación al usuario del cual se retiró
+      await this.sendNotificationToUser(
+        userId,
+        `💸 Retiro Realizado`,
+        `Se retiró $${amount.toFixed(2)} de tu cuenta. Concepto: ${concept}`
+      );
+
+      // 2. Enviar notificación a todos los administradores y usuarios de finanzas
+      const adminUsers = await this.firestore.collection('users', ref =>
+        ref.where('profiles', 'array-contains', 'administrador')
+      ).get().toPromise();
+
+      const financeUsers = await this.firestore.collection('users', ref =>
+        ref.where('profiles', 'array-contains', 'finanzas')
+      ).get().toPromise();
+
+      // Combinar resultados y eliminar duplicados
+      const notifiedUserIds = new Set<string>();
+
+      // Enviar a administradores
+      if (adminUsers && !adminUsers.empty) {
+        for (const adminDoc of adminUsers.docs) {
+          const adminId = adminDoc.id;
+          
+          // No enviar notificación si es el mismo usuario del retiro
+          if (adminId !== userId && !notifiedUserIds.has(adminId)) {
+            await this.sendNotificationToUser(
+              adminId,
+              `💸 Retiro Procesado`,
+              `Retiro de $${amount.toFixed(2)} de la cuenta de ${recipientName}. Concepto: ${concept}`
+            );
+            notifiedUserIds.add(adminId);
+          }
+        }
+      }
+
+      // Enviar a usuarios de finanzas
+      if (financeUsers && !financeUsers.empty) {
+        for (const financeDoc of financeUsers.docs) {
+          const financeId = financeDoc.id;
+          
+          // No enviar notificación si es el mismo usuario del retiro o ya fue notificado
+          if (financeId !== userId && !notifiedUserIds.has(financeId)) {
+            await this.sendNotificationToUser(
+              financeId,
+              `💸 Retiro Procesado`,
+              `Retiro de $${amount.toFixed(2)} de la cuenta de ${recipientName}. Concepto: ${concept}`
+            );
+            notifiedUserIds.add(financeId);
+          }
+        }
+      }
+    } catch (error) {
+      // Error al enviar notificaciones de retiro
     }
   }
 
@@ -373,14 +425,7 @@ export class NotificationService {
       const userDoc = await this.firestore.collection('users').doc(userId).get().toPromise();
       const userData = userDoc?.data() as any;
 
-      console.log(`[Notification] Enviando a usuario ${userId}:`, {
-        hasData: !!userData,
-        notificationsEnabled: userData?.notificationsEnabled,
-        hasToken: !!userData?.notificationToken
-      });
-
       if (!userData) {
-        console.warn(`Usuario ${userId} no encontrado en Firestore`);
         return;
       }
 
@@ -397,8 +442,6 @@ export class NotificationService {
         read: false
       });
 
-      console.log(`[Notification] Notificación guardada en Firestore para ${userId}`);
-
       // Si el usuario tiene notificaciones habilitadas, intentar mostrar notificación push
       if (userData.notificationsEnabled && userData.notificationToken) {
         // Verificar si el usuario actual es el destinatario para mostrar notificación local
@@ -406,19 +449,15 @@ export class NotificationService {
         
         if (currentUser && currentUser.uid === userId) {
           // Usuario activo - mostrar notificación inmediatamente
-          console.log(`[Notification] Usuario activo - mostrando notificación local`);
           await this.showLocalNotification(title, body, '/assets/icons/icon-192x192.png');
         } else {
           // Usuario no activo - intentar enviar a través del service worker
-          console.log(`[Notification] Usuario no activo - enviando vía service worker`);
           await this.sendPushNotification(userId, title, body, userData.notificationToken);
         }
-      } else {
-        console.log(`[Notification] Usuario ${userId} no tiene notificaciones push habilitadas. La notificación se guardó en Firestore.`);
       }
 
     } catch (error) {
-      console.error(`Error al enviar notificación al usuario ${userId}:`, error);
+      // Error al enviar notificación al usuario
     }
   }
 
@@ -440,15 +479,13 @@ export class NotificationService {
       // que usaría la Admin SDK de Firebase para enviar el mensaje FCM
       
       // Por ahora, guardamos en Firestore y el usuario la verá cuando abra la app
-      console.log(`[Notification] Se requiere backend para enviar FCM push a token: ${token.substring(0, 20)}...`);
-      
       // NOTA: Para implementar esto completamente, necesitas:
       // 1. Firebase Cloud Functions
       // 2. Llamar a una función que use firebase-admin para enviar el mensaje
       // 3. Ejemplo: await this.firestore.collection('fcm-queue').add({ userId, title, body, token });
       
     } catch (error) {
-      console.error('Error al enviar push notification:', error);
+      // Error al enviar push notification
     }
   }
 
@@ -458,15 +495,12 @@ export class NotificationService {
    */
   async sendTestNotificationToAll(): Promise<void> {
     try {
-      console.log('[Notification] Enviando notificación de prueba a todos los usuarios...');
-      
       // Obtener todos los usuarios con notificaciones habilitadas
       const usersWithNotifications = await this.firestore.collection('users', ref =>
         ref.where('notificationsEnabled', '==', true)
       ).get().toPromise();
 
       if (!usersWithNotifications || usersWithNotifications.empty) {
-        console.log('[Notification] No hay usuarios con notificaciones habilitadas');
         await Swal.fire({
           icon: 'info',
           title: 'Sin destinatarios',
@@ -477,7 +511,6 @@ export class NotificationService {
       }
 
       const usersCount = usersWithNotifications.docs.length;
-      console.log(`[Notification] Encontrados ${usersCount} usuarios con notificaciones activas`);
 
       // Confirmar envío
       const result = await Swal.fire({
@@ -498,6 +531,25 @@ export class NotificationService {
         return;
       }
 
+      // Mostrar loading mientras se envían las notificaciones
+      Swal.fire({
+        title: 'Enviando notificaciones...',
+        html: `
+          <div style="margin: 20px 0;">
+            <p style="font-size: 1.1rem; margin-bottom: 10px;">Enviando a <strong>${usersCount}</strong> usuario${usersCount > 1 ? 's' : ''}</p>
+            <div style="background: #f3f4f6; border-radius: 8px; padding: 15px; margin-top: 15px;">
+              <p style="font-size: 1.5rem; font-weight: bold; color: #189d98; margin: 0;" id="progress-text">0 / ${usersCount}</p>
+            </div>
+          </div>
+        `,
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        showConfirmButton: false,
+        didOpen: () => {
+          Swal.showLoading();
+        }
+      });
+
       // Enviar notificación a cada usuario
       let successCount = 0;
       for (const userDoc of usersWithNotifications.docs) {
@@ -511,12 +563,19 @@ export class NotificationService {
             `Hola ${userData.name || 'Usuario'}, esta es una notificación de prueba del sistema de la Estudiantina Tonantzin Guadalupe 🎵`
           );
           successCount++;
+          
+          // Actualizar el progreso en el loading
+          const progressElement = document.getElementById('progress-text');
+          if (progressElement) {
+            progressElement.textContent = `${successCount} / ${usersCount}`;
+          }
         } catch (error) {
-          console.error(`Error al enviar notificación a ${userId}:`, error);
+          // Error al enviar notificación
         }
       }
 
-      console.log(`[Notification] ✅ Notificaciones de prueba enviadas: ${successCount}/${usersCount}`);
+      // Cerrar el loading y mostrar resultado
+      Swal.close();
 
       await Swal.fire({
         icon: 'success',
@@ -530,7 +589,6 @@ export class NotificationService {
       });
 
     } catch (error) {
-      console.error('[Notification] Error al enviar notificaciones de prueba:', error);
       await Swal.fire({
         icon: 'error',
         title: 'Error',

@@ -329,6 +329,14 @@ export class FinancialManagementComponent implements OnInit {
       
       await batch.commit();
       
+      // Enviar notificaciones push al usuario y administradores
+      await this.notificationService.sendWithdrawalNotifications(
+        this.selectedAccount.userId,
+        this.transactionAmount,
+        this.transactionConcept,
+        this.selectedAccount.userName || this.selectedAccount.name
+      );
+      
       Swal.fire('Éxito', 'Retiro realizado exitosamente', 'success');
       this.closeTransactionModal();
     } catch (error) {

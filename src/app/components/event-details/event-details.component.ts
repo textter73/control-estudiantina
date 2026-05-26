@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
+import { NotificationService } from '../../services/notification.service';
 import Swal from 'sweetalert2';
 
 @Component({
@@ -23,7 +24,8 @@ export class EventDetailsComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private firestore: AngularFirestore,
-    private afAuth: AngularFireAuth
+    private afAuth: AngularFireAuth,
+    private notificationService: NotificationService
   ) {}
 
   goBack() {
@@ -99,9 +101,78 @@ export class EventDetailsComponent implements OnInit {
 
     try {
       await this.firestore.collection('events').doc(this.eventId).update({ confirmations });
+      
+      // Enviar notificación al usuario confirmando su respuesta
+      await this.sendConfirmationNotification();
+      
       Swal.fire('Éxito', 'Confirmación registrada', 'success');
     } catch (error) {
       Swal.fire('Error', 'Error al registrar confirmación', 'error');
+    }
+  }
+
+  /**
+   * Envía notificación al usuario confirmando su respuesta al evento
+   */
+  async sendConfirmationNotification() {
+    try {
+      const responseIcons: { [key: string]: string } = {
+        'asistire': '✅',
+        'tal-vez': '🤔',
+        'no-asistire': '❌'
+      };
+
+      const responseTexts: { [key: string]: string } = {
+        'asistire': 'Asistiré',
+        'tal-vez': 'Tal vez',
+        'no-asistire': 'No asistiré'
+      };
+
+      const icon = responseIcons[this.selectedResponse] || '📅';
+      const responseText = responseTexts[this.selectedResponse] || this.selectedResponse;
+
+      // Formatear fecha
+      let dateText = this.event.date;
+      if (this.event.date) {
+        const eventDate = new Date(this.event.date + 'T00:00:00');
+        dateText = eventDate.toLocaleDateString('es-MX', { 
+          weekday: 'long', 
+          year: 'numeric', 
+          month: 'long', 
+          day: 'numeric' 
+        });
+      }
+
+      const title = `${icon} Confirmación registrada`;
+      
+      let body = `Tu respuesta para el evento "${this.event.title}" ha sido registrada:\n\n` +
+                 `Respuesta: ${responseText}\n` +
+                 `Fecha: ${dateText}`;
+
+      // Agregar información de hora y ubicación si están disponibles
+      if (this.event.startTime) {
+        body += `\nHora: ${this.event.startTime}`;
+      }
+      
+      if (this.event.location) {
+        body += `\n📍 ${this.event.location}`;
+      }
+
+      // Agregar información de acompañantes si aplica
+      if (this.event.requiresTransport && this.companions > 0) {
+        body += `\n👥 Acompañantes: ${this.companions}`;
+      }
+
+      // Enviar notificación al usuario
+      await this.notificationService.sendNotificationToUser(
+        this.user.uid,
+        title,
+        body
+      );
+
+    } catch (error) {
+      console.error('Error enviando notificación de confirmación:', error);
+      // No mostrar error al usuario, la confirmación ya se guardó exitosamente
     }
   }
 

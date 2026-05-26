@@ -5206,18 +5206,17 @@
 /* ========== NOTIFICACIONES PUSH ========== */
 
 .notification-setup-card {
-  background: linear-gradient(135deg, #fff, #f0fdfa);
-  border: 2px solid #5eead4;
-  border-radius: 16px;
-  padding: 1.5rem;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 2rem;
   margin: 1.5rem 0;
-  box-shadow: 0 4px 20px rgba(94, 234, 212, 0.1);
-  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  transition: box-shadow 0.3s ease;
 }
 
 .notification-setup-card:hover {
-  box-shadow: 0 6px 30px rgba(94, 234, 212, 0.2);
-  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 .push-notification-header {
@@ -5225,93 +5224,85 @@
   align-items: center;
   gap: 1rem;
   margin-bottom: 1.5rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid #f1f5f9;
 }
 
 .push-notification-header .push-notification-icon {
-  font-size: 2.5rem;
-  animation: bellRing 2s ease-in-out infinite;
-}
-
-@keyframes bellRing {
-  0%, 100% { transform: rotate(0deg); }
-  10%, 30% { transform: rotate(-10deg); }
-  20% { transform: rotate(10deg); }
+  font-size: 2rem;
+  opacity: 0.8;
 }
 
 .push-notification-info h3 {
   margin: 0;
-  font-size: 1.3rem;
+  font-size: 1.1rem;
   color: #0f172a;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .push-notification-info p {
-  margin: 0.3rem 0 0;
-  font-size: 0.9rem;
+  margin: 0.5rem 0 0;
+  font-size: 0.875rem;
   color: #64748b;
+  line-height: 1.5;
 }
 
-.push-push-notification-controls {
+.push-notification-controls {
   display: flex;
   justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
   gap: 1rem;
-  padding: 1rem;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
-.push-push-notification-status {
+.push-notification-status {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   padding: 0.5rem 1rem;
-  border-radius: 8px;
-  background: #f1f5f9;
+  border-radius: 6px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
 }
 
 .push-notification-status.active {
-  background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+  background: #ecfdf5;
+  border: 1px solid #10b981;
 }
 
 .push-status-indicator {
-  width: 12px;
-  height: 12px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
-  background: #94a3b8;
-  animation: pushPulse 2s ease-in-out infinite;
+  background: #cbd5e1;
 }
 
 .push-notification-status.active .push-status-indicator {
   background: #10b981;
-  box-shadow: 0 0 8px rgba(16, 185, 129, 0.5);
 }
 
-@keyframes pushPulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
+.push-status-text {
+  font-weight: 500;
+  color: #475569;
+  font-size: 0.875rem;
 }
 
-.push-push-status-text {
-  font-weight: 600;
-  color: #0f172a;
-  font-size: 0.95rem;
+.push-notification-status.active .push-status-text {
+  color: #059669;
 }
 
-.push-push-notification-buttons {
+.push-notification-buttons {
   display: flex;
   gap: 0.75rem;
   flex-wrap: wrap;
 }
 
-.push-push-notification-buttons button {
-  padding: 0.75rem 1.25rem;
+.push-notification-buttons button {
+  padding: 0.625rem 1.25rem;
   border: none;
-  border-radius: 10px;
-  font-weight: 600;
-  font-size: 0.9rem;
+  border-radius: 6px;
+  font-weight: 500;
+  font-size: 0.875rem;
   cursor: pointer;
   transition: all 0.2s ease;
   display: flex;
@@ -5320,65 +5311,69 @@
 }
 
 .push-notification-buttons button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transform: translateY(-1px);
 }
 
 .btn-enable {
-  background: linear-gradient(135deg, #10b981, #059669);
+  background: #10b981;
   color: white;
 }
 
 .btn-enable:hover {
-  background: linear-gradient(135deg, #059669, #047857);
+  background: #059669;
 }
 
 .btn-disable {
-  background: linear-gradient(135deg, #ef4444, #dc2626);
+  background: #ef4444;
   color: white;
 }
 
 .btn-disable:hover {
-  background: linear-gradient(135deg, #dc2626, #b91c1c);
+  background: #dc2626;
 }
 
 .btn-test {
-  background: linear-gradient(135deg, #189d98, #0d7773);
+  background: #189d98;
   color: white;
 }
 
 .btn-test:hover {
-  background: linear-gradient(135deg, #0d7773, #0a5b58);
+  background: #0d7773;
 }
 
 .btn-icon {
-  font-size: 1.1rem;
+  font-size: 1rem;
 }
 
 .push-notification-info-box {
-  margin-top: 1rem;
+  margin-top: 1.5rem;
   padding: 1rem;
-  background: linear-gradient(135deg, #eff6ff, #dbeafe);
-  border-left: 4px solid #3b82f6;
-  border-radius: 8px;
+  background: #f8fafc;
+  border-left: 3px solid #3b82f6;
+  border-radius: 6px;
   display: flex;
   align-items: flex-start;
   gap: 0.75rem;
 }
 
 .push-info-icon {
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   flex-shrink: 0;
+  opacity: 0.7;
 }
 
 .push-notification-info-box p {
   margin: 0;
-  font-size: 0.9rem;
-  color: #1e40af;
-  line-height: 1.5;
+  font-size: 0.875rem;
+  color: #475569;
+  line-height: 1.6;
 }
 
 @media (max-width: 768px) {
+  .notification-setup-card {
+    padding: 1.5rem;
+  }
+
   .push-notification-controls {
     flex-direction: column;
     align-items: stretch;
@@ -5399,12 +5394,16 @@
   }
 
   .push-notification-header {
-    flex-direction: column;
-    text-align: center;
+    flex-direction: row;
+    padding-bottom: 1rem;
   }
 
   .push-notification-info h3 {
-    font-size: 1.1rem;
+    font-size: 1rem;
+  }
+
+  .push-notification-info p {
+    font-size: 0.8125rem;
   }
 }
 

@@ -261,4 +261,137 @@ export class NotificationService {
       console.error('Error al obtener eventos:', error);
     }
   }
+
+  /**
+   * Envía notificaciones de depósito al usuario, administradores y usuarios de finanzas
+   * @param userId ID del usuario que recibe el depósito
+   * @param amount Monto del depósito
+   * @param concept Concepto del depósito
+   * @param userName Nombre del usuario (opcional, se obtiene de Firestore si no se proporciona)
+   */
+  async sendDepositNotifications(
+    userId: string,
+    amount: number,
+    concept: string,
+    userName?: string
+  ): Promise<void> {
+    try {
+      // Obtener datos del usuario si no se proporcionó el nombre
+      let recipientName = userName;
+      if (!recipientName) {
+        const userDoc = await this.firestore.collection('users').doc(userId).get().toPromise();
+        const userData = userDoc?.data() as any;
+        recipientName = userData?.name || 'Usuario';
+      }
+
+      // Crear notificación para guardar en Firestore (base de datos)
+      const notificationData = {
+        type: 'deposit',
+        userId: userId,
+        amount: amount,
+        concept: concept,
+        userName: recipientName,
+        createdAt: new Date(),
+        read: false
+      };
+
+      // Guardar notificación en Firestore
+      await this.firestore.collection('notifications').add(notificationData);
+
+      // 1. Enviar notificación al usuario que recibe el depósito
+      await this.sendNotificationToUser(
+        userId,
+        `💰 Depósito Recibido`,
+        `Se depositó $${amount.toFixed(2)} a tu cuenta. Concepto: ${concept}`
+      );
+
+      // 2. Enviar notificación a todos los administradores y usuarios de finanzas
+      const adminUsers = await this.firestore.collection('users', ref =>
+        ref.where('profiles', 'array-contains', 'administrador')
+      ).get().toPromise();
+
+      const financeUsers = await this.firestore.collection('users', ref =>
+        ref.where('profiles', 'array-contains', 'finanzas')
+      ).get().toPromise();
+
+      // Combinar resultados y eliminar duplicados
+      const notifiedUserIds = new Set<string>();
+
+      // Enviar a administradores
+      if (adminUsers && !adminUsers.empty) {
+        for (const adminDoc of adminUsers.docs) {
+          const adminId = adminDoc.id;
+          
+          // No enviar notificación si es el mismo usuario que recibe el depósito
+          if (adminId !== userId && !notifiedUserIds.has(adminId)) {
+            await this.sendNotificationToUser(
+              adminId,
+              `💵 Depósito Realizado`,
+              `Depósito de $${amount.toFixed(2)} a ${recipientName}. Concepto: ${concept}`
+            );
+            notifiedUserIds.add(adminId);
+          }
+        }
+      }
+
+      // Enviar a usuarios de finanzas
+      if (financeUsers && !financeUsers.empty) {
+        for (const financeDoc of financeUsers.docs) {
+          const financeId = financeDoc.id;
+          
+          // No enviar notificación si es el mismo usuario que recibe el depósito o ya fue notificado
+          if (financeId !== userId && !notifiedUserIds.has(financeId)) {
+            await this.sendNotificationToUser(
+              financeId,
+              `💵 Depósito Realizado`,
+              `Depósito de $${amount.toFixed(2)} a ${recipientName}. Concepto: ${concept}`
+            );
+            notifiedUserIds.add(financeId);
+          }
+        }
+      }
+
+      console.log(`Notificaciones de depósito enviadas: $${amount} a ${recipientName}`);
+    } catch (error) {
+      console.error('Error al enviar notificaciones de depósito:', error);
+    }
+  }
+
+  /**
+   * Envía una notificación a un usuario específico
+   * @param userId ID del usuario
+   * @param title Título de la notificación
+   * @param body Cuerpo de la notificación
+   */
+  private async sendNotificationToUser(
+    userId: string,
+    title: string,
+    body: string
+  ): Promise<void> {
+    try {
+      // Obtener el usuario y verificar si tiene notificaciones habilitadas
+      const userDoc = await this.firestore.collection('users').doc(userId).get().toPromise();
+      const userData = userDoc?.data() as any;
+
+      if (!userData || !userData.notificationsEnabled || !userData.notificationToken) {
+        console.log(`Usuario ${userId} no tiene notificaciones habilitadas`);
+        return;
+      }
+
+      // Si el usuario tiene las notificaciones habilitadas, mostrar notificación local
+      // (En producción, aquí enviarías el mensaje a través de Firebase Cloud Functions)
+      
+      // Por ahora, guardamos la notificación en Firestore para que el usuario la vea
+      // y si está activo, mostramos notificación local
+      
+      // Verificar si el usuario actual es el destinatario para mostrar notificación local
+      const currentUser = await this.auth.currentUser;
+      if (currentUser && currentUser.uid === userId) {
+        await this.showLocalNotification(title, body, '/assets/icons/icon-192x192.png');
+      }
+
+    } catch (error) {
+      console.error(`Error al enviar notificación al usuario ${userId}:`, error);
+    }
+  }
 }

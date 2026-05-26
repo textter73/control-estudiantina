@@ -4,6 +4,7 @@ import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
 import Swal from 'sweetalert2';
 import jsPDF from 'jspdf';
+import { NotificationService } from '../../services/notification.service';
 
 @Component({
   selector: 'app-financial-management',
@@ -40,7 +41,8 @@ export class FinancialManagementComponent implements OnInit {
   constructor(
     private firestore: AngularFirestore,
     private afAuth: AngularFireAuth,
-    private router: Router
+    private router: Router,
+    private notificationService: NotificationService
   ) {}
 
   ngOnInit() {
@@ -233,6 +235,14 @@ export class FinancialManagementComponent implements OnInit {
       batch.set(transactionRef, transaction);
       
       await batch.commit();
+      
+      // Enviar notificaciones push al usuario y administradores
+      await this.notificationService.sendDepositNotifications(
+        this.selectedAccount.userId,
+        this.transactionAmount,
+        this.transactionConcept,
+        this.selectedAccount.userName || this.selectedAccount.name
+      );
       
       Swal.fire('Éxito', 'Depósito realizado exitosamente', 'success');
       this.closeTransactionModal();

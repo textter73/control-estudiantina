@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import Swal from 'sweetalert2';
 import jsPDF from 'jspdf';
 import { UserEvaluationService } from '../../services/user-evaluation.service';
+import { NotificationService } from '../../services/notification.service';
 
 interface PayrollEmployee {
   id: string;
@@ -75,7 +76,8 @@ export class ContractDistributionComponent implements OnInit {
     private firestore: AngularFirestore,
     private afAuth: AngularFireAuth,
     private router: Router,
-    private userEvaluationService: UserEvaluationService
+    private userEvaluationService: UserEvaluationService,
+    private notificationService: NotificationService
   ) {}
 
   ngOnInit() {
@@ -880,6 +882,16 @@ export class ContractDistributionComponent implements OnInit {
     }
 
     await batch.commit();
+
+    // Enviar notificaciones push a cada empleado que recibió pago
+    for (const employee of this.allEmployees.filter(e => e.attended)) {
+      await this.notificationService.sendDepositNotifications(
+        employee.id,
+        employee.net,
+        `Pago nómina: ${this.contractName}`,
+        employee.name
+      );
+    }
   }
 
   generateGeneralPDF() {

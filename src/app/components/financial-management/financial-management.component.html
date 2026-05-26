@@ -207,9 +207,10 @@
       </div>
       
       <div class="modal-footer">
-        <button class="cancel-btn" (click)="closeTransactionModal()">Cancelar</button>
-        <button class="confirm-btn" (click)="processTransaction()">
-          {{ transactionType === 'deposit' ? 'Depositar' : 'Retirar' }}
+        <button class="cancel-btn" (click)="closeTransactionModal()" [disabled]="isProcessingTransaction">Cancelar</button>
+        <button class="confirm-btn" (click)="processTransaction()" [disabled]="isProcessingTransaction">
+          <span *ngIf="!isProcessingTransaction">{{ transactionType === 'deposit' ? 'Depositar' : 'Retirar' }}</span>
+          <span *ngIf="isProcessingTransaction">⏳ Procesando...</span>
         </button>
       </div>
     </div>

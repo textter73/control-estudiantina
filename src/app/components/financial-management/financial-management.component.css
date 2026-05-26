@@ -713,6 +713,14 @@
   box-shadow: 0 4px 12px rgba(24, 157, 152, 0.3);
 }
 
+.cancel-btn:disabled,
+.confirm-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .financial-main {

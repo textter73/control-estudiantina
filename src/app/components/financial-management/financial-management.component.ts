@@ -37,6 +37,9 @@ export class FinancialManagementComponent implements OnInit {
   showStatementModal = false;
   statementData: any = null;
   statementMovements: any[] = [];
+  
+  // Protección contra doble clic
+  isProcessingTransaction = false;
 
   constructor(
     private firestore: AngularFirestore,
@@ -181,6 +184,10 @@ export class FinancialManagementComponent implements OnInit {
   }
 
   async processTransaction() {
+    if (this.isProcessingTransaction) {
+      return; // Prevenir doble clic
+    }
+
     if (!this.selectedAccount || this.transactionAmount <= 0 || !this.transactionConcept) {
       Swal.fire('Error', 'Complete todos los campos correctamente', 'error');
       return;
@@ -209,6 +216,18 @@ export class FinancialManagementComponent implements OnInit {
   }
 
   async processDeposit() {
+    this.isProcessingTransaction = true;
+
+    // Mostrar loading
+    Swal.fire({
+      title: 'Procesando depósito...',
+      text: 'Enviando notificaciones',
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
+      }
+    });
+
     const newBalance = this.selectedAccount.balance + this.transactionAmount;
     
     const transaction = {
@@ -248,6 +267,8 @@ export class FinancialManagementComponent implements OnInit {
       this.closeTransactionModal();
     } catch (error) {
       Swal.fire('Error', 'Error al procesar el depósito', 'error');
+    } finally {
+      this.isProcessingTransaction = false;
     }
   }
 
@@ -295,6 +316,18 @@ export class FinancialManagementComponent implements OnInit {
 
     if (!result.isConfirmed) return;
 
+    this.isProcessingTransaction = true;
+
+    // Mostrar loading
+    Swal.fire({
+      title: 'Procesando retiro...',
+      text: 'Enviando notificaciones',
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
+      }
+    });
+
     try {
       // Verificar saldo una vez más antes de procesar (por seguridad)
       if (this.transactionAmount > this.selectedAccount.balance) {
@@ -341,6 +374,8 @@ export class FinancialManagementComponent implements OnInit {
       this.closeTransactionModal();
     } catch (error) {
       Swal.fire('Error', 'Error al procesar el retiro', 'error');
+    } finally {
+      this.isProcessingTransaction = false;
     }
   }
 

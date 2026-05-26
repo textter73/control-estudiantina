@@ -721,6 +721,24 @@ export class AttendanceComponent implements OnInit, OnDestroy {
           `${statusIcon} ${statusLabel} - ${typeLabel} del ${date}`
         );
       }
+
+      // Enviar notificación a todos los administradores
+      const adminUsers = await this.firestore.collection('users', ref =>
+        ref.where('profiles', 'array-contains', 'administrador')
+      ).get().toPromise();
+
+      if (adminUsers && !adminUsers.empty) {
+        const totalRecords = this.attendanceRecords.length;
+        const presentCount = this.attendanceRecords.filter(r => r.status === 'presente').length;
+        
+        for (const adminDoc of adminUsers.docs) {
+          await this.notificationService.sendNotificationToUser(
+            adminDoc.id,
+            `📋 Asistencia Tomada`,
+            `${typeLabel} del ${date}\n✅ Presentes: ${presentCount}/${totalRecords}`
+          );
+        }
+      }
     } catch (error) {
       // Error al enviar notificaciones (no bloquea el guardado)
     }

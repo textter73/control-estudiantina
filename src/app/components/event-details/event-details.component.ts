@@ -170,6 +170,27 @@ export class EventDetailsComponent implements OnInit {
         body
       );
 
+      // Enviar notificación a todos los administradores
+      const adminUsers = await this.firestore.collection('users', ref =>
+        ref.where('profiles', 'array-contains', 'administrador')
+      ).get().toPromise();
+
+      if (adminUsers && !adminUsers.empty) {
+        const adminTitle = `${icon} Nueva Confirmación`;
+        const adminBody = `${this.userProfile?.name || this.user.email} confirmó "${responseText}" para el evento "${this.event.title}"`;
+        
+        for (const adminDoc of adminUsers.docs) {
+          // No enviar al mismo usuario si es administrador
+          if (adminDoc.id !== this.user.uid) {
+            await this.notificationService.sendNotificationToUser(
+              adminDoc.id,
+              adminTitle,
+              adminBody
+            );
+          }
+        }
+      }
+
     } catch (error) {
       console.error('Error enviando notificación de confirmación:', error);
       // No mostrar error al usuario, la confirmación ya se guardó exitosamente

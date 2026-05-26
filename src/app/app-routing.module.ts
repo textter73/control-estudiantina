@@ -29,6 +29,7 @@ import { SupplyRequestComponent } from './components/supply-request/supply-reque
 import { MemberEvaluationComponent } from './components/member-evaluation/member-evaluation.component';
 import { ContractDistributionComponent } from './components/contract-distribution/contract-distribution.component';
 import { PayrollHistoryComponent } from './components/payroll-history/payroll-history.component';
+import { CalendarViewComponent } from './components/calendar-view/calendar-view.component';
 
 const routes: Routes = [
   { path: '', component: LoginComponent },
@@ -53,6 +54,7 @@ const routes: Routes = [
   { path: 'member-evaluation', component: MemberEvaluationComponent, canActivate: [AdminGuard] },
   { path: 'contract-distribution', component: ContractDistributionComponent, canActivate: [AdminGuard] },
   { path: 'payroll-history', component: PayrollHistoryComponent, canActivate: [AdminGuard] },
+  { path: 'calendar-view', component: CalendarViewComponent, canActivate: [AuthGuard] },
   { path: '**', redirectTo: '' }
 ];
 

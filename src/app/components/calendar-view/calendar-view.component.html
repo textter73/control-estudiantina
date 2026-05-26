@@ -1,0 +1,149 @@
+<div class="calendar-view-container">
+  <!-- Header -->
+  <div class="page-header">
+    <button class="back-btn" (click)="goBack()">
+      <span>←</span> Volver
+    </button>
+    <h1>📅 Calendario de Eventos</h1>
+  </div>
+
+  <!-- Calendar Controls -->
+  <div class="calendar-controls">
+    <button class="control-btn" (click)="previousMonth()">
+      ← Anterior
+    </button>
+    
+    <div class="current-month">
+      <h2>{{ monthNames[currentMonth] }} {{ currentYear }}</h2>
+      <button class="today-btn" (click)="goToToday()">Hoy</button>
+    </div>
+    
+    <button class="control-btn" (click)="nextMonth()">
+      Siguiente →
+    </button>
+  </div>
+
+  <!-- Google Calendar Integration -->
+  <div class="google-calendar-section">
+    <button class="google-btn" (click)="syncWithGoogleCalendar()">
+      <span class="google-icon">🔗</span>
+      Sincronizar con Google Calendar
+    </button>
+    <small class="info-text">Ver tus eventos de Google Calendar junto a los eventos de la estudiantina</small>
+  </div>
+
+  <!-- Calendar Grid -->
+  <div class="calendar-container">
+    <!-- Weekday Headers -->
+    <div class="weekday-headers">
+      <div class="weekday-header" *ngFor="let day of weekDays">
+        {{ day }}
+      </div>
+    </div>
+
+    <!-- Calendar Days -->
+    <div class="calendar-grid">
+      <div 
+        *ngFor="let calendarDay of calendarDays"
+        class="calendar-day"
+        [class.other-month]="!calendarDay.isCurrentMonth"
+        [class.today]="calendarDay.isToday"
+        [class.has-events]="calendarDay.events.length > 0"
+        (click)="selectDay(calendarDay)"
+      >
+        <div class="day-number">{{ calendarDay.day }}</div>
+        
+        <!-- Event Indicators -->
+        <div class="events-list" *ngIf="calendarDay.events.length > 0">
+          <div 
+            *ngFor="let event of calendarDay.events.slice(0, 3)"
+            class="event-indicator"
+            [ngClass]="getEventTypeClass(event.type)"
+            [title]="event.title"
+          >
+            <span class="event-icon">{{ getEventTypeIcon(event.type) }}</span>
+            <span class="event-title">{{ event.title }}</span>
+          </div>
+          
+          <!-- More events indicator -->
+          <div class="more-events" *ngIf="calendarDay.events.length > 3">
+            +{{ calendarDay.events.length - 3 }} más
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Legend -->
+  <div class="calendar-legend">
+    <h3>Tipos de Eventos:</h3>
+    <div class="legend-items">
+      <div class="legend-item">
+        <span class="legend-icon event-callejoneada">🎭</span>
+        <span>Callejoneada</span>
+      </div>
+      <div class="legend-item">
+        <span class="legend-icon event-evento">🎉</span>
+        <span>Evento</span>
+      </div>
+      <div class="legend-item">
+        <span class="legend-icon event-participacion">🎪</span>
+        <span>Participación</span>
+      </div>
+      <div class="legend-item">
+        <span class="legend-icon event-contrato">📋</span>
+        <span>Contrato</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Event Details Modal -->
+  <div class="modal-overlay" *ngIf="showEventDetails" (click)="closeEventDetails()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Eventos del Día</h2>
+        <button class="close-btn" (click)="closeEventDetails()">✕</button>
+      </div>
+      
+      <div class="modal-body">
+        <div class="event-card" *ngFor="let event of selectedDayEvents">
+          <div class="event-card-header" [ngClass]="getEventTypeClass(event.type)">
+            <span class="event-type-icon">{{ getEventTypeIcon(event.type) }}</span>
+            <h3>{{ event.title }}</h3>
+          </div>
+          
+          <div class="event-card-body">
+            <div class="event-info" *ngIf="event.description">
+              <strong>📝 Descripción:</strong>
+              <p>{{ event.description }}</p>
+            </div>
+            
+            <div class="event-info" *ngIf="event.location">
+              <strong>📍 Ubicación:</strong>
+              <p>{{ event.location }}</p>
+            </div>
+            
+            <div class="event-info" *ngIf="event.startTime">
+              <strong>🕐 Hora:</strong>
+              <p>{{ event.startTime }} - {{ event.endTime || 'Por definir' }}</p>
+            </div>
+            
+            <div class="event-info" *ngIf="event.meetingPoint">
+              <strong>📌 Punto de Reunión:</strong>
+              <p>{{ event.meetingPoint }}</p>
+            </div>
+            
+            <div class="event-info" *ngIf="event.meetingTime">
+              <strong>⏰ Hora de Reunión:</strong>
+              <p>{{ event.meetingTime }}</p>
+            </div>
+            
+            <button class="view-details-btn" (click)="viewEventDetails(event.id)">
+              Ver Detalles Completos →
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

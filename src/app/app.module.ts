@@ -36,6 +36,7 @@ import { SupplyRequestComponent } from './components/supply-request/supply-reque
 import { MemberEvaluationComponent } from './components/member-evaluation/member-evaluation.component';
 import { ContractDistributionComponent } from './components/contract-distribution/contract-distribution.component';
 import { PayrollHistoryComponent } from './components/payroll-history/payroll-history.component';
+import { CalendarViewComponent } from './components/calendar-view/calendar-view.component';
 import { SafePipe } from './pipes/safe.pipe';
 import { InsumoService } from './services/insumo.service';
 import { UserEvaluationService } from './services/user-evaluation.service';
@@ -67,6 +68,7 @@ import { environment } from '../environments/environment';
     MemberEvaluationComponent,
     ContractDistributionComponent,
     PayrollHistoryComponent,
+    CalendarViewComponent,
     SafePipe
   ],
   imports: [

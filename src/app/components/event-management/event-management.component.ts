@@ -17,6 +17,8 @@ export class EventManagementComponent implements OnInit {
   users: any[] = [];
   showCreateForm = false;
   activeTab: string = 'open';
+  isCreatingEvent = false;
+  isChangingStatus: { [key: string]: boolean } = {};
   
   newEvent = {
     title: '',
@@ -80,10 +82,26 @@ export class EventManagementComponent implements OnInit {
   }
 
   async createEvent() {
+    if (this.isCreatingEvent) {
+      return; // Prevenir doble clic
+    }
+
     if (!this.newEvent.title || !this.newEvent.date) {
       Swal.fire('Error', 'Título y fecha son obligatorios', 'error');
       return;
     }
+
+    this.isCreatingEvent = true;
+
+    // Mostrar loading
+    Swal.fire({
+      title: 'Creando evento...',
+      text: 'Enviando notificaciones',
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
+      }
+    });
 
     const eventData = {
       ...this.newEvent,
@@ -106,10 +124,16 @@ export class EventManagementComponent implements OnInit {
       this.resetForm();
     } catch (error) {
       Swal.fire('Error', 'Error al crear evento', 'error');
+    } finally {
+      this.isCreatingEvent = false;
     }
   }
 
   async changeEventStatus(eventId: string, newStatus: string) {
+    if (this.isChangingStatus[eventId]) {
+      return; // Prevenir doble clic
+    }
+
     const result = await Swal.fire({
       title: '¿Confirmar cambio?',
       text: `¿Cambiar estado a ${newStatus}?`,
@@ -120,6 +144,18 @@ export class EventManagementComponent implements OnInit {
     });
 
     if (result.isConfirmed) {
+      this.isChangingStatus[eventId] = true;
+
+      // Mostrar loading
+      Swal.fire({
+        title: 'Actualizando estado...',
+        text: newStatus === 'cancelado' ? 'Enviando notificaciones de cancelación' : 'Procesando',
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        }
+      });
+
       try {
         await this.firestore.collection('events').doc(eventId).update({ status: newStatus });
         
@@ -135,6 +171,8 @@ export class EventManagementComponent implements OnInit {
         Swal.fire('Éxito', 'Estado actualizado', 'success');
       } catch (error) {
         Swal.fire('Error', 'Error al actualizar estado', 'error');
+      } finally {
+        this.isChangingStatus[eventId] = false;
       }
     }
   }

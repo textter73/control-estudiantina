@@ -10,3 +10,27 @@ body {
   line-height: 1.6;
   color: #333;
 }
+
+/* SweetAlert2 - Z-index para que aparezca siempre al frente */
+.swal2-container {
+  z-index: 99999 !important;
+}
+
+.swal2-backdrop-show {
+  z-index: 99998 !important;
+}
+
+/* Asegurar que el overlay/backdrop también esté al frente */
+.swal2-shown {
+  overflow: hidden !important;
+}
+
+/* Asegurar que el modal esté centrado y visible */
+.swal2-popup {
+  z-index: 100000 !important;
+}
+
+/* Asegurar que los íconos de loading se vean */
+.swal2-loader {
+  z-index: 100001 !important;
+}

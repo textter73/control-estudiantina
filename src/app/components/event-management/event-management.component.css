@@ -139,6 +139,13 @@
   transform: translateY(-2px);
 }
 
+.cancel-btn:disabled, .save-btn:disabled,
+.status-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
 .events-container {
   background: white;
   border-radius: 15px;

@@ -19,6 +19,7 @@ export class EventDetailsComponent implements OnInit {
   userConfirmation: any = null;
   selectedResponse: string = '';
   companions: number = 0;
+  isSubmitting = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -79,6 +80,22 @@ export class EventDetailsComponent implements OnInit {
   }
 
   async submitConfirmation() {
+    if (this.isSubmitting) {
+      return; // Prevenir doble clic
+    }
+
+    this.isSubmitting = true;
+
+    // Mostrar loading
+    Swal.fire({
+      title: 'Registrando confirmación...',
+      text: 'Enviando notificaciones',
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
+      }
+    });
+
     const confirmation: any = {
       userId: this.user.uid,
       userName: this.userProfile?.name || this.user.email,
@@ -108,6 +125,8 @@ export class EventDetailsComponent implements OnInit {
       Swal.fire('Éxito', 'Confirmación registrada', 'success');
     } catch (error) {
       Swal.fire('Error', 'Error al registrar confirmación', 'error');
+    } finally {
+      this.isSubmitting = false;
     }
   }
 

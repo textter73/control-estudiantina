@@ -36,6 +36,7 @@ export class AttendanceComponent implements OnInit, OnDestroy {
   currentSessionId: string | null = null;
   autoSaveEnabled: boolean = true;
   isSaving: boolean = false;
+  isSavingAttendance: boolean = false;
   lastSaved: Date | null = null;
   unsavedChanges: boolean = false;
 
@@ -257,6 +258,10 @@ export class AttendanceComponent implements OnInit, OnDestroy {
   }
 
   async saveAttendance() {
+    if (this.isSavingAttendance) {
+      return; // Prevenir doble clic
+    }
+
     if (!this.attendanceType || !this.attendanceDate) {
       Swal.fire({
         icon: 'warning',
@@ -274,6 +279,18 @@ export class AttendanceComponent implements OnInit, OnDestroy {
       });
       return;
     }
+
+    this.isSavingAttendance = true;
+
+    // Mostrar loading
+    Swal.fire({
+      title: 'Guardando asistencia...',
+      text: 'Enviando notificaciones a los usuarios',
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
+      }
+    });
 
     try {
       const attendanceData = {
@@ -311,6 +328,8 @@ export class AttendanceComponent implements OnInit, OnDestroy {
         title: 'Error',
         text: 'No se pudo guardar la asistencia'
       });
+    } finally {
+      this.isSavingAttendance = false;
     }
   }
 

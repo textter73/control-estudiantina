@@ -107,8 +107,11 @@
         </div>
 
         <div class="form-actions">
-          <button class="cancel-btn" (click)="resetForm()">Cancelar</button>
-          <button class="save-btn" (click)="createEvent()">Crear Evento</button>
+          <button class="cancel-btn" (click)="resetForm()" [disabled]="isCreatingEvent">Cancelar</button>
+          <button class="save-btn" (click)="createEvent()" [disabled]="isCreatingEvent">
+            <span *ngIf="!isCreatingEvent">Crear Evento</span>
+            <span *ngIf="isCreatingEvent">⏳ Creando...</span>
+          </button>
         </div>
       </div>
     </div>
@@ -206,14 +209,18 @@
               <button 
                 class="status-btn finish-btn" 
                 *ngIf="event.status === 'abierto'"
-                (click)="changeEventStatus(event.id, 'finalizado')">
-                Finalizar
+                (click)="changeEventStatus(event.id, 'finalizado')"
+                [disabled]="isChangingStatus[event.id]">
+                <span *ngIf="!isChangingStatus[event.id]">Finalizar</span>
+                <span *ngIf="isChangingStatus[event.id]">⏳</span>
               </button>
               
               <button 
                 class="status-btn cancel-btn"
-                (click)="changeEventStatus(event.id, 'cancelado')">
-                Cancelar
+                (click)="changeEventStatus(event.id, 'cancelado')"
+                [disabled]="isChangingStatus[event.id]">
+                <span *ngIf="!isChangingStatus[event.id]">Cancelar</span>
+                <span *ngIf="isChangingStatus[event.id]">⏳</span>
               </button>
             </div>
 

@@ -116,17 +116,20 @@
         <div class="response-buttons">
           <button 
             class="response-btn yes-btn" 
-            (click)="selectResponse('asistire')">
+            (click)="selectResponse('asistire')"
+            [disabled]="isSubmitting">
             ✅ Asistiré
           </button>
           <button 
             class="response-btn maybe-btn" 
-            (click)="selectResponse('tal-vez')">
+            (click)="selectResponse('tal-vez')"
+            [disabled]="isSubmitting">
             🤔 Tal vez
           </button>
           <button 
             class="response-btn no-btn" 
-            (click)="selectResponse('no-asistire')">
+            (click)="selectResponse('no-asistire')"
+            [disabled]="isSubmitting">
             ❌ No asistiré
           </button>
         </div>
@@ -135,7 +138,7 @@
           <h4>🚌 ¿Cuántas personas te acompañarán?</h4>
           <div class="companions-input">
             <label for="companions">Número de acompañantes:</label>
-            <select [(ngModel)]="companions" name="companions" class="companions-select">
+            <select [(ngModel)]="companions" name="companions" class="companions-select" [disabled]="isSubmitting">
               <option value="0">Solo yo</option>
               <option value="1">1 acompañante</option>
               <option value="2">2 acompañantes</option>
@@ -147,8 +150,9 @@
           class="confirm-btn" 
           *ngIf="selectedResponse"
           (click)="submitConfirmation()"
-          [disabled]="event.requiresTransport && companions === null">
-          Confirmar Asistencia
+          [disabled]="isSubmitting || (event.requiresTransport && companions === null)">
+          <span *ngIf="!isSubmitting">Confirmar Asistencia</span>
+          <span *ngIf="isSubmitting">⏳ Confirmando...</span>
         </button>
       </div>
 

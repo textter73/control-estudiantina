@@ -167,16 +167,19 @@
       <button 
         class="save-btn" 
         (click)="saveAttendance()"
-        [disabled]="!attendanceType || !attendanceDate">
-        <span class="save-icon">💾</span>
-        <span class="save-text">Finalizar y Guardar</span>
-        <span class="save-count">({{ attendanceStats.total }} integrantes)</span>
+        [disabled]="!attendanceType || !attendanceDate || isSavingAttendance">
+        <span class="save-icon" *ngIf="!isSavingAttendance">💾</span>
+        <span class="save-icon" *ngIf="isSavingAttendance">⏳</span>
+        <span class="save-text" *ngIf="!isSavingAttendance">Finalizar y Guardar</span>
+        <span class="save-text" *ngIf="isSavingAttendance">Guardando...</span>
+        <span class="save-count" *ngIf="!isSavingAttendance">({{ attendanceStats.total }} integrantes)</span>
       </button>
       
       <button 
         class="reset-btn" 
         (click)="confirmDeleteDraft()" 
         type="button"
+        [disabled]="isSavingAttendance"
         [class.has-session]="currentSessionId"
         [title]="currentSessionId ? 'Eliminar asistencia guardada' : 'Reiniciar formulario'">
         <span *ngIf="!currentSessionId">🔄 Reiniciar</span>

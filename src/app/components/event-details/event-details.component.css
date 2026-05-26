@@ -490,6 +490,12 @@
   transform: translateY(-2px);
 }
 
+.response-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
 .response-btn.yes-btn.active {
   background: #d4edda;
   border-color: #28a745;

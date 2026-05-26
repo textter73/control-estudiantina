@@ -289,22 +289,27 @@ export class EventManagementComponent implements OnInit {
       const body = `${eventData.title}\n📅 ${formattedDate}${timeInfo}\n📍 ${eventData.location || 'Por definir'}`;
 
       // Obtener todos los usuarios activos (no eliminados)
-      const usersSnapshot = await this.firestore.collection('users', ref =>
-        ref.where('deleted', '==', false)
-      ).get().toPromise();
+      const usersSnapshot = await this.firestore.collection('users').get().toPromise();
 
       if (usersSnapshot && !usersSnapshot.empty) {
-        // Enviar notificación a cada usuario
+        // Enviar notificación a cada usuario activo
         for (const userDoc of usersSnapshot.docs) {
           const userData = userDoc.data() as any;
+          
+          // Saltar usuarios eliminados
+          if (userData.deleted) {
+            continue;
+          }
+          
           await this.notificationService.sendNotificationToUser(
-            userData.uid,
+            userDoc.id, // Usar el ID del documento, no userData.uid
             title,
             body
           );
         }
       }
     } catch (error) {
+      console.error('Error al enviar notificaciones de evento:', error);
       // Error al enviar notificaciones (no bloquea la creación del evento)
     }
   }
@@ -335,22 +340,27 @@ export class EventManagementComponent implements OnInit {
       const body = `${eventData.title}\n📅 ${formattedDate}${timeInfo}\nEste evento ha sido cancelado.`;
 
       // Obtener todos los usuarios activos (no eliminados)
-      const usersSnapshot = await this.firestore.collection('users', ref =>
-        ref.where('deleted', '==', false)
-      ).get().toPromise();
+      const usersSnapshot = await this.firestore.collection('users').get().toPromise();
 
       if (usersSnapshot && !usersSnapshot.empty) {
-        // Enviar notificación a cada usuario
+        // Enviar notificación a cada usuario activo
         for (const userDoc of usersSnapshot.docs) {
           const userData = userDoc.data() as any;
+          
+          // Saltar usuarios eliminados
+          if (userData.deleted) {
+            continue;
+          }
+          
           await this.notificationService.sendNotificationToUser(
-            userData.uid,
+            userDoc.id, // Usar el ID del documento, no userData.uid
             title,
             body
           );
         }
       }
     } catch (error) {
+      console.error('Error al enviar notificaciones de cancelación:', error);
       // Error al enviar notificaciones (no bloquea la cancelación)
     }
   }

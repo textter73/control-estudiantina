@@ -3,6 +3,7 @@ import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { Router } from '@angular/router';
 import Swal from 'sweetalert2';
 import { Html5Qrcode } from 'html5-qrcode';
+import { NotificationService } from '../../services/notification.service';
 
 @Component({
   selector: 'app-attendance',
@@ -53,7 +54,8 @@ export class AttendanceComponent implements OnInit, OnDestroy {
 
   constructor(
     private firestore: AngularFirestore,
-    private router: Router
+    private router: Router,
+    private notificationService: NotificationService
   ) {}
 
   async ngOnInit() {
@@ -243,6 +245,9 @@ export class AttendanceComponent implements OnInit, OnDestroy {
       if (this.currentSessionId) {
         await this.firestore.collection('attendance-sessions').doc(this.currentSessionId).delete();
       }
+
+      // Enviar notificaciones a todos los usuarios registrados
+      await this.sendAttendanceNotifications();
       
       Swal.fire({
         icon: 'success',
@@ -643,6 +648,35 @@ export class AttendanceComponent implements OnInit, OnDestroy {
     this.isScanning = false;
     this.showQrScanner = false;
     this.html5QrCode = null;
+  }
+
+  /**
+   * Envía notificaciones a todos los usuarios cuya asistencia fue registrada
+   */
+  async sendAttendanceNotifications() {
+    try {
+      // Obtener descripción del tipo de asistencia
+      const typeLabel = this.attendanceTypes.find(t => t.value === this.attendanceType)?.label || this.attendanceType;
+      const date = new Date(this.attendanceDate).toLocaleDateString('es-MX', { 
+        day: 'numeric', 
+        month: 'long', 
+        year: 'numeric' 
+      });
+
+      // Enviar notificación a cada usuario registrado
+      for (const record of this.attendanceRecords) {
+        const statusLabel = this.statusOptions.find(s => s.value === record.status)?.label || record.status;
+        const statusIcon = this.statusOptions.find(s => s.value === record.status)?.icon || '';
+
+        await this.notificationService.sendNotificationToUser(
+          record.userId,
+          `📋 Asistencia Registrada`,
+          `${statusIcon} ${statusLabel} - ${typeLabel} del ${date}`
+        );
+      }
+    } catch (error) {
+      // Error al enviar notificaciones (no bloquea el guardado)
+    }
   }
 
   ngOnDestroy() {

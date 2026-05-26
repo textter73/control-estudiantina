@@ -415,7 +415,7 @@ export class NotificationService {
    * @param title Título de la notificación
    * @param body Cuerpo de la notificación
    */
-  private async sendNotificationToUser(
+  async sendNotificationToUser(
     userId: string,
     title: string,
     body: string

@@ -198,6 +198,12 @@
       
       <!-- Botones de administración -->
       <div class="admin-actions" *ngIf="userProfile?.profiles?.includes('administrador') || userProfile?.profiles?.includes('agenda')">
+        <button class="admin-btn attendance-btn" 
+          (click)="goToAttendance()"
+          *ngIf="canTakeAttendance()">
+          📝 Tomar Asistencia
+        </button>
+
         <button class="admin-btn copy-btn" 
           (click)="copyConfirmationsToClipboard()">
           📋 Copiar respuestas para WhatsApp

@@ -62,6 +62,19 @@
   border-left: 4px solid #189d98;
 }
 
+.attendance-btn {
+  background: #e8f5f4;
+  color: #189d98;
+  border-color: #189d98;
+  font-weight: 600;
+}
+
+.attendance-btn:hover {
+  background: #189d98;
+  color: white;
+  transform: scale(1.05);
+}
+
 .copy-btn {
   background: #e8f2ff;
   color: #0b63c6;

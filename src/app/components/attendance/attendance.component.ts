@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import Swal from 'sweetalert2';
 import { Html5Qrcode } from 'html5-qrcode';
 import { NotificationService } from '../../services/notification.service';
@@ -55,6 +55,7 @@ export class AttendanceComponent implements OnInit, OnDestroy {
   constructor(
     private firestore: AngularFirestore,
     private router: Router,
+    private route: ActivatedRoute,
     private notificationService: NotificationService
   ) {}
 
@@ -62,6 +63,14 @@ export class AttendanceComponent implements OnInit, OnDestroy {
     this.loadUsers();
     this.attendanceDate = new Date().toISOString().split('T')[0];
     this.setDateLimits();
+    
+    // Verificar si viene desde un evento
+    this.route.queryParams.subscribe(params => {
+      if (params['eventId']) {
+        this.loadEventData(params);
+      }
+    });
+    
     await this.loadDraftSession();
   }
 
@@ -93,6 +102,44 @@ export class AttendanceComponent implements OnInit, OnDestroy {
         await this.updateAttendanceRecordsWithSession();
       }
     });
+  }
+
+  /**
+   * Carga los datos del evento cuando se viene desde event-details
+   */
+  loadEventData(params: any) {
+    if (params['eventTitle']) {
+      // Mapear el tipo de evento a tipo de asistencia
+      let attendanceType = params['eventType'];
+      
+      // Convertir tipos de eventos a tipos de asistencia
+      if (attendanceType === 'ensayo') {
+        attendanceType = 'ensayo';
+      } else if (attendanceType === 'misa') {
+        attendanceType = 'misa dominical';
+      } else {
+        attendanceType = 'evento';
+      }
+      
+      this.attendanceType = attendanceType;
+    }
+    
+    if (params['eventDate']) {
+      this.attendanceDate = params['eventDate'];
+    }
+    
+    // Mostrar mensaje informativo
+    if (params['eventTitle']) {
+      Swal.fire({
+        icon: 'info',
+        title: 'Evento cargado',
+        text: `Tomando asistencia para: ${params['eventTitle']}`,
+        timer: 3000,
+        showConfirmButton: false,
+        position: 'top-end',
+        toast: true
+      });
+    }
   }
 
   initializeAttendanceRecords() {

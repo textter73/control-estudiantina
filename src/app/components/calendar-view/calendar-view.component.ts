@@ -194,6 +194,8 @@ export class CalendarViewComponent implements OnInit {
 
   getEventTypeClass(type: string): string {
     switch (type) {
+      case 'ensayo': return 'event-ensayo';
+      case 'misa': return 'event-misa';
       case 'callejoneada': return 'event-callejoneada';
       case 'evento': return 'event-evento';
       case 'participacion': return 'event-participacion';
@@ -204,6 +206,8 @@ export class CalendarViewComponent implements OnInit {
 
   getEventTypeIcon(type: string): string {
     switch (type) {
+      case 'ensayo': return '🎵';
+      case 'misa': return '⛪';
       case 'callejoneada': return '🎭';
       case 'evento': return '🎉';
       case 'participacion': return '🎪';

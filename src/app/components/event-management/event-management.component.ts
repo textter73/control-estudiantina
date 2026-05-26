@@ -31,7 +31,7 @@ export class EventManagementComponent implements OnInit {
     travelCost: '',
     requiresTransport: false,
     attire: 'ropa-normal',
-    type: 'callejoneada',
+    type: 'ensayo',
     status: 'abierto'
   };
 
@@ -122,6 +122,16 @@ export class EventManagementComponent implements OnInit {
     if (result.isConfirmed) {
       try {
         await this.firestore.collection('events').doc(eventId).update({ status: newStatus });
+        
+        // Si el evento se cancela, notificar a todos los usuarios
+        if (newStatus === 'cancelado') {
+          const eventDoc = await this.firestore.collection('events').doc(eventId).get().toPromise();
+          const eventData = eventDoc?.data() as any;
+          if (eventData) {
+            await this.sendCancellationNotifications(eventData);
+          }
+        }
+        
         Swal.fire('Éxito', 'Estado actualizado', 'success');
       } catch (error) {
         Swal.fire('Error', 'Error al actualizar estado', 'error');
@@ -170,6 +180,8 @@ export class EventManagementComponent implements OnInit {
 
   getTypeText(type: string): string {
     switch (type) {
+      case 'ensayo': return 'Ensayo';
+      case 'misa': return 'Misa Dominical';
       case 'callejoneada': return 'Callejoneada';
       case 'evento': return 'Evento';
       case 'participacion': return 'Participación';
@@ -201,7 +213,7 @@ export class EventManagementComponent implements OnInit {
       travelCost: '',
       requiresTransport: false,
       attire: 'ropa-normal',
-      type: 'callejoneada',
+      type: 'ensayo',
       status: 'abierto'
     };
     this.showCreateForm = false;
@@ -294,6 +306,52 @@ export class EventManagementComponent implements OnInit {
       }
     } catch (error) {
       // Error al enviar notificaciones (no bloquea la creación del evento)
+    }
+  }
+
+  /**
+   * Envía notificaciones cuando se cancela un evento
+   * @param eventData Datos del evento cancelado
+   */
+  async sendCancellationNotifications(eventData: any) {
+    try {
+      // Formatear la fecha del evento
+      const eventDate = new Date(eventData.date);
+      const formattedDate = eventDate.toLocaleDateString('es-MX', { 
+        day: 'numeric', 
+        month: 'long', 
+        year: 'numeric',
+        weekday: 'long'
+      });
+
+      // Formatear la hora de inicio
+      const timeInfo = eventData.startTime ? ` que era a las ${eventData.startTime}` : '';
+
+      // Obtener el tipo de evento
+      const eventType = this.getTypeText(eventData.type);
+
+      // Crear el mensaje de notificación
+      const title = `❌ ${eventType} Cancelado`;
+      const body = `${eventData.title}\n📅 ${formattedDate}${timeInfo}\nEste evento ha sido cancelado.`;
+
+      // Obtener todos los usuarios activos (no eliminados)
+      const usersSnapshot = await this.firestore.collection('users', ref =>
+        ref.where('deleted', '==', false)
+      ).get().toPromise();
+
+      if (usersSnapshot && !usersSnapshot.empty) {
+        // Enviar notificación a cada usuario
+        for (const userDoc of usersSnapshot.docs) {
+          const userData = userDoc.data() as any;
+          await this.notificationService.sendNotificationToUser(
+            userData.uid,
+            title,
+            body
+          );
+        }
+      }
+    } catch (error) {
+      // Error al enviar notificaciones (no bloquea la cancelación)
     }
   }
 }

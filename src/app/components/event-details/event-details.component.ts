@@ -477,4 +477,36 @@ export class EventDetailsComponent implements OnInit {
       user.uid && !confirmedUserIds.includes(user.uid)
     );
   }
+
+  /**
+   * Verifica si el usuario puede tomar asistencia
+   */
+  canTakeAttendance(): boolean {
+    return this.userProfile?.profiles?.includes('administrador') || 
+           this.userProfile?.profiles?.includes('asistencia') || false;
+  }
+
+  /**
+   * Navega a la página de asistencia con el evento pre-cargado
+   */
+  goToAttendance() {
+    if (!this.canTakeAttendance()) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Acceso denegado',
+        text: 'No tienes permisos para tomar asistencia'
+      });
+      return;
+    }
+
+    // Navegar con parámetros del evento
+    this.router.navigate(['/attendance'], {
+      queryParams: {
+        eventId: this.eventId,
+        eventTitle: this.event.title,
+        eventType: this.event.type,
+        eventDate: this.event.date
+      }
+    });
+  }
 }

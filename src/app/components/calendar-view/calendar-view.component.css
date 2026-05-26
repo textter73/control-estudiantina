@@ -240,6 +240,18 @@
   text-overflow: ellipsis;
 }
 
+.event-ensayo {
+  background: #fce4ec;
+  color: #c2185b;
+  border-left: 3px solid #c2185b;
+}
+
+.event-misa {
+  background: #e0f2f1;
+  color: #00796b;
+  border-left: 3px solid #00796b;
+}
+
 .event-callejoneada {
   background: #e3f2fd;
   color: #1976d2;

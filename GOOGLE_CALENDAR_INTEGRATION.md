@@ -91,15 +91,32 @@ Para habilitar la sincronización con Google Calendar, sigue estos pasos:
 
 ### Paso 5: Configurar en la Aplicación
 
-✅ **CONFIGURADO** - Las credenciales ya están agregadas en el archivo: `src/app/components/calendar-view/calendar-view.component.ts`
+✅ **CONFIGURADO CORRECTAMENTE** - OAuth 2.0 Client ID agregado en: `src/app/components/calendar-view/calendar-view.component.ts`
 
 ```typescript
-// Google Calendar
-CLIENT_ID = 'control-estudiantina@comunidad-musical.iam.gserviceaccount.com';
+CLIENT_ID = '440911866333-07eplgfmhjk0bj0g3srqotf5lr21oj72.apps.googleusercontent.com'; // ✅ OAuth 2.0 Client ID
 API_KEY = '115682484871491854928';
 ```
 
-**Nota:** Estas credenciales corresponden a una cuenta de servicio de Google. Si necesitas acceso a calendarios de usuarios específicos, considera usar OAuth 2.0 Client ID en lugar de una cuenta de servicio.
+**Tipo de credencial:** OAuth 2.0 Client ID (válido para aplicaciones web)
+
+### ⚠️ **IMPORTANTE - Verificar orígenes autorizados:**
+
+Asegúrate de que en [Google Cloud Console](https://console.cloud.google.com/apis/credentials) tu OAuth 2.0 Client ID tenga configurados estos orígenes:
+
+**Authorized JavaScript origins:**
+```
+http://localhost:4200
+https://control-estonantzin.web.app
+https://control-estonantzin.firebaseapp.com
+```
+
+**Authorized redirect URIs:**
+```
+http://localhost:4200
+https://control-estonantzin.web.app
+https://control-estonantzin.firebaseapp.com
+```
 
 ### Paso 6: Agregar Google API Script
 

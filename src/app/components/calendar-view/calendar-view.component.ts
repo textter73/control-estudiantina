@@ -37,7 +37,7 @@ export class CalendarViewComponent implements OnInit {
   // Google Calendar
   isGoogleSignedIn = false;
   googleCalendarEnabled = false;
-  CLIENT_ID = 'control-estudiantina@comunidad-musical.iam.gserviceaccount.com';
+  CLIENT_ID = '440911866333-07eplgfmhjk0bj0g3srqotf5lr21oj72.apps.googleusercontent.com';
   API_KEY = '115682484871491854928';
   DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest';
   SCOPES = 'https://www.googleapis.com/auth/calendar.readonly';
@@ -219,39 +219,251 @@ export class CalendarViewComponent implements OnInit {
   // Google Calendar Integration
   async initGoogleCalendar() {
     try {
-      // Por ahora, la integración de Google Calendar está preparada
-      // pero requiere configurar CLIENT_ID y API_KEY en Firebase Console
-      // Documentación: https://developers.google.com/calendar/api/quickstart/js
+      // Verificar si las credenciales están configuradas
+      if (!this.CLIENT_ID || !this.API_KEY) {
+        console.log('⚠️ Google Calendar: Credenciales no configuradas');
+        return;
+      }
+
+      // Verificar si el CLIENT_ID es válido para OAuth (debe terminar en .apps.googleusercontent.com)
+      if (this.CLIENT_ID.includes('.iam.gserviceaccount.com')) {
+        console.warn('⚠️ Google Calendar: CLIENT_ID es una cuenta de servicio.');
+        console.warn('   Para usar Google Calendar en el navegador necesitas un OAuth 2.0 Client ID');
+        console.warn('   Crea uno en: https://console.cloud.google.com/apis/credentials');
+        this.googleCalendarEnabled = false;
+        return;
+      }
+
+      console.log('🔄 Inicializando Google Calendar...');
+      
+      // Cargar Google API
+      await this.loadGapi();
+      
+      // Inicializar cliente de Google Calendar
+      await gapi.client.init({
+        apiKey: this.API_KEY,
+        clientId: this.CLIENT_ID,
+        discoveryDocs: [this.DISCOVERY_DOC],
+        scope: this.SCOPES
+      });
+
+      // Verificar estado de autenticación
+      const authInstance = gapi.auth2.getAuthInstance();
+      this.isGoogleSignedIn = authInstance.isSignedIn.get();
+      
+      // Listener para cambios en autenticación
+      authInstance.isSignedIn.listen((signedIn: boolean) => {
+        this.isGoogleSignedIn = signedIn;
+        if (signedIn) {
+          this.loadGoogleCalendarEvents();
+        }
+      });
+
+      if (this.isGoogleSignedIn) {
+        await this.loadGoogleCalendarEvents();
+      }
+
+      this.googleCalendarEnabled = true;
+      console.log('✅ Google Calendar inicializado correctamente');
     } catch (error) {
-      // Error inicializando Google Calendar
+      console.error('❌ Error inicializando Google Calendar:', error);
+      this.googleCalendarEnabled = false;
     }
   }
 
-  async signInGoogle() {
-    Swal.fire({
-      title: 'Integración con Google Calendar',
-      html: `
-        <p>Para conectar tu Google Calendar necesitas:</p>
-        <ol style="text-align: left;">
-          <li>Ir a <a href="https://console.cloud.google.com" target="_blank">Google Cloud Console</a></li>
-          <li>Crear un proyecto o seleccionar uno existente</li>
-          <li>Habilitar la API de Google Calendar</li>
-          <li>Crear credenciales (OAuth 2.0 Client ID)</li>
-          <li>Configurar las credenciales en la aplicación</li>
-        </ol>
-      `,
-      icon: 'info',
-      confirmButtonText: 'Entendido'
+  loadGapi(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      if (typeof gapi !== 'undefined') {
+        gapi.load('client:auth2', () => resolve());
+      } else {
+        reject('Google API no cargada. Asegúrate de incluir el script en index.html');
+      }
     });
   }
 
+  async signInGoogle() {
+    try {
+      // Verificar si CLIENT_ID es cuenta de servicio
+      if (this.CLIENT_ID.includes('.iam.gserviceaccount.com')) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'OAuth 2.0 Client ID requerido',
+          html: `
+            <p style="text-align: left;">Tu CLIENT_ID actual es una <strong>cuenta de servicio</strong>, que no funciona para aplicaciones web.</p>
+            <br>
+            <p style="text-align: left;"><strong>Necesitas crear un OAuth 2.0 Client ID:</strong></p>
+            <ol style="text-align: left; font-size: 14px;">
+              <li>Ve a <a href="https://console.cloud.google.com/apis/credentials" target="_blank">Google Cloud Console</a></li>
+              <li>Create Credentials > <strong>OAuth client ID</strong></li>
+              <li>Application type: <strong>Web application</strong></li>
+              <li>Authorized JavaScript origins: <code>http://localhost:4200</code></li>
+              <li>Copia el Client ID (termina en .apps.googleusercontent.com)</li>
+            </ol>
+          `,
+          confirmButtonColor: '#189d98',
+          width: 600
+        });
+        return;
+      }
+
+      if (!this.googleCalendarEnabled) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Google Calendar no inicializado',
+          text: 'Verifica que el script de Google API esté cargado en index.html',
+          confirmButtonColor: '#189d98'
+        });
+        return;
+      }
+
+      Swal.fire({
+        title: 'Conectando...',
+        text: 'Autenticando con Google Calendar',
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        }
+      });
+
+      await gapi.auth2.getAuthInstance().signIn();
+      
+      Swal.fire({
+        icon: 'success',
+        title: '✅ ¡Conectado!',
+        text: 'Tu cuenta de Google Calendar ha sido vinculada exitosamente',
+        timer: 2000,
+        confirmButtonColor: '#189d98'
+      });
+      
+      // Cargar eventos de Google Calendar
+      await this.loadGoogleCalendarEvents();
+    } catch (error) {
+      console.error('Error conectando con Google:', error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error de conexión',
+        text: 'No se pudo conectar con Google Calendar. Verifica tus permisos.',
+        confirmButtonColor: '#189d98'
+      });
+    }
+  }
+
+  async signOutGoogle() {
+    try {
+      await gapi.auth2.getAuthInstance().signOut();
+      this.isGoogleSignedIn = false;
+      Swal.fire({
+        icon: 'success',
+        title: 'Desconectado',
+        text: 'Tu cuenta de Google Calendar ha sido desvinculada',
+        timer: 2000,
+        confirmButtonColor: '#189d98'
+      });
+    } catch (error) {
+      console.error('Error desconectando:', error);
+    }
+  }
+
+  async loadGoogleCalendarEvents() {
+    try {
+      const startOfMonth = new Date(this.currentYear, this.currentMonth, 1);
+      const endOfMonth = new Date(this.currentYear, this.currentMonth + 1, 0);
+
+    // Verificar si CLIENT_ID es cuenta de servicio
+    if (this.CLIENT_ID.includes('.iam.gserviceaccount.com')) {
+      Swal.fire({
+        icon: 'info',
+        title: 'Configuración pendiente',
+        html: `
+          <p>Para sincronizar con Google Calendar necesitas un <strong>OAuth 2.0 Client ID</strong>.</p>
+          <br>
+          <p>Consulta la documentación en <code>GOOGLE_CALENDAR_INTEGRATION.md</code></p>
+        `,
+        confirmButtonColor: '#189d98'
+      });
+      return;
+    }
+
+      const response = await gapi.client.calendar.events.list({
+        calendarId: 'primary',
+        timeMin: startOfMonth.toISOString(),
+        timeMax: endOfMonth.toISOString(),
+        showDeleted: false,
+        singleEvents: true,
+        orderBy: 'startTime'
+      });
+
+      const googleEvents = response.result.items || [];
+      console.log(`📅 Eventos de Google Calendar cargados: ${googleEvents.length}`);
+      
+      // Integrar eventos de Google Calendar con los de Firestore
+      // Los eventos de Google se pueden distinguir por tener un campo 'googleId'
+      // Por ahora solo los mostramos en consola
+      // TODO: Integrar visualmente en el calendario
+      
+    } catch (error) {
+      console.error('Error cargando eventos de Google Calendar:', error);
+    }
+  }
+
   async syncWithGoogleCalendar() {
-    Swal.fire({
-      title: 'Sincronización con Google Calendar',
-      text: 'Esta función estará disponible cuando configures las credenciales de Google Calendar',
-      icon: 'info',
-      confirmButtonText: 'Ok'
-    });
+    if (!this.googleCalendarEnabled) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Google Calendar no disponible',
+        text: 'Asegúrate de agregar el script de Google API en index.html',
+        confirmButtonColor: '#189d98'
+      });
+      return;
+    }
+
+    if (!this.isGoogleSignedIn) {
+      const result = await Swal.fire({
+        title: 'Conectar con Google Calendar',
+        text: 'Necesitas conectar tu cuenta de Google para sincronizar eventos',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Conectar ahora',
+        cancelButtonText: 'Cancelar',
+        confirmButtonColor: '#189d98'
+      });
+
+      if (result.isConfirmed) {
+        await this.signInGoogle();
+      }
+      return;
+    }
+
+    try {
+      Swal.fire({
+        title: 'Sincronizando...',
+        text: 'Obteniendo eventos de Google Calendar',
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        }
+      });
+
+      await this.loadGoogleCalendarEvents();
+      await this.loadEvents();
+      this.generateCalendar();
+
+      Swal.fire({
+        icon: 'success',
+        title: '✅ Sincronización completa',
+        text: 'Los eventos de Google Calendar se han cargado correctamente',
+        timer: 2000,
+        confirmButtonColor: '#189d98'
+      });
+    } catch (error) {
+      console.error('Error sincronizando:', error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error de sincronización',
+        text: 'No se pudieron cargar los eventos de Google Calendar',
+        confirmButtonColor: '#189d98'
+      });
+    }
   }
 
   goBack() {

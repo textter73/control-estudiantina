@@ -271,9 +271,64 @@ export class CalendarViewComponent implements OnInit {
       
       this.googleCalendarEnabled = true;
       console.log('✅ Google Calendar inicializado correctamente');
+      
+      // Intentar restaurar sesión anterior desde localStorage
+      await this.restoreGoogleSession();
+      
     } catch (error) {
       console.error('❌ Error inicializando Google Calendar:', error);
       this.googleCalendarEnabled = false;
+    }
+  }
+
+  async restoreGoogleSession() {
+    try {
+      const savedToken = localStorage.getItem('google_calendar_token');
+      
+      if (!savedToken) {
+        console.log('ℹ️ No hay sesión de Google Calendar guardada');
+        return;
+      }
+      
+      const token = JSON.parse(savedToken);
+      
+      // NO verificar expiración local - intentar usar el token guardado
+      // Google nos avisará si el token ya no es válido
+      
+      // Establecer el token en GAPI
+      gapi.client.setToken(token);
+      
+      // Verificar si el token sigue siendo válido haciendo una llamada de prueba
+      console.log('🔄 Verificando token guardado...');
+      
+      const response = await gapi.client.calendar.events.list({
+        calendarId: 'primary',
+        maxResults: 1,
+        timeMin: new Date().toISOString()
+      });
+      
+      // Si llegamos aquí, el token es válido
+      this.isGoogleSignedIn = true;
+      console.log('✅ Sesión de Google Calendar restaurada automáticamente');
+      
+      // Cargar eventos automáticamente
+      await this.loadGoogleCalendarEvents();
+      
+    } catch (error: any) {
+      console.error('❌ Error restaurando sesión de Google:', error);
+      
+      // Si el error es por token inválido, limpiar localStorage y pedir nueva autenticación
+      if (error.status === 401 || error.status === 403) {
+        console.log('🔐 Token inválido o expirado, solicitando nueva autenticación...');
+        localStorage.removeItem('google_calendar_token');
+        gapi.client.setToken(null);
+        this.isGoogleSignedIn = false;
+        
+        // Solicitar nueva autenticación automáticamente de forma silenciosa
+        if (this.tokenClient) {
+          this.tokenClient.requestAccessToken({ prompt: '' }); // prompt: '' = sin mostrar pantalla de selección de cuenta
+        }
+      }
     }
   }
 
@@ -317,8 +372,22 @@ export class CalendarViewComponent implements OnInit {
               this.isGoogleSignedIn = false;
               return;
             }
+            
+            // Guardar el token en localStorage para persistencia extendida
+            const oneYearInMs = 365 * 24 * 60 * 60 * 1000; // 1 año en milisegundos
+            const token = {
+              access_token: response.access_token,
+              expires_in: response.expires_in,
+              scope: response.scope,
+              token_type: response.token_type,
+              expires_at: Date.now() + oneYearInMs, // Guardar con expiración de 1 año
+              saved_at: Date.now()
+            };
+            localStorage.setItem('google_calendar_token', JSON.stringify(token));
+            gapi.client.setToken(token);
+            
             this.isGoogleSignedIn = true;
-            console.log('✅ Usuario autenticado con Google');
+            console.log('✅ Usuario autenticado con Google (token guardado por 1 año)');
             this.loadGoogleCalendarEvents();
           }
         });
@@ -415,7 +484,13 @@ export class CalendarViewComponent implements OnInit {
         gapi.client.setToken(null);
       }
       
+      // Limpiar token guardado en localStorage
+      localStorage.removeItem('google_calendar_token');
+      
       this.isGoogleSignedIn = false;
+      
+      // Recargar eventos solo de Firestore
+      this.loadEvents();
       
       Swal.fire({
         icon: 'success',
@@ -433,6 +508,8 @@ export class CalendarViewComponent implements OnInit {
     try {
       const startOfMonth = new Date(this.currentYear, this.currentMonth, 1);
       const endOfMonth = new Date(this.currentYear, this.currentMonth + 1, 0);
+      // Establecer hora al final del día para incluir eventos del último día
+      endOfMonth.setHours(23, 59, 59, 999);
 
       // Verificar si CLIENT_ID es cuenta de servicio
       if (this.CLIENT_ID.includes('.iam.gserviceaccount.com')) {
@@ -450,18 +527,46 @@ export class CalendarViewComponent implements OnInit {
       }
 
       console.log('🔄 Cargando eventos de Google Calendar...');
+      console.log(`📆 Rango de búsqueda: ${startOfMonth.toLocaleDateString('es-MX')} - ${endOfMonth.toLocaleDateString('es-MX')}`);
+      console.log(`🕐 TimeMin: ${startOfMonth.toISOString()}`);
+      console.log(`🕐 TimeMax: ${endOfMonth.toISOString()}`);
 
+      // Primero, listar los calendarios disponibles para debug
+      try {
+        const calendarListResponse = await gapi.client.calendar.calendarList.list();
+        const calendars = calendarListResponse.result.items || [];
+        console.log(`📋 Calendarios disponibles: ${calendars.length}`);
+        calendars.forEach((cal: any) => {
+          console.log(`  - ${cal.summary} (${cal.id}) - Primary: ${cal.primary || false}`);
+        });
+      } catch (calError) {
+        console.warn('⚠️ No se pudo listar calendarios:', calError);
+      }
+
+      // Cargar eventos del calendario principal
       const response = await gapi.client.calendar.events.list({
         calendarId: 'primary',
         timeMin: startOfMonth.toISOString(),
         timeMax: endOfMonth.toISOString(),
         showDeleted: false,
         singleEvents: true,
+        maxResults: 250, // Aumentar el límite
         orderBy: 'startTime'
       });
 
       const googleEvents = response.result.items || [];
       console.log(`📅 Eventos de Google Calendar cargados: ${googleEvents.length}`);
+      
+      // Debug: mostrar los primeros 3 eventos
+      if (googleEvents.length > 0) {
+        console.log('🔍 Primeros eventos encontrados:');
+        googleEvents.slice(0, 3).forEach((event: any, index: number) => {
+          console.log(`  ${index + 1}. ${event.summary} - ${event.start.date || event.start.dateTime}`);
+        });
+      } else {
+        console.warn('⚠️ No se encontraron eventos en el rango especificado');
+        console.log('💡 Sugerencia: Verifica que tengas eventos en este mes en tu Google Calendar');
+      }
       
       // Convertir eventos de Google al formato de la app
       const convertedEvents = googleEvents.map((event: any) => {
@@ -501,17 +606,38 @@ export class CalendarViewComponent implements OnInit {
       // Combinar ambos arrays
       this.events = [...firestoreEvents, ...convertedEvents];
       
-      console.log(`📊 Total de eventos (Firestore + Google): ${this.events.length}`);
+      console.log(`📊 Total de eventos (Firestore: ${firestoreEvents.length} + Google: ${convertedEvents.length}) = ${this.events.length}`);
       
       // Regenerar el calendario con los nuevos eventos
       this.generateCalendar();
       
-    } catch (error) {
+      // Si no se encontraron eventos de Google, mostrar mensaje informativo
+      if (convertedEvents.length === 0) {
+        console.log('💡 Tip: Asegúrate de tener eventos en tu Google Calendar para este mes');
+      }
+      
+    } catch (error: any) {
       console.error('❌ Error cargando eventos de Google Calendar:', error);
+      
+      // Proporcionar información más detallada del error
+      let errorMessage = 'No se pudieron cargar los eventos de Google Calendar';
+      
+      if (error.status === 401 || error.status === 403) {
+        errorMessage = 'Error de autenticación. Por favor, vuelve a conectar tu cuenta de Google.';
+        // Limpiar token inválido
+        localStorage.removeItem('google_calendar_token');
+        this.isGoogleSignedIn = false;
+      } else if (error.status === 404) {
+        errorMessage = 'No se encontró el calendario. Verifica que tu cuenta tenga acceso a Google Calendar.';
+      } else if (error.message) {
+        console.error('Detalles del error:', error.message);
+      }
+      
       Swal.fire({
         icon: 'error',
         title: 'Error cargando eventos',
-        text: 'No se pudieron cargar los eventos de Google Calendar',
+        text: errorMessage,
+        footer: 'Revisa la consola del navegador (F12) para más detalles',
         confirmButtonColor: '#189d98'
       });
     }
@@ -579,5 +705,89 @@ export class CalendarViewComponent implements OnInit {
 
   goBack() {
     this.router.navigate(['/dashboard']);
+  }
+  
+  // Función de diagnóstico para debug - llamar desde consola del navegador
+  async debugGoogleCalendar() {
+    if (!this.isGoogleSignedIn) {
+      console.error('❌ No estás conectado a Google Calendar');
+      return;
+    }
+    
+    console.log('🔍 === DIAGNÓSTICO DE GOOGLE CALENDAR ===');
+    
+    try {
+      // 1. Listar todos los calendarios
+      console.log('\n📋 1. CALENDARIOS DISPONIBLES:');
+      const calListResponse = await gapi.client.calendar.calendarList.list();
+      const calendars = calListResponse.result.items || [];
+      calendars.forEach((cal: any) => {
+        console.log(`  ${cal.primary ? '⭐' : '  '} ${cal.summary}`);
+        console.log(`     ID: ${cal.id}`);
+        console.log(`     Acceso: ${cal.accessRole}`);
+      });
+      
+      // 2. Buscar eventos en un rango amplio (últimos 3 meses + próximos 3 meses)
+      console.log('\n📅 2. EVENTOS EN LOS ÚLTIMOS Y PRÓXIMOS 3 MESES:');
+      const now = new Date();
+      const threeMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 3, 1);
+      const threeMonthsAhead = new Date(now.getFullYear(), now.getMonth() + 3, 0);
+      
+      console.log(`   Desde: ${threeMonthsAgo.toLocaleDateString('es-MX')}`);
+      console.log(`   Hasta: ${threeMonthsAhead.toLocaleDateString('es-MX')}`);
+      
+      const response = await gapi.client.calendar.events.list({
+        calendarId: 'primary',
+        timeMin: threeMonthsAgo.toISOString(),
+        timeMax: threeMonthsAhead.toISOString(),
+        showDeleted: false,
+        singleEvents: true,
+        maxResults: 100,
+        orderBy: 'startTime'
+      });
+      
+      const events = response.result.items || [];
+      console.log(`\n   Total de eventos encontrados: ${events.length}`);
+      
+      if (events.length > 0) {
+        console.log('\n   Primeros 10 eventos:');
+        events.slice(0, 10).forEach((event: any, i: number) => {
+          const fecha = event.start.date || event.start.dateTime;
+          console.log(`   ${i + 1}. ${event.summary} - ${fecha}`);
+        });
+      } else {
+        console.log('   ⚠️ No se encontraron eventos en este rango');
+      }
+      
+      // 3. Mes actual específico
+      console.log(`\n📆 3. EVENTOS DEL MES ACTUAL (${this.monthNames[this.currentMonth]} ${this.currentYear}):`);
+      const startOfMonth = new Date(this.currentYear, this.currentMonth, 1);
+      const endOfMonth = new Date(this.currentYear, this.currentMonth + 1, 0);
+      endOfMonth.setHours(23, 59, 59, 999);
+      
+      const monthResponse = await gapi.client.calendar.events.list({
+        calendarId: 'primary',
+        timeMin: startOfMonth.toISOString(),
+        timeMax: endOfMonth.toISOString(),
+        showDeleted: false,
+        singleEvents: true,
+        orderBy: 'startTime'
+      });
+      
+      const monthEvents = monthResponse.result.items || [];
+      console.log(`   Eventos en este mes: ${monthEvents.length}`);
+      
+      if (monthEvents.length > 0) {
+        monthEvents.forEach((event: any) => {
+          const fecha = event.start.date || event.start.dateTime;
+          console.log(`   - ${event.summary} - ${fecha}`);
+        });
+      }
+      
+      console.log('\n✅ === FIN DEL DIAGNÓSTICO ===');
+      
+    } catch (error) {
+      console.error('❌ Error en diagnóstico:', error);
+    }
   }
 }

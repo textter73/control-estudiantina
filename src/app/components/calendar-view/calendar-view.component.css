@@ -139,6 +139,101 @@
   font-size: 14px;
 }
 
+/* Google Calendar Connected State */
+.google-connected {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  align-items: center;
+}
+
+.connected-status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #e8f5e9;
+  padding: 12px 24px;
+  border-radius: 8px;
+  border: 2px solid #4caf50;
+}
+
+.status-icon {
+  font-size: 20px;
+}
+
+.status-text {
+  color: #2e7d32;
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.google-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.sync-btn {
+  background: #4285f4;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.sync-btn:hover {
+  background: #357ae8;
+  transform: scale(1.05);
+}
+
+.debug-btn {
+  background: #ff9800;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.debug-btn:hover {
+  background: #f57c00;
+  transform: scale(1.05);
+}
+
+.disconnect-btn {
+  background: white;
+  color: #d32f2f;
+  border: 2px solid #d32f2f;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.disconnect-btn:hover {
+  background: #d32f2f;
+  color: white;
+  transform: scale(1.05);
+}
+
+.debug-info {
+  display: block;
+  margin-top: 10px;
+  color: #666;
+  font-size: 13px;
+  font-style: italic;
+}
+
 /* Calendar Container */
 .calendar-container {
   background: white;

@@ -25,11 +25,25 @@
 
   <!-- Google Calendar Integration -->
   <div class="google-calendar-section">
-    <button class="google-btn" (click)="syncWithGoogleCalendar()">
-      <span class="google-icon">🔗</span>
-      Sincronizar con Google Calendar
-    </button>
-    <small class="info-text">Ver tus eventos de Google Calendar junto a los eventos de la estudiantina</small>
+    <div class="google-buttons" *ngIf="!isGoogleSignedIn">
+      <button class="google-btn" (click)="syncWithGoogleCalendar()">
+        <span class="google-icon">🔗</span>
+        Conectar con Google Calendar
+      </button>
+      <small class="info-text">Ver tus eventos de Google Calendar junto a los eventos de la estudiantina</small>
+    </div>
+    
+    <div class="google-connected" *ngIf="isGoogleSignedIn">
+      <div class="connected-status">
+        <span class="status-icon">✅</span>
+        <span class="status-text">Conectado a Google Calendar</span>
+      </div>
+      <div class="google-actions">
+        <button class="sync-btn" (click)="syncWithGoogleCalendar()">
+          🔄 Sincronizar ahora
+        </button>
+      </div>
+    </div>
   </div>
 
   <!-- Calendar Grid -->

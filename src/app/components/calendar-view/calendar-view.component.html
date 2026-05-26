@@ -102,6 +102,10 @@
         <span class="legend-icon event-contrato">📋</span>
         <span>Contrato</span>
       </div>
+      <div class="legend-item">
+        <span class="legend-icon event-google">🔗</span>
+        <span>Google Calendar</span>
+      </div>
     </div>
   </div>
 
@@ -147,7 +151,8 @@
             </div>
             
             <button class="view-details-btn" (click)="viewEventDetails(event.id)">
-              Ver Detalles Completos →
+              <span *ngIf="event.isGoogleEvent">Abrir en Google Calendar →</span>
+              <span *ngIf="!event.isGoogleEvent">Ver Detalles Completos →</span>
             </button>
           </div>
         </div>

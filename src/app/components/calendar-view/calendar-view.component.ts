@@ -80,9 +80,15 @@ export class CalendarViewComponent implements OnInit {
       ref.where('date', '>=', startOfMonth.toISOString().split('T')[0])
          .where('date', '<=', endOfMonth.toISOString().split('T')[0])
          .orderBy('date', 'asc')
-    ).valueChanges({ idField: 'id' }).subscribe((events: any[]) => {
+    ).valueChanges({ idField: 'id' }).subscribe(async (events: any[]) => {
       this.events = events;
-      this.generateCalendar();
+      
+      // Si Google Calendar está conectado, cargar también esos eventos
+      if (this.isGoogleSignedIn && this.googleCalendarEnabled) {
+        await this.loadGoogleCalendarEvents();
+      } else {
+        this.generateCalendar();
+      }
     });
   }
 
@@ -193,6 +199,16 @@ export class CalendarViewComponent implements OnInit {
   }
 
   viewEventDetails(eventId: string) {
+    // Si es un evento de Google Calendar, abrirlo en Google Calendar
+    if (eventId.startsWith('google-')) {
+      const event = this.selectedDayEvents.find(e => e.id === eventId);
+      if (event && event.htmlLink) {
+        window.open(event.htmlLink, '_blank');
+      }
+      return;
+    }
+    
+    // Si es un evento de Firestore, navegar a los detalles
     this.router.navigate(['/event-details', eventId]);
   }
 
@@ -204,6 +220,7 @@ export class CalendarViewComponent implements OnInit {
       case 'evento': return 'event-evento';
       case 'participacion': return 'event-participacion';
       case 'contrato': return 'event-contrato';
+      case 'google': return 'event-google';
       default: return 'event-default';
     }
   }
@@ -216,6 +233,7 @@ export class CalendarViewComponent implements OnInit {
       case 'evento': return '🎉';
       case 'participacion': return '🎪';
       case 'contrato': return '📋';
+      case 'google': return '🔗';
       default: return '📅';
     }
   }
@@ -416,20 +434,22 @@ export class CalendarViewComponent implements OnInit {
       const startOfMonth = new Date(this.currentYear, this.currentMonth, 1);
       const endOfMonth = new Date(this.currentYear, this.currentMonth + 1, 0);
 
-    // Verificar si CLIENT_ID es cuenta de servicio
-    if (this.CLIENT_ID.includes('.iam.gserviceaccount.com')) {
-      Swal.fire({
-        icon: 'info',
-        title: 'Configuración pendiente',
-        html: `
-          <p>Para sincronizar con Google Calendar necesitas un <strong>OAuth 2.0 Client ID</strong>.</p>
-          <br>
-          <p>Consulta la documentación en <code>GOOGLE_CALENDAR_INTEGRATION.md</code></p>
-        `,
-        confirmButtonColor: '#189d98'
-      });
-      return;
-    }
+      // Verificar si CLIENT_ID es cuenta de servicio
+      if (this.CLIENT_ID.includes('.iam.gserviceaccount.com')) {
+        Swal.fire({
+          icon: 'info',
+          title: 'Configuración pendiente',
+          html: `
+            <p>Para sincronizar con Google Calendar necesitas un <strong>OAuth 2.0 Client ID</strong>.</p>
+            <br>
+            <p>Consulta la documentación en <code>GOOGLE_CALENDAR_INTEGRATION.md</code></p>
+          `,
+          confirmButtonColor: '#189d98'
+        });
+        return;
+      }
+
+      console.log('🔄 Cargando eventos de Google Calendar...');
 
       const response = await gapi.client.calendar.events.list({
         calendarId: 'primary',
@@ -443,13 +463,57 @@ export class CalendarViewComponent implements OnInit {
       const googleEvents = response.result.items || [];
       console.log(`📅 Eventos de Google Calendar cargados: ${googleEvents.length}`);
       
-      // Integrar eventos de Google Calendar con los de Firestore
-      // Los eventos de Google se pueden distinguir por tener un campo 'googleId'
-      // Por ahora solo los mostramos en consola
-      // TODO: Integrar visualmente en el calendario
+      // Convertir eventos de Google al formato de la app
+      const convertedEvents = googleEvents.map((event: any) => {
+        // Extraer fecha del evento
+        let eventDate = '';
+        if (event.start.date) {
+          // Evento de día completo
+          eventDate = event.start.date;
+        } else if (event.start.dateTime) {
+          // Evento con hora específica
+          eventDate = event.start.dateTime.split('T')[0];
+        }
+
+        return {
+          id: `google-${event.id}`,
+          title: event.summary || 'Sin título',
+          description: event.description || '',
+          date: eventDate,
+          startTime: event.start.dateTime ? new Date(event.start.dateTime).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' }) : '',
+          endTime: event.end.dateTime ? new Date(event.end.dateTime).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' }) : '',
+          location: event.location || '',
+          meetingPoint: '',
+          type: 'google',
+          status: 'activo',
+          isGoogleEvent: true,
+          googleEventId: event.id,
+          htmlLink: event.htmlLink
+        };
+      });
+
+      console.log(`✅ Eventos de Google convertidos: ${convertedEvents.length}`);
+      
+      // Combinar eventos de Firestore con eventos de Google
+      // Filtrar eventos de Firestore que no sean de Google
+      const firestoreEvents = this.events.filter(e => !e.isGoogleEvent);
+      
+      // Combinar ambos arrays
+      this.events = [...firestoreEvents, ...convertedEvents];
+      
+      console.log(`📊 Total de eventos (Firestore + Google): ${this.events.length}`);
+      
+      // Regenerar el calendario con los nuevos eventos
+      this.generateCalendar();
       
     } catch (error) {
-      console.error('Error cargando eventos de Google Calendar:', error);
+      console.error('❌ Error cargando eventos de Google Calendar:', error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error cargando eventos',
+        text: 'No se pudieron cargar los eventos de Google Calendar',
+        confirmButtonColor: '#189d98'
+      });
     }
   }
 

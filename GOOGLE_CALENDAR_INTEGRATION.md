@@ -249,7 +249,26 @@ npm start
 - [x] Credenciales de Google Calendar configuradas
 - [x] Script de Google API agregado en index.html
 - [x] Funciones de sincronización implementadas
+- [x] Integración visual de eventos de Google completada
+- [x] Estilos para eventos de Google agregados
 - [ ] Pruebas de integración realizadas
+
+---
+
+## 🎨 Identificación Visual de Eventos
+
+### Eventos de Firestore:
+- 🎵 **Ensayo** - Amarillo/Dorado
+- ⛪ **Misa** - Rosa/Púrpura
+- 🎭 **Callejoneada** - Azul claro
+- 🎉 **Evento** - Morado
+- 🎪 **Participación** - Naranja
+- 📋 **Contrato** - Verde
+
+### Eventos de Google Calendar:
+- 🔗 **Google** - Azul Google (#4285f4) con borde azul más oscuro
+
+Los eventos de Google se distinguen visualmente con el ícono 🔗 y color azul característico de Google.
 
 ---
 

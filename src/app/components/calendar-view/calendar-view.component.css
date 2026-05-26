@@ -276,6 +276,12 @@
   border-left: 3px solid #388e3c;
 }
 
+.event-google {
+  background: #e3f2fd;
+  color: #1976d2;
+  border-left: 3px solid #4285f4;
+}
+
 .event-default {
   background: #f5f5f5;
   color: #666;

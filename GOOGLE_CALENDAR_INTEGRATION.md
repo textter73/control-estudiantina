@@ -83,22 +83,31 @@ Para habilitar la sincronización con Google Calendar, sigue estos pasos:
 ### Paso 4: Crear API Key
 
 1. En **Credentials**, click **Create Credentials** > **API Key**
-2. Copia la **API Key**
+2. Copia la **API Key** (empieza con `AIza`)
 3. (Opcional) Restricciones recomendadas:
-   - Application restrictions: HTTP referrers
-   - Agregar: `localhost:4200/*` y `tu-dominio.com/*`
-   - API restrictions: Google Calendar API
+   - Click en la API Key creada para editarla
+   - **Application restrictions:** HTTP referrers
+   - Agregar:
+     - `http://localhost:4200/*`
+     - `https://control-estonantzin.web.app/*`
+     - `https://control-estonantzin.firebaseapp.com/*`
+   - **API restrictions:** Restrict key
+   - Seleccionar solo: **Google Calendar API**
+   - **Save**
+
+⚠️ **IMPORTANTE:** La API Key debe verse como: `AIzaSyAbCdEf1234567890_-ejemplo`
 
 ### Paso 5: Configurar en la Aplicación
 
-✅ **CONFIGURADO CORRECTAMENTE** - OAuth 2.0 Client ID agregado en: `src/app/components/calendar-view/calendar-view.component.ts`
+✅ **CREDENCIALES CONFIGURADAS CORRECTAMENTE**
 
+**Credenciales actuales en `src/app/components/calendar-view/calendar-view.component.ts`:**
 ```typescript
-CLIENT_ID = '440911866333-07eplgfmhjk0bj0g3srqotf5lr21oj72.apps.googleusercontent.com'; // ✅ OAuth 2.0 Client ID
-API_KEY = '115682484871491854928';
+CLIENT_ID = '440911866333-07eplgfmhjk0bj0g3srqotf5lr21oj72.apps.googleusercontent.com'; // ✅ OAuth 2.0 válido
+API_KEY = 'AIzaSyDt0DpRRKl4H-Ws0-KU_KQqQJLoiS-PQ9Y'; // ✅ API Key válida
 ```
 
-**Tipo de credencial:** OAuth 2.0 Client ID (válido para aplicaciones web)
+🎉 **La integración con Google Calendar está lista para usarse.**
 
 ### ⚠️ **IMPORTANTE - Verificar orígenes autorizados:**
 
@@ -118,218 +127,62 @@ https://control-estonantzin.web.app
 https://control-estonantzin.firebaseapp.com
 ```
 
-### Paso 6: Agregar Google API Script
+### Paso 6: Agregar Google API Scripts
 
-Edita `src/index.html` y agrega antes del cierre de `</body>`:
+✅ **YA CONFIGURADO** - Los scripts están agregados en `src/index.html`:
 
 ```html
-<!-- Google API -->
+<!-- Google Identity Services (nueva API) -->
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<!-- Google API Client Library -->
 <script src="https://apis.google.com/js/api.js"></script>
 ```
 
-### Paso 7: Implementar Funciones de Sincronización
+**Nota:** Se utiliza la nueva API de Google Identity Services (GIS) que reemplaza a `gapi.auth2`.
 
-Una vez configuradas las credenciales, necesitarás implementar las siguientes funciones en el componente:
+### Paso 7: Funciones de Sincronización
 
-#### A. Inicialización de Google API
+✅ **YA IMPLEMENTADO** - El componente `calendar-view` ya tiene implementadas todas las funciones usando la **nueva API de Google Identity Services (GIS)**:
 
-```typescript
-async initGoogleCalendar() {
-  try {
-    await this.loadGapi();
-    await gapi.client.init({
-      apiKey: this.API_KEY,
-      clientId: this.CLIENT_ID,
-      discoveryDocs: [this.DISCOVERY_DOC],
-      scope: this.SCOPES
-    });
+#### Funciones implementadas:
 
-    // Verificar si el usuario ya está autenticado
-    this.isGoogleSignedIn = gapi.auth2.getAuthInstance().isSignedIn.get();
-    
-    // Listener para cambios en el estado de autenticación
-    gapi.auth2.getAuthInstance().isSignedIn.listen((signedIn: boolean) => {
-      this.isGoogleSignedIn = signedIn;
-      if (signedIn) {
-        this.loadGoogleCalendarEvents();
-      }
-    });
+1. **`initGoogleCalendar()`** - Inicializa GAPI y GIS
+2. **`gapiLoaded()`** - Carga el cliente de Google API
+3. **`gisLoaded()`** - Inicializa Google Identity Services (reemplaza a auth2)
+4. **`signInGoogle()`** - Solicita autenticación del usuario
+5. **`signOutGoogle()`** - Revoca el token y desconecta
+6. **`loadGoogleCalendarEvents()`** - Carga eventos del calendario
+7. **`syncWithGoogleCalendar()`** - Sincroniza manualmente
 
-    if (this.isGoogleSignedIn) {
-      this.loadGoogleCalendarEvents();
-    }
-  } catch (error) {
-    console.error('Error inicializando Google Calendar:', error);
-  }
-}
+**Actualización importante:** El código usa la nueva API `google.accounts.oauth2` en lugar de la antigua `gapi.auth2` que está deprecada.
 
-loadGapi(): Promise<void> {
-  return new Promise((resolve, reject) => {
-    if (typeof gapi !== 'undefined') {
-      gapi.load('client:auth2', () => resolve());
-    } else {
-      reject('Google API no cargada');
-    }
-  });
-}
+---
+
+## 🧪 Cómo Probar la Integración
+
+### 1. Reiniciar la aplicación
+```bash
+# Si está corriendo, detén con Ctrl+C
+npm start
 ```
 
-#### B. Autenticación
+### 2. Navegar al calendario
+- Inicia sesión en la app
+- Ve al Dashboard
+- Click en el botón **📅 Calendario**
 
-```typescript
-async signInGoogle() {
-  try {
-    await gapi.auth2.getAuthInstance().signIn();
-    Swal.fire({
-      icon: 'success',
-      title: '¡Conectado!',
-      text: 'Tu cuenta de Google ha sido conectada exitosamente',
-      timer: 2000
-    });
-  } catch (error) {
-    Swal.fire({
-      icon: 'error',
-      title: 'Error',
-      text: 'No se pudo conectar con Google Calendar'
-    });
-  }
-}
+### 3. Conectar Google Calendar
+- En la vista del calendario, verás el botón **"Conectar con Google Calendar"**
+- Haz click en el botón
+- Se abrirá una ventana de autenticación de Google
+- Inicia sesión con tu cuenta de Google
+- Acepta los permisos (solo lectura de calendario)
+- La ventana se cerrará y verás tus eventos
 
-async signOutGoogle() {
-  await gapi.auth2.getAuthInstance().signOut();
-  this.isGoogleSignedIn = false;
-}
-```
-
-#### C. Cargar Eventos de Google Calendar
-
-```typescript
-async loadGoogleCalendarEvents() {
-  try {
-    const startOfMonth = new Date(this.currentYear, this.currentMonth, 1);
-    const endOfMonth = new Date(this.currentYear, this.currentMonth + 1, 0);
-
-    const response = await gapi.client.calendar.events.list({
-      calendarId: 'primary',
-      timeMin: startOfMonth.toISOString(),
-      timeMax: endOfMonth.toISOString(),
-      showDeleted: false,
-      singleEvents: true,
-      orderBy: 'startTime'
-    });
-
-    const googleEvents = response.result.items || [];
-    
-    // Convertir eventos de Google al formato de la app
-    const convertedEvents = googleEvents.map((event: any) => ({
-      id: event.id,
-      title: event.summary,
-      description: event.description || '',
-      date: event.start.date || event.start.dateTime?.split('T')[0],
-      startTime: event.start.dateTime ? new Date(event.start.dateTime).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' }) : '',
-      endTime: event.end.dateTime ? new Date(event.end.dateTime).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' }) : '',
-      location: event.location || '',
-      type: 'evento', // Tipo por defecto para eventos de Google
-      isGoogleEvent: true
-    }));
-
-    // Combinar eventos de Firestore con eventos de Google
-    this.events = [...this.events, ...convertedEvents];
-    this.generateCalendar();
-
-  } catch (error) {
-    console.error('Error cargando eventos de Google Calendar:', error);
-  }
-}
-```
-
-#### D. Actualizar el HTML
-
-En `calendar-view.component.html`, actualiza la sección de Google Calendar:
-
-```html
-<div class="google-calendar-section">
-  <div *ngIf="!isGoogleSignedIn">
-    <button class="google-btn" (click)="signInGoogle()">
-      <span class="google-icon">🔗</span>
-      Conectar con Google Calendar
-    </button>
-    <small class="info-text">Ver tus eventos de Google Calendar junto a los eventos de la estudiantina</small>
-  </div>
-
-  <div *ngIf="isGoogleSignedIn">
-    <button class="google-btn connected" (click)="syncWithGoogleCalendar()">
-      <span class="google-icon">✅</span>
-      Sincronizar Calendario
-    </button>
-    <button class="google-btn-secondary" (click)="signOutGoogle()">
-      Desconectar
-    </button>
-    <small class="info-text">Google Calendar conectado</small>
-  </div>
-</div>
-```
-
-### Paso 8: Actualizar loadEvents()
-
-Modifica el método `loadEvents()` para llamar también a los eventos de Google:
-
-```typescript
-loadEvents() {
-  const startOfMonth = new Date(this.currentYear, this.currentMonth, 1);
-  const endOfMonth = new Date(this.currentYear, this.currentMonth + 1, 0);
-
-  // Cargar eventos de Firestore
-  this.firestore.collection('events', ref => 
-    ref.where('date', '>=', startOfMonth.toISOString().split('T')[0])
-       .where('date', '<=', endOfMonth.toISOString().split('T')[0])
-       .orderBy('date', 'asc')
-  ).valueChanges({ idField: 'id' }).subscribe((events: any[]) => {
-    this.events = events;
-    
-    // Si Google Calendar está conectado, cargar también esos eventos
-    if (this.isGoogleSignedIn) {
-      this.loadGoogleCalendarEvents();
-    } else {
-      this.generateCalendar();
-    }
-  });
-}
-```
-
-### Paso 9: Estilos Adicionales (Opcional)
-
-Agrega en `calendar-view.component.css`:
-
-```css
-.google-btn.connected {
-  background: #34a853;
-  border-color: #34a853;
-  color: white;
-}
-
-.google-btn-secondary {
-  background: white;
-  color: #666;
-  border: 1px solid #ccc;
-  padding: 8px 16px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 14px;
-  margin-left: 10px;
-  transition: all 0.3s ease;
-}
-
-.google-btn-secondary:hover {
-  background: #f5f5f5;
-}
-
-.event-indicator.google-event {
-  background: #4285f4;
-  color: white;
-  border-left: 3px solid #1967d2;
-}
-```
+### 4. Sincronizar eventos
+- Una vez conectado, tus eventos de Google Calendar aparecerán en el calendario
+- Puedes usar el botón **"Sincronizar"** para actualizar manualmente
+- Usa **"Desconectar"** para revocar el acceso
 
 ---
 
@@ -393,20 +246,21 @@ Agrega en `calendar-view.component.css`:
 - [x] Modal de detalles de eventos
 - [x] Botón en dashboard agregado
 - [x] Ruta configurada
-- [ ] Credenciales de Google Calendar configuradas
-- [ ] Script de Google API agregado en index.html
-- [ ] Funciones de sincronización implementadas
+- [x] Credenciales de Google Calendar configuradas
+- [x] Script de Google API agregado en index.html
+- [x] Funciones de sincronización implementadas
 - [ ] Pruebas de integración realizadas
 
 ---
 
 ## 🚀 Próximos Pasos Sugeridos
 
-1. Configurar credenciales de Google Calendar
-2. Implementar las funciones de sincronización
-3. Probar con usuarios reales
-4. Agregar opción de exportar eventos a Google Calendar
-5. Crear eventos de estudiantina desde la app y sincronizar con Google
+1. ✅ Credenciales configuradas
+2. ✅ Scripts de Google agregados  
+3. ✅ Funciones implementadas
+4. 🧪 Probar con usuarios reales
+5. 💡 Agregar opción de exportar eventos a Google Calendar (futuro)
+6. 💡 Crear eventos de estudiantina desde la app y sincronizar con Google (futuro)
 
 ---
 

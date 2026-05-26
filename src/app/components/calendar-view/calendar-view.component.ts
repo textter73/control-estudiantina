@@ -13,6 +13,7 @@ interface CalendarDay {
 }
 
 declare var gapi: any;
+declare var google: any;
 
 @Component({
   selector: 'app-calendar-view',
@@ -38,9 +39,12 @@ export class CalendarViewComponent implements OnInit {
   isGoogleSignedIn = false;
   googleCalendarEnabled = false;
   CLIENT_ID = '440911866333-07eplgfmhjk0bj0g3srqotf5lr21oj72.apps.googleusercontent.com';
-  API_KEY = '115682484871491854928';
+  API_KEY = 'AIzaSyDt0DpRRKl4H-Ws0-KU_KQqQJLoiS-PQ9Y';
   DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest';
   SCOPES = 'https://www.googleapis.com/auth/calendar.readonly';
+  tokenClient: any = null;
+  gapiInited = false;
+  gisInited = false;
 
   constructor(
     private firestore: AngularFirestore,
@@ -216,7 +220,7 @@ export class CalendarViewComponent implements OnInit {
     }
   }
 
-  // Google Calendar Integration
+  // Google Calendar Integration (Nueva API GIS)
   async initGoogleCalendar() {
     try {
       // Verificar si las credenciales están configuradas
@@ -225,44 +229,28 @@ export class CalendarViewComponent implements OnInit {
         return;
       }
 
-      // Verificar si el CLIENT_ID es válido para OAuth (debe terminar en .apps.googleusercontent.com)
+      // Verificar si el CLIENT_ID es válido para OAuth
       if (this.CLIENT_ID.includes('.iam.gserviceaccount.com')) {
         console.warn('⚠️ Google Calendar: CLIENT_ID es una cuenta de servicio.');
-        console.warn('   Para usar Google Calendar en el navegador necesitas un OAuth 2.0 Client ID');
-        console.warn('   Crea uno en: https://console.cloud.google.com/apis/credentials');
         this.googleCalendarEnabled = false;
         return;
       }
 
-      console.log('🔄 Inicializando Google Calendar...');
-      
-      // Cargar Google API
-      await this.loadGapi();
-      
-      // Inicializar cliente de Google Calendar
-      await gapi.client.init({
-        apiKey: this.API_KEY,
-        clientId: this.CLIENT_ID,
-        discoveryDocs: [this.DISCOVERY_DOC],
-        scope: this.SCOPES
-      });
-
-      // Verificar estado de autenticación
-      const authInstance = gapi.auth2.getAuthInstance();
-      this.isGoogleSignedIn = authInstance.isSignedIn.get();
-      
-      // Listener para cambios en autenticación
-      authInstance.isSignedIn.listen((signedIn: boolean) => {
-        this.isGoogleSignedIn = signedIn;
-        if (signedIn) {
-          this.loadGoogleCalendarEvents();
-        }
-      });
-
-      if (this.isGoogleSignedIn) {
-        await this.loadGoogleCalendarEvents();
+      // Verificar si la API Key tiene el formato correcto
+      if (!this.API_KEY.startsWith('AIza')) {
+        console.warn('⚠️ Google Calendar: API_KEY no parece ser válida.');
+        this.googleCalendarEnabled = false;
+        return;
       }
 
+      console.log('🔄 Inicializando Google Calendar con nueva API GIS...');
+      
+      // Inicializar GAPI client
+      await this.gapiLoaded();
+      
+      // Inicializar GIS (Google Identity Services)
+      await this.gisLoaded();
+      
       this.googleCalendarEnabled = true;
       console.log('✅ Google Calendar inicializado correctamente');
     } catch (error) {
@@ -271,12 +259,57 @@ export class CalendarViewComponent implements OnInit {
     }
   }
 
-  loadGapi(): Promise<void> {
-    return new Promise((resolve, reject) => {
-      if (typeof gapi !== 'undefined') {
-        gapi.load('client:auth2', () => resolve());
-      } else {
-        reject('Google API no cargada. Asegúrate de incluir el script en index.html');
+  async gapiLoaded() {
+    return new Promise<void>((resolve, reject) => {
+      if (typeof gapi === 'undefined') {
+        reject('GAPI no cargada');
+        return;
+      }
+      
+      gapi.load('client', async () => {
+        try {
+          await gapi.client.init({
+            apiKey: this.API_KEY,
+            discoveryDocs: [this.DISCOVERY_DOC]
+          });
+          this.gapiInited = true;
+          console.log('✅ GAPI Client inicializado');
+          resolve();
+        } catch (error) {
+          reject(error);
+        }
+      });
+    });
+  }
+
+  async gisLoaded() {
+    return new Promise<void>((resolve, reject) => {
+      if (typeof google === 'undefined') {
+        reject('Google Identity Services no cargado');
+        return;
+      }
+
+      try {
+        this.tokenClient = google.accounts.oauth2.initTokenClient({
+          client_id: this.CLIENT_ID,
+          scope: this.SCOPES,
+          callback: (response: any) => {
+            if (response.error !== undefined) {
+              console.error('Error en autenticación:', response);
+              this.isGoogleSignedIn = false;
+              return;
+            }
+            this.isGoogleSignedIn = true;
+            console.log('✅ Usuario autenticado con Google');
+            this.loadGoogleCalendarEvents();
+          }
+        });
+        
+        this.gisInited = true;
+        console.log('✅ Google Identity Services inicializado');
+        resolve();
+      } catch (error) {
+        reject(error);
       }
     });
   }
@@ -306,37 +339,42 @@ export class CalendarViewComponent implements OnInit {
         return;
       }
 
-      if (!this.googleCalendarEnabled) {
+      // Verificar si la API Key es válida
+      if (!this.API_KEY.startsWith('AIza')) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'API Key inválida',
+          html: `
+            <p style="text-align: left;">Tu API_KEY actual no es válida. Las API Keys de Google empiezan con <strong>"AIza"</strong>.</p>
+            <br>
+            <p style="text-align: left;"><strong>Para crear una API Key:</strong></p>
+            <ol style="text-align: left; font-size: 14px;">
+              <li>Ve a <a href="https://console.cloud.google.com/apis/credentials" target="_blank">Google Cloud Console</a></li>
+              <li>Create Credentials > <strong>API key</strong></li>
+              <li>Copia la key (empieza con AIza)</li>
+              <li>(Opcional) Restringir a Google Calendar API</li>
+              <li>Actualiza el código con la nueva API_KEY</li>
+            </ol>
+          `,
+          confirmButtonColor: '#189d98',
+          width: 600
+        });
+        return;
+      }
+
+      if (!this.googleCalendarEnabled || !this.gisInited) {
         Swal.fire({
           icon: 'warning',
           title: 'Google Calendar no inicializado',
-          text: 'Verifica que el script de Google API esté cargado en index.html',
+          text: 'Verifica que los scripts de Google estén cargados correctamente',
           confirmButtonColor: '#189d98'
         });
         return;
       }
 
-      Swal.fire({
-        title: 'Conectando...',
-        text: 'Autenticando con Google Calendar',
-        allowOutsideClick: false,
-        didOpen: () => {
-          Swal.showLoading();
-        }
-      });
+      // Solicitar token usando la nueva API GIS
+      this.tokenClient.requestAccessToken({ prompt: 'consent' });
 
-      await gapi.auth2.getAuthInstance().signIn();
-      
-      Swal.fire({
-        icon: 'success',
-        title: '✅ ¡Conectado!',
-        text: 'Tu cuenta de Google Calendar ha sido vinculada exitosamente',
-        timer: 2000,
-        confirmButtonColor: '#189d98'
-      });
-      
-      // Cargar eventos de Google Calendar
-      await this.loadGoogleCalendarEvents();
     } catch (error) {
       console.error('Error conectando con Google:', error);
       Swal.fire({
@@ -350,8 +388,17 @@ export class CalendarViewComponent implements OnInit {
 
   async signOutGoogle() {
     try {
-      await gapi.auth2.getAuthInstance().signOut();
+      // Revocar el token
+      const token = gapi.client.getToken();
+      if (token !== null) {
+        google.accounts.oauth2.revoke(token.access_token, () => {
+          console.log('Token revocado');
+        });
+        gapi.client.setToken(null);
+      }
+      
       this.isGoogleSignedIn = false;
+      
       Swal.fire({
         icon: 'success',
         title: 'Desconectado',

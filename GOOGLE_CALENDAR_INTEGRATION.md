@@ -91,13 +91,15 @@ Para habilitar la sincronización con Google Calendar, sigue estos pasos:
 
 ### Paso 5: Configurar en la Aplicación
 
-Edita el archivo: `src/app/components/calendar-view/calendar-view.component.ts`
+✅ **CONFIGURADO** - Las credenciales ya están agregadas en el archivo: `src/app/components/calendar-view/calendar-view.component.ts`
 
 ```typescript
 // Google Calendar
-CLIENT_ID = 'TU-CLIENT-ID-AQUI.apps.googleusercontent.com';
-API_KEY = 'TU-API-KEY-AQUI';
+CLIENT_ID = 'control-estudiantina@comunidad-musical.iam.gserviceaccount.com';
+API_KEY = '115682484871491854928';
 ```
+
+**Nota:** Estas credenciales corresponden a una cuenta de servicio de Google. Si necesitas acceso a calendarios de usuarios específicos, considera usar OAuth 2.0 Client ID en lugar de una cuenta de servicio.
 
 ### Paso 6: Agregar Google API Script
 

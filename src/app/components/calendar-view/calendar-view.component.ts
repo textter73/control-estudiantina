@@ -37,8 +37,8 @@ export class CalendarViewComponent implements OnInit {
   // Google Calendar
   isGoogleSignedIn = false;
   googleCalendarEnabled = false;
-  CLIENT_ID = '';
-  API_KEY = '';
+  CLIENT_ID = 'control-estudiantina@comunidad-musical.iam.gserviceaccount.com';
+  API_KEY = '115682484871491854928';
   DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest';
   SCOPES = 'https://www.googleapis.com/auth/calendar.readonly';
 

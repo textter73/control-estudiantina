@@ -3,6 +3,7 @@ import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
 import { Router } from '@angular/router';
 import Swal from 'sweetalert2';
+import { NotificationService } from '../../services/notification.service';
 
 @Component({
   selector: 'app-event-management',
@@ -37,7 +38,8 @@ export class EventManagementComponent implements OnInit {
   constructor(
     private firestore: AngularFirestore,
     private afAuth: AngularFireAuth,
-    private router: Router
+    private router: Router,
+    private notificationService: NotificationService
   ) {}
 
   ngOnInit() {
@@ -96,6 +98,9 @@ export class EventManagementComponent implements OnInit {
       if (this.newEvent.requiresTransport) {
         await this.createTransportRequest(eventRef.id, eventData);
       }
+      
+      // Enviar notificaciones a todos los usuarios
+      await this.sendEventNotifications(eventData);
       
       Swal.fire('Éxito', 'Evento creado correctamente', 'success');
       this.resetForm();
@@ -244,5 +249,51 @@ export class EventManagementComponent implements OnInit {
 
   getHistoricalEventsCount(): number {
     return this.events.filter(event => event.status !== 'abierto').length;
+  }
+
+  /**
+   * Envía notificaciones a todos los usuarios cuando se crea un nuevo evento
+   * @param eventData Datos del evento creado
+   */
+  async sendEventNotifications(eventData: any) {
+    try {
+      // Formatear la fecha del evento
+      const eventDate = new Date(eventData.date);
+      const formattedDate = eventDate.toLocaleDateString('es-MX', { 
+        day: 'numeric', 
+        month: 'long', 
+        year: 'numeric',
+        weekday: 'long'
+      });
+
+      // Formatear la hora de inicio
+      const timeInfo = eventData.startTime ? ` a las ${eventData.startTime}` : '';
+
+      // Obtener el tipo de evento
+      const eventType = this.getTypeText(eventData.type);
+
+      // Crear el mensaje de notificación
+      const title = `🎉 Nuevo ${eventType}`;
+      const body = `${eventData.title}\n📅 ${formattedDate}${timeInfo}\n📍 ${eventData.location || 'Por definir'}`;
+
+      // Obtener todos los usuarios activos (no eliminados)
+      const usersSnapshot = await this.firestore.collection('users', ref =>
+        ref.where('deleted', '==', false)
+      ).get().toPromise();
+
+      if (usersSnapshot && !usersSnapshot.empty) {
+        // Enviar notificación a cada usuario
+        for (const userDoc of usersSnapshot.docs) {
+          const userData = userDoc.data() as any;
+          await this.notificationService.sendNotificationToUser(
+            userData.uid,
+            title,
+            body
+          );
+        }
+      }
+    } catch (error) {
+      // Error al enviar notificaciones (no bloquea la creación del evento)
+    }
   }
 }

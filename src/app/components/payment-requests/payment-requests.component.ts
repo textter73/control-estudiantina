@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
 import Swal from 'sweetalert2';
+import { NotificationService } from '../../services/notification.service';
 
 @Component({
   selector: 'app-payment-requests',
@@ -50,7 +51,8 @@ export class PaymentRequestsComponent implements OnInit {
   constructor(
     private firestore: AngularFirestore,
     private afAuth: AngularFireAuth,
-    private router: Router
+    private router: Router,
+    private notificationService: NotificationService
   ) {}
 
   ngOnInit() {
@@ -702,7 +704,9 @@ export class PaymentRequestsComponent implements OnInit {
 
         // Verificar si con este pago se completa la cuota
         const newTotalPaid = totalPaid + this.newPartialPayment.amount;
-        if (newTotalPaid >= quotaAmount) {
+        const isCompletedPayment = newTotalPaid >= quotaAmount;
+        
+        if (isCompletedPayment) {
           // Marcar la notificación como completada
           await this.firestore.collection('payment-notifications').doc(this.selectedPayment.id).update({
             status: 'completed',
@@ -718,6 +722,14 @@ export class PaymentRequestsComponent implements OnInit {
           }
         }
 
+        // Enviar notificaciones de pago
+        await this.sendPaymentNotifications(
+          this.selectedPayment.userId,
+          this.newPartialPayment.amount,
+          this.selectedPayment.concept,
+          isCompletedPayment
+        );
+
         // Recargar datos
         await this.loadRequestNotifications(this.selectedRequest.concept);
         this.loadPaymentRequests();
@@ -729,7 +741,7 @@ export class PaymentRequestsComponent implements OnInit {
         Swal.fire({
           icon: 'success',
           title: '¡Pago registrado!',
-          text: newTotalPaid >= quotaAmount ? 
+          text: isCompletedPayment ? 
             'La cuota ha sido completada' : 
             `Pago registrado. Pendiente: $${(quotaAmount - newTotalPaid).toFixed(2)}`,
           timer: 3000,
@@ -932,6 +944,75 @@ export class PaymentRequestsComponent implements OnInit {
 
   getCompletedRequestsCount(): number {
     return this.completedPayments.length;
+  }
+
+  /**
+   * Envía notificaciones cuando se realiza un pago parcial o completo
+   * @param userId ID del usuario que realizó el pago
+   * @param amount Monto del pago
+   * @param concept Concepto del pago
+   * @param isCompleted Si el pago completa la cuota
+   */
+  async sendPaymentNotifications(
+    userId: string,
+    amount: number,
+    concept: string,
+    isCompleted: boolean
+  ) {
+    try {
+      // Obtener nombre del usuario
+      const userName = this.getUserName(userId);
+
+      // Mensaje personalizado según el tipo de pago
+      const paymentType = isCompleted ? '✅ Pago Completo' : '💵 Pago Parcial';
+      const title = `${paymentType} Registrado`;
+      const body = `$${amount.toFixed(2)} - ${concept}`;
+
+      // 1. Notificar al usuario que realizó el pago
+      await this.notificationService.sendNotificationToUser(
+        userId,
+        title,
+        body
+      );
+
+      // 2. Notificar a administradores
+      const adminsSnapshot = await this.firestore.collection('users', ref =>
+        ref.where('profiles', 'array-contains', 'administrador')
+      ).get().toPromise();
+
+      if (adminsSnapshot && !adminsSnapshot.empty) {
+        for (const adminDoc of adminsSnapshot.docs) {
+          const adminData = adminDoc.data() as any;
+          if (adminData.uid !== userId) { // No notificar al mismo usuario dos veces
+            await this.notificationService.sendNotificationToUser(
+              adminData.uid,
+              `${paymentType} de ${userName}`,
+              body
+            );
+          }
+        }
+      }
+
+      // 3. Notificar al perfil de finanzas
+      const financeSnapshot = await this.firestore.collection('users', ref =>
+        ref.where('profiles', 'array-contains', 'finanzas')
+      ).get().toPromise();
+
+      if (financeSnapshot && !financeSnapshot.empty) {
+        for (const financeDoc of financeSnapshot.docs) {
+          const financeData = financeDoc.data() as any;
+          if (financeData.uid !== userId) { // No notificar al mismo usuario dos veces
+            await this.notificationService.sendNotificationToUser(
+              financeData.uid,
+              `${paymentType} de ${userName}`,
+              body
+            );
+          }
+        }
+      }
+    } catch (error) {
+      // Error al enviar notificaciones (no bloquea el guardado del pago)
+    }
   }
 
   goBack() {

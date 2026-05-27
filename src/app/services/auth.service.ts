@@ -14,18 +14,29 @@ export class AuthService {
   ) {
     // Configurar persistencia LOCAL para mantener la sesión permanentemente
     this.setPersistence();
+    
+    // Monitorear estado de autenticación para debug
+    this.afAuth.authState.subscribe(user => {
+      if (user) {
+        console.log('🔐 AuthService: Usuario autenticado -', user.email);
+      }
+    });
   }
 
   /**
    * Configura la persistencia de sesión como LOCAL (permanente)
-   * La sesión se mantendrá activa incluso después de cerrar el navegador
+   * La sesión se mantendrá activa incluso después de cerrar el navegador o la PWA
+   * Firebase Auth usa IndexedDB para almacenar los tokens de autenticación
    */
   private async setPersistence() {
     try {
       await this.afAuth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
-      console.log('Persistencia de sesión configurada como LOCAL (permanente)');
+      console.log('✅ AuthService: Persistencia configurada como LOCAL (permanente)');
+      console.log('💾 Los datos de sesión se guardan en IndexedDB del navegador');
     } catch (error) {
-      console.error('Error al configurar persistencia:', error);
+      console.error('❌ AuthService: Error al configurar persistencia:', error);
+      // Intentar de nuevo después de un momento
+      setTimeout(() => this.setPersistence(), 1000);
     }
   }
 
@@ -59,9 +70,12 @@ export class AuthService {
       await this.afAuth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
       
       const result = await this.afAuth.signInWithEmailAndPassword(email, password);
-      console.log('Sesión iniciada con persistencia LOCAL - se mantendrá activa permanentemente');
+      console.log('✅ Login exitoso con persistencia LOCAL');
+      console.log('🔐 La sesión permanecerá activa indefinidamente');
+      console.log('💾 Token guardado en IndexedDB del navegador');
       return { success: true, user: result.user };
     } catch (error: any) {
+      console.error('❌ Error en login:', error.message);
       return { success: false, error: error.message };
     }
   }

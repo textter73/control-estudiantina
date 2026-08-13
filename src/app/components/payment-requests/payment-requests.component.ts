@@ -968,14 +968,16 @@ export class PaymentRequestsComponent implements OnInit {
       const title = `${paymentType} Registrado`;
       const body = `$${amount.toFixed(2)} - ${concept}`;
 
-      // 1. Notificar al usuario que realizó el pago
+      // NOTIFICACIONES DESACTIVADAS
+      /* // 1. Notificar al usuario que realizó el pago
       await this.notificationService.sendNotificationToUser(
         userId,
         title,
         body
-      );
+      ); */
 
-      // 2. Notificar a administradores
+      // NOTIFICACIONES DESACTIVADAS
+      /* // 2. Notificar a administradores
       const adminsSnapshot = await this.firestore.collection('users', ref =>
         ref.where('profiles', 'array-contains', 'administrador')
       ).get().toPromise();
@@ -1009,7 +1011,7 @@ export class PaymentRequestsComponent implements OnInit {
             );
           }
         }
-      }
+      } */
     } catch (error) {
       // Error al enviar notificaciones (no bloquea el guardado del pago)
     }

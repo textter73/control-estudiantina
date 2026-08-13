@@ -256,12 +256,13 @@ export class FinancialManagementComponent implements OnInit {
       await batch.commit();
       
       // Enviar notificaciones push al usuario y administradores
-      await this.notificationService.sendDepositNotifications(
+      // NOTIFICACIONES DESACTIVADAS
+      /* await this.notificationService.sendDepositNotifications(
         this.selectedAccount.userId,
         this.transactionAmount,
         this.transactionConcept,
         this.selectedAccount.userName || this.selectedAccount.name
-      );
+      ); */
       
       Swal.fire('Éxito', 'Depósito realizado exitosamente', 'success');
       this.closeTransactionModal();
@@ -363,12 +364,13 @@ export class FinancialManagementComponent implements OnInit {
       await batch.commit();
       
       // Enviar notificaciones push al usuario y administradores
-      await this.notificationService.sendWithdrawalNotifications(
+      // NOTIFICACIONES DESACTIVADAS
+      /* await this.notificationService.sendWithdrawalNotifications(
         this.selectedAccount.userId,
         this.transactionAmount,
         this.transactionConcept,
         this.selectedAccount.userName || this.selectedAccount.name
-      );
+      ); */
       
       Swal.fire('Éxito', 'Retiro realizado exitosamente', 'success');
       this.closeTransactionModal();

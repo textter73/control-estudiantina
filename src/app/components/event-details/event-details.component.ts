@@ -120,7 +120,8 @@ export class EventDetailsComponent implements OnInit {
       await this.firestore.collection('events').doc(this.eventId).update({ confirmations });
       
       // Enviar notificación al usuario confirmando su respuesta
-      await this.sendConfirmationNotification();
+      // NOTIFICACIONES DESACTIVADAS
+      // await this.sendConfirmationNotification();
       
       Swal.fire('Éxito', 'Confirmación registrada', 'success');
     } catch (error) {

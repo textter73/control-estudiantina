@@ -884,14 +884,15 @@ export class ContractDistributionComponent implements OnInit {
     await batch.commit();
 
     // Enviar notificaciones push a cada empleado que recibió pago
-    for (const employee of this.allEmployees.filter(e => e.attended)) {
+    // NOTIFICACIONES DESACTIVADAS
+    /* for (const employee of this.allEmployees.filter(e => e.attended)) {
       await this.notificationService.sendDepositNotifications(
         employee.id,
         employee.net,
         `Pago nómina: ${this.contractName}`,
         employee.name
       );
-    }
+    } */
   }
 
   generateGeneralPDF() {

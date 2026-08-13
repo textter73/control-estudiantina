@@ -218,7 +218,8 @@ export class DashboardComponent implements OnInit {
         this.loadInsumosData();
         this.loadAllMembersAttendance();
         this.loadUsersWithConsecutiveAbsences();
-        await this.checkNotificationStatus(); // Verificar estado de notificaciones
+        // NOTIFICACIONES DESACTIVADAS
+        // await this.checkNotificationStatus(); // Verificar estado de notificaciones
       } else {
         this.router.navigate(['/']);
       }

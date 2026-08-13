@@ -311,7 +311,8 @@ export class AttendanceComponent implements OnInit, OnDestroy {
       }
 
       // Enviar notificaciones a todos los usuarios registrados
-      await this.sendAttendanceNotifications();
+      // NOTIFICACIONES DESACTIVADAS
+      // await this.sendAttendanceNotifications();
       
       Swal.fire({
         icon: 'success',

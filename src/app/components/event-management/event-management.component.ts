@@ -118,7 +118,8 @@ export class EventManagementComponent implements OnInit {
       }
       
       // Enviar notificaciones a todos los usuarios
-      await this.sendEventNotifications(eventData);
+      // NOTIFICACIONES DESACTIVADAS
+      // await this.sendEventNotifications(eventData);
       
       Swal.fire('Éxito', 'Evento creado correctamente', 'success');
       this.resetForm();

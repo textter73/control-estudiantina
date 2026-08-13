@@ -17,7 +17,8 @@ export class NotificationService {
     private firestore: AngularFirestore,
     private auth: AngularFireAuth
   ) {
-    this.initMessaging();
+    // NOTIFICACIONES DESACTIVADAS
+    // this.initMessaging();
   }
 
   /**
@@ -39,7 +40,8 @@ export class NotificationService {
    * Escucha mensajes cuando la app está en primer plano
    */
   private listenToForegroundMessages(): void {
-    if (this.messaging) {
+    // NOTIFICACIONES DESACTIVADAS
+    /* if (this.messaging) {
       onMessage(this.messaging, (payload) => {
         // Mostrar notificación personalizada
         if (payload.notification) {
@@ -50,7 +52,7 @@ export class NotificationService {
           );
         }
       });
-    }
+    } */
   }
 
   /**

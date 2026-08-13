@@ -77,12 +77,13 @@ export class AttendanceComponent implements OnInit, OnDestroy {
 
   setDateLimits() {
     const today = new Date();
-    const oneWeekAgo = new Date(today);
-    oneWeekAgo.setDate(today.getDate() - 7);
+    // VALIDACIÓN DE SEMANA REMOVIDA - Ahora se puede registrar asistencia de cualquier fecha pasada
+    // const oneWeekAgo = new Date(today);
+    // oneWeekAgo.setDate(today.getDate() - 7);
     
     const dateInput = document.getElementById('attendanceDate') as HTMLInputElement;
     if (dateInput) {
-      dateInput.min = oneWeekAgo.toISOString().split('T')[0];
+      // dateInput.min = oneWeekAgo.toISOString().split('T')[0];
       dateInput.max = today.toISOString().split('T')[0];
     }
   }
@@ -251,10 +252,11 @@ export class AttendanceComponent implements OnInit, OnDestroy {
   isValidDate(dateString: string): boolean {
     const selectedDate = new Date(dateString);
     const today = new Date();
-    const oneWeekAgo = new Date(today);
-    oneWeekAgo.setDate(today.getDate() - 7);
+    // VALIDACIÓN DE SEMANA REMOVIDA - Solo validar que no sea fecha futura
+    // const oneWeekAgo = new Date(today);
+    // oneWeekAgo.setDate(today.getDate() - 7);
     
-    return selectedDate >= oneWeekAgo && selectedDate <= today;
+    return selectedDate <= today;
   }
 
   async saveAttendance() {
@@ -275,7 +277,7 @@ export class AttendanceComponent implements OnInit, OnDestroy {
       Swal.fire({
         icon: 'error',
         title: 'Fecha no válida',
-        text: 'Solo puedes registrar asistencia de una semana atrás hasta hoy'
+        text: 'No puedes registrar asistencia de fechas futuras'
       });
       return;
     }

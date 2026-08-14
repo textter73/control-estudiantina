@@ -485,6 +485,57 @@
   color: #ffd700;
 }
 
+.card-year-summary {
+  margin-top: 0.5rem;
+  margin-bottom: 0.75rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid rgba(255,255,255,0.2);
+  position: relative;
+  z-index: 5;
+}
+
+.summary-title {
+  display: block;
+  text-align: center;
+  font-size: 0.7rem;
+  opacity: 0.7;
+  margin-bottom: 0.3rem;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+}
+
+.summary-items {
+  display: flex;
+  justify-content: space-around;
+  gap: 0.5rem;
+}
+
+.summary-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.1rem;
+  flex: 1;
+}
+
+.summary-label {
+  font-size: 0.65rem;
+  opacity: 0.7;
+}
+
+.summary-value {
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.summary-item.income .summary-value {
+  color: #4caf50;
+}
+
+.summary-item.expenses .summary-value {
+  color: #ff5252;
+}
+
 .card-actions {
   display: flex;
   gap: 1rem;

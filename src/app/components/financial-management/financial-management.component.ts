@@ -40,6 +40,9 @@ export class FinancialManagementComponent implements OnInit {
   
   // Protección contra doble clic
   isProcessingTransaction = false;
+  
+  // Resúmenes totales de cuentas
+  accountSummaries: { [accountId: string]: { income: number, expenses: number } } = {};
 
   constructor(
     private firestore: AngularFirestore,
@@ -89,7 +92,42 @@ export class FinancialManagementComponent implements OnInit {
       this.accounts = accounts;
       this.filteredAccounts = accounts;
       this.filterAccounts();
+      this.loadAccountSummaries();
     });
+  }
+
+  loadAccountSummaries() {
+    this.accounts.forEach(account => {
+      this.firestore.collection('financial-transactions', ref =>
+        ref.where('accountId', '==', account.id)
+      ).valueChanges().subscribe((transactions: any[]) => {
+        let income = 0;
+        let expenses = 0;
+
+        // Calcular todos los ingresos y egresos históricos
+        transactions.forEach(transaction => {
+          if (transaction.type === 'deposit') {
+            income += transaction.amount || 0;
+          } else if (transaction.type === 'withdrawal') {
+            expenses += transaction.amount || 0;
+          }
+        });
+
+        console.log(`Cuenta: ${account.userName}`);
+        console.log(`Total transacciones: ${transactions.length}`);
+        console.log(`Depósitos encontrados: ${transactions.filter(t => t.type === 'deposit').length}`);
+        console.log(`Retiros encontrados: ${transactions.filter(t => t.type === 'withdrawal').length}`);
+        console.log(`Total Ingresos: $${income.toFixed(2)}`);
+        console.log(`Total Egresos: $${expenses.toFixed(2)}`);
+        console.log('---');
+
+        this.accountSummaries[account.id] = { income, expenses };
+      });
+    });
+  }
+
+  getAccountSummary(accountId: string): { income: number, expenses: number } {
+    return this.accountSummaries[accountId] || { income: 0, expenses: 0 };
   }
 
   filterAccounts() {

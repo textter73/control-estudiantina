@@ -120,6 +120,19 @@
                 <span class="balance-amount">${{ account.balance.toFixed(2) }}</span>
               </div>
               
+              <div class="card-year-summary">
+                <div class="summary-items">
+                  <div class="summary-item income">
+                    <span class="summary-label">Ingresos:</span>
+                    <span class="summary-value">${{ getAccountSummary(account.id).income.toLocaleString('es-MX', {minimumFractionDigits: 2, maximumFractionDigits: 2}) }}</span>
+                  </div>
+                  <div class="summary-item expenses">
+                    <span class="summary-label">Egresos:</span>
+                    <span class="summary-value">${{ getAccountSummary(account.id).expenses.toLocaleString('es-MX', {minimumFractionDigits: 2, maximumFractionDigits: 2}) }}</span>
+                  </div>
+                </div>
+              </div>
+              
               <div class="click-hint">
                 <small>💳 Clic para ver movimientos</small>
               </div>

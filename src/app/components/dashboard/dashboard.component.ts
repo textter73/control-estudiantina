@@ -93,6 +93,7 @@ export class DashboardComponent implements OnInit {
   insumosConStock: Insumo[] = [];
   totalInsumosConStock: number = 0;
   insumosStockBajo: Insumo[] = [];
+  insumosAgrupadosPorCategoria: { categoria: string, insumos: Insumo[], count: number, expanded: boolean }[] = [];
   
   // Notificaciones
   notificationsEnabled: boolean = false;
@@ -1226,7 +1227,33 @@ export class DashboardComponent implements OnInit {
       this.insumosStockBajo = this.insumosConStock.filter(insumo => 
         insumo.cantidadDisponible <= insumo.cantidadMinima
       );
+      
+      // Agrupar insumos por categoría
+      this.agruparInsumosPorCategoria();
     });
+  }
+  
+  agruparInsumosPorCategoria() {
+    const grupos: { [key: string]: Insumo[] } = {};
+    
+    this.insumosConStock.forEach(insumo => {
+      const categoria = insumo.categoria || 'Sin Categoría';
+      if (!grupos[categoria]) {
+        grupos[categoria] = [];
+      }
+      grupos[categoria].push(insumo);
+    });
+    
+    this.insumosAgrupadosPorCategoria = Object.keys(grupos).map(categoria => ({
+      categoria: categoria,
+      insumos: grupos[categoria],
+      count: grupos[categoria].length,
+      expanded: false
+    }));
+  }
+  
+  toggleCategoria(categoria: any) {
+    categoria.expanded = !categoria.expanded;
   }
 
   goToInventoryManagement() {

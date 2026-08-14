@@ -23,66 +23,110 @@
 
   <!-- TAB: CATÁLOGO -->
   <div *ngIf="activeTab === 'catalogo'" class="tab-content">
-    <div class="controls">
-      <div class="filters">
-        <select [(ngModel)]="filtroCategoria" class="form-control">
-          <option value="">Todas las categorías</option>
-          <option *ngFor="let categoria of categorias" [value]="categoria">{{categoria}}</option>
-        </select>
-        
-        <input type="text" [(ngModel)]="filtroBusqueda" 
-               placeholder="Buscar insumos..." class="form-control search-input">
-        
-        <div class="checkbox-filter">
-          <label class="checkbox-label">
-            <input type="checkbox" [(ngModel)]="soloDisponibles">
-            <span class="checkmark"></span>
-            Solo disponibles
-          </label>
+    
+    <!-- VISTA DE CATEGORÍAS -->
+    <div *ngIf="vistaActual === 'categorias'" class="categorias-view">
+      <div class="view-header">
+        <h3>📦 Selecciona una Categoría</h3>
+        <p>Elige el tipo de insumo que necesitas solicitar</p>
+      </div>
+      
+      <div class="categorias-grid">
+        <div *ngFor="let grupo of categoriasConInsumos" 
+             class="categoria-card" 
+             (click)="seleccionarCategoria(grupo.categoria)">
+          <div class="categoria-icon">📦</div>
+          <h4 class="categoria-nombre">{{ grupo.categoria }}</h4>
+          <div class="categoria-stats">
+            <div class="stat">
+              <span class="stat-value">{{ grupo.count }}</span>
+              <span class="stat-label">Total</span>
+            </div>
+            <div class="stat disponibles">
+              <span class="stat-value">{{ grupo.disponibles }}</span>
+              <span class="stat-label">Disponibles</span>
+            </div>
+          </div>
+          <div class="categoria-action">
+            <span>Ver insumos →</span>
+          </div>
         </div>
       </div>
+      
+      <div *ngIf="categoriasConInsumos.length === 0" class="empty-state">
+        <i class="fas fa-box-open"></i>
+        <h3>No hay categorías disponibles</h3>
+        <p>No se encontraron insumos en el catálogo</p>
+      </div>
     </div>
-
-    <div class="insumos-grid">
-      <div *ngFor="let insumo of insumosFiltrados" class="insumo-card">
-        <div class="insumo-header">
-          <h4>{{insumo.nombre}}</h4>
-          <span class="categoria-badge">{{insumo.categoria}}</span>
-        </div>
-        
-        <div class="insumo-body">
-          <p class="descripcion" *ngIf="insumo.descripcion">{{insumo.descripcion}}</p>
+    
+    <!-- VISTA DE INSUMOS -->
+    <div *ngIf="vistaActual === 'insumos'" class="insumos-view">
+      <div class="view-header">
+        <button class="btn-back-categorias" (click)="volverACategorias()">
+          ← Volver a Categorías
+        </button>
+        <h3>{{ categoriaSeleccionada }}</h3>
+      </div>
+      
+      <div class="controls">
+        <div class="filters">
+          <input type="text" [(ngModel)]="filtroBusqueda" 
+                 placeholder="Buscar en esta categoría..." class="form-control search-input">
           
-          <div class="stock-info">
-            <div class="stock-item">
-              <span class="label">Disponible:</span>
-              <span [class]="getStockClass(insumo)">{{insumo.cantidadDisponible}}</span>
+          <div class="checkbox-filter">
+            <label class="checkbox-label">
+              <input type="checkbox" [(ngModel)]="soloDisponibles">
+              <span class="checkmark"></span>
+              Solo disponibles
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="insumos-grid">
+        <div *ngFor="let insumo of insumosFiltrados" class="insumo-card">
+          <div class="insumo-header">
+            <h4>{{insumo.nombre}}</h4>
+            <span class="stock-badge" [class.low-stock]="insumo.cantidadDisponible <= insumo.cantidadMinima">
+              Stock: {{insumo.cantidadDisponible}}
+            </span>
+          </div>
+          
+          <div class="insumo-body">
+            <p class="descripcion" *ngIf="insumo.descripcion">{{insumo.descripcion}}</p>
+            
+            <div class="stock-info">
+              <div class="stock-item">
+                <span class="label">Disponible:</span>
+                <span [class]="getStockClass(insumo)">{{insumo.cantidadDisponible}}</span>
+              </div>
+              <div class="stock-item">
+                <span class="label">Precio:</span>
+                <span class="precio">{{formatCurrency(insumo.costoUnitario)}}</span>
+              </div>
             </div>
-            <div class="stock-item">
-              <span class="label">Precio:</span>
-              <span class="precio">{{formatCurrency(insumo.costoUnitario)}}</span>
+            
+            <div class="proveedor" *ngIf="insumo.proveedor">
+              <small>📦 {{insumo.proveedor}}</small>
             </div>
           </div>
           
-          <div class="proveedor" *ngIf="insumo.proveedor">
-            <small>📦 {{insumo.proveedor}}</small>
+          <div class="insumo-actions">
+            <button class="btn btn-primary" 
+                    (click)="openSolicitudModal(insumo)"
+                    [disabled]="insumo.cantidadDisponible === 0">
+              {{insumo.cantidadDisponible === 0 ? 'Sin Stock' : 'Solicitar'}}
+            </button>
           </div>
         </div>
-        
-        <div class="insumo-actions">
-          <button class="btn btn-primary" 
-                  (click)="openSolicitudModal(insumo)"
-                  [disabled]="insumo.cantidadDisponible === 0">
-            {{insumo.cantidadDisponible === 0 ? 'Sin Stock' : 'Solicitar'}}
-          </button>
-        </div>
       </div>
-    </div>
 
-    <div *ngIf="insumosFiltrados.length === 0" class="empty-state">
-      <i class="fas fa-search"></i>
-      <h3>No se encontraron insumos</h3>
-      <p>Intenta ajustar los filtros de búsqueda</p>
+      <div *ngIf="insumosFiltrados.length === 0" class="empty-state">
+        <i class="fas fa-search"></i>
+        <h3>No se encontraron insumos</h3>
+        <p>No hay insumos en esta categoría con los filtros aplicados</p>
+      </div>
     </div>
   </div>
 

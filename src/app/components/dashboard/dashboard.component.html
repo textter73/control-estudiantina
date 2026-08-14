@@ -177,11 +177,6 @@
         <span class="action-icon">📦</span>
         <span class="action-text">Gestión de Almacén</span>
       </button>
-      
-      <button class="action" routerLink="/supply-request" *ngIf="canRequestSupplies">
-        <span class="action-icon">🛒</span>
-        <span class="action-text">Solicitar Insumos</span>
-      </button>
       <!---->
     </div>
 
@@ -855,18 +850,37 @@
           </div>
         </div>
         
+        <div class="btn-container" *ngIf="canRequestSupplies">
+          <button class="btn-solicitar-insumos" routerLink="/supply-request">
+            <span class="btn-icon">🛒</span>
+            Solicitar Insumos
+          </button>
+        </div>
+        
         <!-- Lista de todos los insumos con stock -->
-        <div class="inventory-list" *ngIf="insumosConStock.length > 0">
-          <div class="inventory-item" *ngFor="let insumo of insumosConStock" 
-               [class.low-stock]="insumo.cantidadDisponible <= insumo.cantidadMinima">
-            <div class="item-info">
-              <span class="item-name">{{ insumo.nombre }}</span>
-              <span class="item-category">{{ insumo.categoria }}</span>
+        <div class="inventory-list" *ngIf="insumosAgrupadosPorCategoria.length > 0">
+          <div class="categoria-group" *ngFor="let grupo of insumosAgrupadosPorCategoria">
+            <div class="categoria-header" (click)="toggleCategoria(grupo)">
+              <div class="categoria-info">
+                <span class="categoria-icon">{{ grupo.expanded ? '📂' : '📁' }}</span>
+                <span class="categoria-nombre">{{ grupo.categoria }}</span>
+                <span class="categoria-count">{{ grupo.count }} {{ grupo.count === 1 ? 'artículo' : 'artículos' }}</span>
+              </div>
+              <span class="categoria-toggle">{{ grupo.expanded ? '▼' : '▶' }}</span>
             </div>
-            <div class="item-stock">
-              <span class="stock-number">{{ insumo.cantidadDisponible }}</span>
-              <span class="stock-label">disponibles</span>
-              <span class="warning-icon" *ngIf="insumo.cantidadDisponible <= insumo.cantidadMinima">⚠️</span>
+            
+            <div class="categoria-items" *ngIf="grupo.expanded">
+              <div class="inventory-item" *ngFor="let insumo of grupo.insumos" 
+                   [class.low-stock]="insumo.cantidadDisponible <= insumo.cantidadMinima">
+                <div class="item-info">
+                  <span class="item-name">{{ insumo.nombre }}</span>
+                </div>
+                <div class="item-stock">
+                  <span class="stock-number">{{ insumo.cantidadDisponible }}</span>
+                  <span class="stock-label">disponibles</span>
+                  <span class="warning-icon" *ngIf="insumo.cantidadDisponible <= insumo.cantidadMinima">⚠️</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>

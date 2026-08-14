@@ -21,6 +21,10 @@ export class SupplyRequestComponent implements OnInit {
   filtroBusqueda: string = '';
   soloDisponibles: boolean = true;
   
+  // Vista de categorías
+  vistaActual: 'categorias' | 'insumos' = 'categorias';
+  categoriaSeleccionada: string = '';
+  
   // Modal de solicitud
   showSolicitudModal: boolean = false;
   selectedInsumo: Insumo | null = null;
@@ -94,6 +98,42 @@ export class SupplyRequestComponent implements OnInit {
   }
 
   // === CATÁLOGO DE INSUMOS ===
+  
+  get categoriasConInsumos(): { categoria: string, count: number, disponibles: number }[] {
+    const grupos: { [key: string]: { total: number, disponibles: number } } = {};
+    
+    this.insumos.forEach(insumo => {
+      if (insumo.activo) {
+        const categoria = insumo.categoria || 'Sin Categoría';
+        if (!grupos[categoria]) {
+          grupos[categoria] = { total: 0, disponibles: 0 };
+        }
+        grupos[categoria].total++;
+        if (insumo.cantidadDisponible > 0) {
+          grupos[categoria].disponibles++;
+        }
+      }
+    });
+    
+    return Object.keys(grupos).map(categoria => ({
+      categoria: categoria,
+      count: grupos[categoria].total,
+      disponibles: grupos[categoria].disponibles
+    }));
+  }
+  
+  seleccionarCategoria(categoria: string): void {
+    this.categoriaSeleccionada = categoria;
+    this.filtroCategoria = categoria;
+    this.vistaActual = 'insumos';
+  }
+  
+  volverACategorias(): void {
+    this.vistaActual = 'categorias';
+    this.categoriaSeleccionada = '';
+    this.filtroCategoria = '';
+    this.filtroBusqueda = '';
+  }
 
   get insumosFiltrados(): Insumo[] {
     return this.insumos.filter(insumo => {

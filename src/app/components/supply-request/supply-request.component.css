@@ -456,6 +456,146 @@
   margin-bottom: 20px;
 }
 
+/* === VISTA DE CATEGORÍAS === */
+.categorias-view {
+  padding: 20px 0;
+}
+
+.view-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.view-header h3 {
+  color: #189d98;
+  font-size: 1.8rem;
+  margin-bottom: 10px;
+}
+
+.view-header p {
+  color: #6c757d;
+  font-size: 1.1rem;
+}
+
+.categorias-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.categoria-card {
+  background: white;
+  border-radius: 8px;
+  padding: 15px 12px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: center;
+  border: 2px solid transparent;
+}
+
+.categoria-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 16px rgba(24, 157, 152, 0.15);
+  border-color: #189d98;
+}
+
+.categoria-icon {
+  font-size: 1.5rem;
+  margin-bottom: 8px;
+  opacity: 0.8;
+}
+
+.categoria-nombre {
+  color: #2c3e50;
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin-bottom: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.categoria-stats {
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: 10px;
+  padding: 10px 0;
+  border-top: 1px solid #e9ecef;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.stat-value {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #189d98;
+}
+
+.stat.disponibles .stat-value {
+  color: #28a745;
+}
+
+.stat-label {
+  font-size: 0.7rem;
+  color: #6c757d;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.categoria-action {
+  color: #189d98;
+  font-weight: 600;
+  margin-top: 5px;
+  font-size: 0.85rem;
+}
+
+.categoria-card:hover .categoria-action {
+  text-decoration: underline;
+}
+
+/* === VISTA DE INSUMOS === */
+.insumos-view {
+  padding: 20px 0;
+}
+
+.btn-back-categorias {
+  background: #189d98;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  margin-bottom: 20px;
+  display: inline-block;
+}
+
+.btn-back-categorias:hover {
+  background: #0f6b68;
+  transform: translateX(-3px);
+}
+
+.stock-badge {
+  background: #28a745;
+  color: white;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.stock-badge.low-stock {
+  background: #ffc107;
+  color: #000;
+}
+
 /* === MODALES === */
 .modal {
   display: none;

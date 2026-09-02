@@ -30,6 +30,7 @@ export class DashboardComponent implements OnInit {
   participationPercentage: number = 0;
   participationAttendances: number = 0;
   activeEvents: any[] = [];
+  eventsByMonth: { monthKey: string, monthName: string, events: any[] }[] = [];
   transportRequests: any[] = [];
   ticketSales: any[] = [];
   userAccount: any = null;
@@ -339,6 +340,67 @@ export class DashboardComponent implements OnInit {
     this.router.navigate(['/mis-documentos']);
   }
 
+  parseEventDate(dateStr: string): Date {
+    if (!dateStr) return new Date();
+    const parts = dateStr.split('-');
+    if (parts.length === 3) {
+      const year = parseInt(parts[0], 10);
+      const month = parseInt(parts[1], 10) - 1;
+      const day = parseInt(parts[2], 10);
+      return new Date(year, month, day);
+    }
+    return new Date(dateStr);
+  }
+
+  getEventDayName(event: any): string {
+    if (!event) return '';
+    const date = this.parseEventDate(event.date);
+    const dayNames = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+    return dayNames[date.getDay()];
+  }
+
+  getEventDayNumber(event: any): number {
+    if (!event) return 0;
+    return this.parseEventDate(event.date).getDate();
+  }
+
+  getEventDisplayTitle(event: any): string {
+    if (!event) return '';
+    const dayName = this.getEventDayName(event);
+    const dayNumber = this.getEventDayNumber(event);
+    return `${dayName} ${dayNumber} - ${event.title || 'Sin título'}`;
+  }
+
+  groupEventsByMonth(events: any[]) {
+    const monthNames = [
+      'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+      'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+    ];
+
+    const groupsMap = new Map<string, { monthKey: string, monthName: string, events: any[] }>();
+
+    events.forEach(event => {
+      const date = this.parseEventDate(event.date);
+      const year = date.getFullYear();
+      const month = date.getMonth();
+      const monthKey = `${year}-${String(month + 1).padStart(2, '0')}`;
+      const monthName = `${monthNames[month]} ${year}`;
+
+      if (!groupsMap.has(monthKey)) {
+        groupsMap.set(monthKey, {
+          monthKey,
+          monthName,
+          events: []
+        });
+      }
+
+      groupsMap.get(monthKey)!.events.push(event);
+    });
+
+    // Ordenar los meses cronológicamente
+    this.eventsByMonth = Array.from(groupsMap.values()).sort((a, b) => a.monthKey.localeCompare(b.monthKey));
+  }
+
   loadActiveEvents() {
     this.firestore.collection('events').valueChanges({ idField: 'id' }).subscribe((events: any[]) => {
       const today = new Date();
@@ -347,7 +409,7 @@ export class DashboardComponent implements OnInit {
       const activeEvents = events
         .filter(event => event.status === 'abierto')
         // .filter(event => new Date(event.date) >= today) // Solo eventos futuros o de hoy
-        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()); // Más próximo primero
+        .sort((a, b) => this.parseEventDate(a.date).getTime() - this.parseEventDate(b.date).getTime()); // Más próximo primero
       
       this.activeEvents = activeEvents.map(event => {
         const userConfirmation = event.confirmations?.find((c: any) => c.userId === this.user.uid);
@@ -356,6 +418,8 @@ export class DashboardComponent implements OnInit {
           userConfirmation: userConfirmation || null
         };
       });
+
+      this.groupEventsByMonth(this.activeEvents);
     });
   }
 

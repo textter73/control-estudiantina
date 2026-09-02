@@ -312,75 +312,94 @@
 
     <!-- Agenda de Eventos -->
     <div class="events-agenda">
-      <h3>Próximos Eventos</h3>
-      <div class="events-list" *ngIf="activeEvents.length > 0">
-        <div class="event-item" *ngFor="let event of activeEvents">
-          <div class="event-main-info">
-            <div class="event-header">
-              <h4 class="event-title">{{ event.title }}</h4>
-              <div class="event-badges">
-                <span class="type-badge" [class]="event.type">{{ getTypeText(event.type) }}</span>
-                <span class="attire-badge" [class]="event.attire">{{ getAttireText(event.attire) }}</span>
-              </div>
-            </div>
-            
-            <div class="event-details">
-              <div class="event-date">
-                <span class="date-icon">📅</span>
-                <span>{{ event.date }}</span>
-              </div>
-              <div class="event-location" *ngIf="event.location">
-                <span class="location-icon">📍</span>
-                <span>{{ event.location }}</span>
-              </div>
-              <div class="event-times" *ngIf="event.meetingTime || event.startTime">
-                <span class="time-icon">🕰️</span>
-                <span *ngIf="event.meetingTime">Reunión: {{ event.meetingTime }}</span>
-                <span *ngIf="event.startTime"> | Inicio: {{ event.startTime }}</span>
-              </div>
-            </div>
+      <div class="events-agenda-header">
+        <h3>Próximos Eventos</h3>
+        <span class="events-badge-count" *ngIf="activeEvents.length > 0">
+          {{ activeEvents.length }} evento{{ activeEvents.length > 1 ? 's' : '' }}
+        </span>
+      </div>
+
+      <div class="events-by-month-container" *ngIf="eventsByMonth.length > 0">
+        <div class="month-group" *ngFor="let group of eventsByMonth">
+          <div class="month-header">
+            <span class="month-icon">🗓️</span>
+            <span class="month-title">{{ group.monthName }}</span>
+            <span class="month-event-count">{{ group.events.length }} evento{{ group.events.length > 1 ? 's' : '' }}</span>
           </div>
-          
-          <div class="event-confirmation">
-            <div class="confirmation-status">
-              <span class="confirmation-label">Tu confirmación:</span>
-              <span class="confirmation-badge" [class]="getConfirmationClass(event.userConfirmation)">
-                {{ getConfirmationText(event.userConfirmation) }}
-              </span>
-            </div>
-            <div class="companions-info" *ngIf="event.requiresTransport && event.userConfirmation?.companions !== undefined && event.userConfirmation?.companions !== null">
-              <span class="companions-text">🚌 {{ event.userConfirmation?.companions || 0 }} acompañantes</span>
-            </div>
-            <div class="total-people-info" *ngIf="event.requiresTransport">
-              <span class="total-people-text">👥 {{ getTotalPeopleForEvent(event) }} personas total</span>
-            </div>
-            
-            <div class="transport-info" *ngIf="event.requiresTransport && hasTransportConfig(event.id)">
-              <button class="transport-btn" (click)="viewTransportMap(event.id)">
-                🗺️ Ver Mapa de Asientos
-              </button>
-              <div class="payment-status-info">
-                <div class="payment-status" [class]="getPaymentStatusClass(getPaymentStatusForEvent(event.id).status)">
-                  <span class="payment-label">Estado de Pago:</span>
-                  <span class="payment-text">{{ getPaymentStatusText(getPaymentStatusForEvent(event.id).status) }}</span>
+
+          <div class="events-list">
+            <div class="event-item" *ngFor="let event of group.events">
+              <div class="event-main-info">
+                <div class="event-header">
+                  <div class="event-title-container">
+                    <span class="event-date-chip">
+                      <span class="date-day-name">{{ getEventDayName(event) }}</span>
+                      <span class="date-day-number">{{ getEventDayNumber(event) }}</span>
+                    </span>
+                    <span class="date-title-divider">-</span>
+                    <h4 class="event-title">{{ event.title }}</h4>
+                  </div>
+                  <div class="event-badges">
+                    <span class="type-badge" [class]="event.type">{{ getTypeText(event.type) }}</span>
+                    <span class="attire-badge" [class]="event.attire">{{ getAttireText(event.attire) }}</span>
+                  </div>
                 </div>
-                <div class="payment-amounts" *ngIf="getPaymentStatusForEvent(event.id).total > 0">
-                  <span class="payment-amount">Total: ${{ getPaymentStatusForEvent(event.id).total }}</span>
-                  <span class="payment-paid" *ngIf="getPaymentStatusForEvent(event.id).paid > 0">Pagado: ${{ getPaymentStatusForEvent(event.id).paid }}</span>
+                
+                <div class="event-details">
+                  <div class="event-location" *ngIf="event.location">
+                    <span class="location-icon">📍</span>
+                    <span>{{ event.location }}</span>
+                  </div>
+                  <div class="event-times" *ngIf="event.meetingTime || event.startTime">
+                    <span class="time-icon">🕰️</span>
+                    <span *ngIf="event.meetingTime">Reunión: {{ event.meetingTime }}</span>
+                    <span *ngIf="event.startTime"> | Inicio: {{ event.startTime }}</span>
+                  </div>
                 </div>
               </div>
-              <div class="cost-info" *ngIf="getTransportCost(event.id) > 0 && getPaymentStatusForEvent(event.id).status === 'sin-boletos'">
-                <span class="cost-text">💰 ${{ getUnitCost(event.id) }} por persona (estimado)</span>
+              
+              <div class="event-confirmation">
+                <div class="confirmation-status">
+                  <span class="confirmation-label">Tu confirmación:</span>
+                  <span class="confirmation-badge" [class]="getConfirmationClass(event.userConfirmation)">
+                    {{ getConfirmationText(event.userConfirmation) }}
+                  </span>
+                </div>
+                <div class="companions-info" *ngIf="event.requiresTransport && event.userConfirmation?.companions !== undefined && event.userConfirmation?.companions !== null">
+                  <span class="companions-text">🚌 {{ event.userConfirmation?.companions || 0 }} acompañantes</span>
+                </div>
+                <div class="total-people-info" *ngIf="event.requiresTransport">
+                  <span class="total-people-text">👥 {{ getTotalPeopleForEvent(event) }} personas total</span>
+                </div>
+                
+                <div class="transport-info" *ngIf="event.requiresTransport && hasTransportConfig(event.id)">
+                  <button class="transport-btn" (click)="viewTransportMap(event.id)">
+                    🗺️ Ver Mapa de Asientos
+                  </button>
+                  <div class="payment-status-info">
+                    <div class="payment-status" [class]="getPaymentStatusClass(getPaymentStatusForEvent(event.id).status)">
+                      <span class="payment-label">Estado de Pago:</span>
+                      <span class="payment-text">{{ getPaymentStatusText(getPaymentStatusForEvent(event.id).status) }}</span>
+                    </div>
+                    <div class="payment-amounts" *ngIf="getPaymentStatusForEvent(event.id).total > 0">
+                      <span class="payment-amount">Total: ${{ getPaymentStatusForEvent(event.id).total }}</span>
+                      <span class="payment-paid" *ngIf="getPaymentStatusForEvent(event.id).paid > 0">Pagado: ${{ getPaymentStatusForEvent(event.id).paid }}</span>
+                    </div>
+                  </div>
+                  <div class="cost-info" *ngIf="getTransportCost(event.id) > 0 && getPaymentStatusForEvent(event.id).status === 'sin-boletos'">
+                    <span class="cost-text">💰 ${{ getUnitCost(event.id) }} por persona (estimado)</span>
+                  </div>
+                </div>
+                <button class="view-event-btn" (click)="viewEventDetails(event.id)">
+                  Ver Detalles
+                </button>
               </div>
             </div>
-            <button class="view-event-btn" (click)="viewEventDetails(event.id)">
-              Ver Detalles
-            </button>
           </div>
         </div>
       </div>
       
-      <div class="no-events" *ngIf="activeEvents.length === 0">
+      <div class="no-events" *ngIf="eventsByMonth.length === 0">
         <p>No hay eventos próximos</p>
       </div>
     </div>

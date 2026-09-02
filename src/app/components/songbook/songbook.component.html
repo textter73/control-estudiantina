@@ -35,6 +35,11 @@
           </select>
         </div>
         <div class="form-field">
+          <label for="orderNumber">🔢 N° en el Cancionero (Índice):</label>
+          <input id="orderNumber" type="number" min="1" [(ngModel)]="orderNumber" placeholder="Ej: 1, 2, 15..." />
+        </div>
+
+        <div class="form-field">
           <label for="title">🎼 Título:</label>
           <input id="title" [(ngModel)]="title" placeholder="Título de la canción" />
         </div>

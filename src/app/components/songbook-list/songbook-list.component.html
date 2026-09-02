@@ -18,12 +18,32 @@
       </header>
 
       <main class="transport-main">
+        <!-- Pestañas de Vista: Índice General vs Categorías -->
+        <div class="songbook-tabs-container">
+          <div class="songbook-tabs">
+            <button 
+              class="songbook-tab-btn" 
+              [class.active]="activeTab === 'categories'"
+              (click)="activeTab = 'categories'">
+              📁 Por Categorías
+              <span class="tab-count-badge">{{ categories.length }}</span>
+            </button>
+            <button 
+              class="songbook-tab-btn" 
+              [class.active]="activeTab === 'index'"
+              (click)="activeTab = 'index'">
+              📑 Índice General
+              <span class="tab-count-badge">{{ songs.length }}</span>
+            </button>
+          </div>
+        </div>
+
         <div class="search-container">
           <div class="search-box">
             <input 
               type="text" 
               class="search-input" 
-              placeholder="Buscar canciones..." 
+              placeholder="Buscar por título, número (#1), letra..." 
               [(ngModel)]="searchTerm"
               (input)="filterSongs()">
             <span class="search-icon">🔍</span>
@@ -50,43 +70,109 @@
             <h3>No hay canciones registradas</h3>
           </div>
 
-          <!-- Resultados de búsqueda -->
-          <div class="search-results" *ngIf="searchTerm && filteredSongs.length > 0">
-            <h3 class="search-results-title">
-              Resultados de búsqueda para "{{ searchTerm }}"
-              <span class="results-count">({{ filteredSongs.length }} coincidencias)</span>
-            </h3>
-            <div class="search-results-list">
-              <div class="song-item" *ngFor="let song of filteredSongs" (click)="openSongDetail(song)">
-                <div class="song-info">
-                  <span class="song-title">{{ song.title }}</span>
-                  <div class="song-details">
-                    <span class="song-category">📁 {{ song.category }}</span>
-                    <span class="song-composer" *ngIf="song.composers">✍️ {{ song.composers }}</span>
+          <!-- VISTA 1: ÍNDICE GENERAL -->
+          <div class="general-index-section" *ngIf="!loading && songs.length > 0 && activeTab === 'index'">
+            <div class="index-toolbar">
+              <div class="index-sort-buttons">
+                <span class="sort-label">Ordenar:</span>
+                <button 
+                  class="sort-btn" 
+                  [class.active]="indexSortBy === 'number'"
+                  (click)="setSort('number')">
+                  🔢 N° {{ indexSortBy === 'number' ? (sortDirection === 'asc' ? '↑' : '↓') : '' }}
+                </button>
+                <button 
+                  class="sort-btn" 
+                  [class.active]="indexSortBy === 'title'"
+                  (click)="setSort('title')">
+                  🔤 Título {{ indexSortBy === 'title' ? (sortDirection === 'asc' ? '↑' : '↓') : '' }}
+                </button>
+                <button 
+                  class="sort-btn" 
+                  [class.active]="indexSortBy === 'category'"
+                  (click)="setSort('category')">
+                  📁 Categoría {{ indexSortBy === 'category' ? (sortDirection === 'asc' ? '↑' : '↓') : '' }}
+                </button>
+              </div>
+
+              <div class="index-admin-actions" *ngIf="isAdmin || canEditSongs">
+                <button class="renumber-btn" (click)="autoAssignOrderNumbers()" title="Asignar números correlativos 1, 2, 3... según el orden actual">
+                  🔢 Renumerar correlativamente
+                </button>
+              </div>
+            </div>
+
+            <div class="index-list">
+              <div 
+                class="index-song-row" 
+                *ngFor="let song of sortedIndexSongs" 
+                (click)="openSongDetail(song)">
+                <div class="index-number-badge" [class.no-number]="!song.orderNumber">
+                  {{ song.orderNumber ? '#' + song.orderNumber : 'S/N' }}
+                </div>
+                <div class="index-song-info">
+                  <div class="index-song-title-row">
+                    <span class="index-song-title">{{ song.title }}</span>
+                    <span class="status-badge" [class.status-ready]="song.status === 'Lista'" *ngIf="song.status">{{ song.status }}</span>
+                  </div>
+                  <div class="index-song-meta">
+                    <span class="index-meta-item">📁 {{ song.category || 'Sin categoría' }}</span>
+                    <span class="index-meta-item" *ngIf="song.composers">✍️ {{ song.composers }}</span>
+                    <span class="index-meta-item video-tag" *ngIf="song.youtubeLink">🎥 Video</span>
                   </div>
                 </div>
-                <div class="song-status" *ngIf="song.status">
-                  <span class="status-badge" [class.status-ready]="song.status === 'Lista'">{{ song.status }}</span>
-                </div>
+                <div class="index-action-icon">›</div>
+              </div>
+
+              <div class="empty-results" *ngIf="sortedIndexSongs.length === 0">
+                <p>No se encontraron canciones con los filtros actuales.</p>
               </div>
             </div>
           </div>
 
-          <div class="folders-container" *ngIf="!loading && songs.length > 0 && !searchTerm">
-            <div class="folder" *ngFor="let category of categories" (click)="toggleSongByCategory(category)">
-              <div class="folder-header" [class.active]="selectedCategory === category">
-                <span class="folder-icon">📁</span>
-                <span class="folder-name">{{ category }}</span>
-                <span class="folder-count">{{ songsByCategory[category]?.length || 0 }}</span>
-              </div>
-              <div class="folder-content" *ngIf="selectedCategory === category">
-                <div class="song-item" *ngFor="let song of songsByCategory[category]" (click)="openSongDetail(song)">
+          <!-- VISTA 2: POR CATEGORÍAS (FOLDERS) -->
+          <div class="categories-section" *ngIf="!loading && songs.length > 0 && activeTab === 'categories'">
+            <!-- Resultados de búsqueda si hay búsqueda activa -->
+            <div class="search-results" *ngIf="searchTerm && filteredSongs.length > 0">
+              <h3 class="search-results-title">
+                Resultados de búsqueda para "{{ searchTerm }}"
+                <span class="results-count">({{ filteredSongs.length }} coincidencias)</span>
+              </h3>
+              <div class="search-results-list">
+                <div class="song-item" *ngFor="let song of filteredSongs" (click)="openSongDetail(song)">
+                  <div class="song-order-tag" *ngIf="song.orderNumber">#{{ song.orderNumber }}</div>
                   <div class="song-info">
                     <span class="song-title">{{ song.title }}</span>
-                    <span class="song-composer" *ngIf="song.composers">{{ song.composers }}</span>
+                    <div class="song-details">
+                      <span class="song-category">📁 {{ song.category }}</span>
+                      <span class="song-composer" *ngIf="song.composers">✍️ {{ song.composers }}</span>
+                    </div>
                   </div>
                   <div class="song-status" *ngIf="song.status">
                     <span class="status-badge" [class.status-ready]="song.status === 'Lista'">{{ song.status }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Carpetas -->
+            <div class="folders-container" *ngIf="!searchTerm">
+              <div class="folder" *ngFor="let category of categories" (click)="toggleSongByCategory(category)">
+                <div class="folder-header" [class.active]="selectedCategory === category">
+                  <span class="folder-icon">📁</span>
+                  <span class="folder-name">{{ category }}</span>
+                  <span class="folder-count">{{ songsByCategory[category]?.length || 0 }}</span>
+                </div>
+                <div class="folder-content" *ngIf="selectedCategory === category">
+                  <div class="song-item" *ngFor="let song of songsByCategory[category]" (click)="openSongDetail(song)">
+                    <div class="song-order-tag" *ngIf="song.orderNumber">#{{ song.orderNumber }}</div>
+                    <div class="song-info">
+                      <span class="song-title">{{ song.title }}</span>
+                      <span class="song-composer" *ngIf="song.composers">{{ song.composers }}</span>
+                    </div>
+                    <div class="song-status" *ngIf="song.status">
+                      <span class="status-badge" [class.status-ready]="song.status === 'Lista'">{{ song.status }}</span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -120,15 +206,18 @@
               </div>
               
               <div class="modal-header">
-                <h2 *ngIf="!isEditing">{{ selectedSong.title }}</h2>
+                <div class="modal-title-container">
+                  <span class="modal-order-badge" *ngIf="selectedSong.orderNumber && !isEditing">#{{ selectedSong.orderNumber }}</span>
+                  <h2 *ngIf="!isEditing">{{ selectedSong.title }}</h2>
+                </div>
                 <input 
-                  *ngIf="isAdmin && isEditing"
+                  *ngIf="(isAdmin || canEditSongs) && isEditing"
                   [(ngModel)]="editedTitle"
                   class="edit-input title-input"
                   placeholder="Título de la canción"
                   type="text">
                 <div class="header-actions">
-                  <button *ngIf="canEditSongs" class="edit-btn" (click)="startEditing()">
+                  <button *ngIf="canEditSongs && !isEditing" class="edit-btn" (click)="startEditing()">
                     ✏️ Editar
                   </button>
                   <button class="close-btn" (click)="closeSongDetail()">×</button>
@@ -136,13 +225,23 @@
               </div>
               <div class="modal-body">
                 <div class="song-info-compact" *ngIf="!isEditing">
+                  <span class="info-badge number-badge" *ngIf="selectedSong.orderNumber">N° {{ selectedSong.orderNumber }}</span>
                   <span class="info-badge">{{ selectedSong.category }}</span>
                   <span class="info-badge">{{ selectedSong.status }}</span>
                   <span class="info-badge" *ngIf="selectedSong.composers">{{ selectedSong.composers }}</span>
                 </div>
                 
                 <!-- Formulario de edición de información básica -->
-                <div class="song-info-edit" *ngIf="isAdmin && isEditing">
+                <div class="song-info-edit" *ngIf="(isAdmin || canEditSongs) && isEditing">
+                  <div class="edit-row">
+                    <label>🔢 Número de orden (Índice):</label>
+                    <input 
+                      [(ngModel)]="editedOrderNumber"
+                      class="edit-input"
+                      placeholder="Ej: 1, 2, 10..."
+                      type="number"
+                      min="1">
+                  </div>
                   <div class="edit-row">
                     <label>Categoría:</label>
                     <input 
@@ -182,14 +281,14 @@
                 <!-- Sección de Instrumentación -->
                 <div class="instrumentation-section" 
                      [class.protected-content]="!isEditing" 
-                     *ngIf="selectedSong.instrumentation || (isAdmin && isEditing)">
+                     *ngIf="selectedSong.instrumentation || ((isAdmin || canEditSongs) && isEditing)">
                   <h3>Instrumentación</h3>
                   <pre class="instrumentation-content" 
                        [class.no-select]="!isEditing" 
                        [style.font-size.px]="fontSize"
                        *ngIf="!isEditing">{{ selectedSong.instrumentation }}</pre>
                   <textarea 
-                    *ngIf="isAdmin && isEditing"
+                    *ngIf="(isAdmin || canEditSongs) && isEditing"
                     [(ngModel)]="editedInstrumentation"
                     class="edit-textarea"
                     placeholder="Describe la instrumentación...&#10;Ejemplo:&#10;Guitarra: Capo 3er traste&#10;Bajo: Afinación estándar&#10;Percusión: Cajón peruano"
@@ -209,7 +308,7 @@
                        *ngIf="!isEditing">{{ selectedSong.structure || 'No hay letra disponible para esta canción.' }}</pre>
                   
                   <textarea 
-                    *ngIf="isAdmin && isEditing"
+                    *ngIf="(isAdmin || canEditSongs) && isEditing"
                     [(ngModel)]="editedStructure"
                     class="edit-textarea lyrics-textarea"
                     placeholder="Escribe la letra de la canción con acordes...&#10;Ejemplo:&#10;    C        F       G&#10;Había una vez una historia..."
@@ -218,7 +317,7 @@
                 </div>
                 
                 <!-- Botones de edición -->
-                <div class="edit-actions" *ngIf="isAdmin && isEditing">
+                <div class="edit-actions" *ngIf="(isAdmin || canEditSongs) && isEditing">
                   <button class="save-btn" (click)="saveChanges()" [disabled]="isSaving">
                     <span *ngIf="!isSaving">💾 Guardar</span>
                     <span *ngIf="isSaving">⏳ Guardando...</span>

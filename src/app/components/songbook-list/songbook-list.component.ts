@@ -226,6 +226,11 @@ export class SongbookListComponent implements OnInit, OnDestroy {
     });
   }
 
+  shouldShowStatus(status: string | null | undefined): boolean {
+    if (!status) return false;
+    return status.trim().toLowerCase() !== 'repertorio';
+  }
+
   extractCategories() {
     const uniqueCategories = [...new Set(this.songs.map(song => song.category))];
     this.categories = uniqueCategories.filter(category => category); // Filtrar valores vacíos

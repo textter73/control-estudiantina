@@ -157,7 +157,7 @@
                 <div class="index-song-info">
                   <div class="index-song-title-row">
                     <span class="index-song-title">{{ song.title }}</span>
-                    <span class="status-badge" [class.status-ready]="song.status === 'Lista'" *ngIf="song.status">{{ song.status }}</span>
+                    <span class="status-badge" [class.status-ready]="song.status === 'Lista'" *ngIf="shouldShowStatus(song.status)">{{ song.status }}</span>
                   </div>
                   <div class="index-song-meta">
                     <span class="index-meta-item">📁 {{ song.category || 'Sin categoría' }}</span>
@@ -192,7 +192,7 @@
                       <span class="song-composer" *ngIf="song.composers">✍️ {{ song.composers }}</span>
                     </div>
                   </div>
-                  <div class="song-status" *ngIf="song.status">
+                  <div class="song-status" *ngIf="shouldShowStatus(song.status)">
                     <span class="status-badge" [class.status-ready]="song.status === 'Lista'">{{ song.status }}</span>
                   </div>
                 </div>
@@ -214,7 +214,7 @@
                       <span class="song-title">{{ song.title }}</span>
                       <span class="song-composer" *ngIf="song.composers">{{ song.composers }}</span>
                     </div>
-                    <div class="song-status" *ngIf="song.status">
+                    <div class="song-status" *ngIf="shouldShowStatus(song.status)">
                       <span class="status-badge" [class.status-ready]="song.status === 'Lista'">{{ song.status }}</span>
                     </div>
                   </div>
@@ -271,7 +271,7 @@
                 <div class="song-info-compact" *ngIf="!isEditing">
                   <span class="info-badge number-badge" *ngIf="selectedSong.orderNumber">N° {{ selectedSong.orderNumber }}</span>
                   <span class="info-badge">{{ selectedSong.category }}</span>
-                  <span class="info-badge">{{ selectedSong.status }}</span>
+                  <span class="info-badge" *ngIf="shouldShowStatus(selectedSong.status)">{{ selectedSong.status }}</span>
                   <span class="info-badge" *ngIf="selectedSong.composers">{{ selectedSong.composers }}</span>
                 </div>
                 

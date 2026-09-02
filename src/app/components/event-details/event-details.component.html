@@ -74,6 +74,14 @@
           </div>
         </div>
 
+        <div class="detail-item" *ngIf="event.allowCompanions">
+          <span class="detail-icon">👥</span>
+          <div class="detail-content">
+            <span class="detail-label">Acompañantes</span>
+            <span class="detail-value" style="color: #026aa7; font-weight: 600;">Permitidos (máx. {{ event.maxCompanions || 2 }})</span>
+          </div>
+        </div>
+
         <div class="detail-item" *ngIf="event.hasTravelCost">
           <span class="detail-icon">💰</span>
           <div class="detail-content">
@@ -104,8 +112,8 @@
         <span class="response-badge" [class]="getResponseClass(userConfirmation.response)">
           {{ getResponseText(userConfirmation.response) }}
         </span>
-        <div class="companions-info" *ngIf="event.requiresTransport && userConfirmation.companions !== undefined">
-          <p><strong>Acompañantes:</strong> {{ userConfirmation.companions || 0 }}</p>
+        <div class="companions-info" *ngIf="canHaveCompanions() && userConfirmation.companions">
+          <p><strong>Acompañantes:</strong> {{ userConfirmation.companions }}</p>
         </div>
         <p class="final-note">Tu confirmación ha sido registrada y no puede ser modificada.</p>
       </div>
@@ -116,41 +124,48 @@
         <div class="response-buttons">
           <button 
             class="response-btn yes-btn" 
+            [class.active]="selectedResponse === 'asistire'"
             (click)="selectResponse('asistire')"
             [disabled]="isSubmitting">
             ✅ Asistiré
           </button>
           <button 
             class="response-btn maybe-btn" 
+            [class.active]="selectedResponse === 'tal-vez'"
             (click)="selectResponse('tal-vez')"
             [disabled]="isSubmitting">
             🤔 Tal vez
           </button>
           <button 
             class="response-btn no-btn" 
+            [class.active]="selectedResponse === 'no-asistire'"
             (click)="selectResponse('no-asistire')"
             [disabled]="isSubmitting">
             ❌ No asistiré
           </button>
         </div>
 
-        <div class="companions-section" *ngIf="selectedResponse && event.requiresTransport">
-          <h4>🚌 ¿Cuántas personas te acompañarán?</h4>
+        <div class="companions-section" *ngIf="selectedResponse && selectedResponse !== 'no-asistire' && canHaveCompanions()">
+          <h4>👥 ¿Cuántas personas te acompañarán?</h4>
+          <p class="companions-hint" *ngIf="event.maxCompanions">
+            Máximo permitido: <strong>{{ event.maxCompanions }}</strong> acompañante(s)
+          </p>
           <div class="companions-input">
             <label for="companions">Número de acompañantes:</label>
             <select [(ngModel)]="companions" name="companions" class="companions-select" [disabled]="isSubmitting">
-              <option value="0">Solo yo</option>
-              <option value="1">1 acompañante</option>
-              <option value="2">2 acompañantes</option>
+              <option [ngValue]="0">Solo yo (0 acompañantes)</option>
+              <ng-container *ngFor="let n of getCompanionOptions()">
+                <option [ngValue]="n">{{ n }} acompañante{{ n > 1 ? 's' : '' }}</option>
+              </ng-container>
             </select>
           </div>
         </div>
 
         <button 
           class="confirm-btn" 
-          *ngIf="selectedResponse"
+          *ngIf="selectedResponse && selectedResponse !== 'no-asistire' && canHaveCompanions()"
           (click)="submitConfirmation()"
-          [disabled]="isSubmitting || (event.requiresTransport && companions === null)">
+          [disabled]="isSubmitting">
           <span *ngIf="!isSubmitting">Confirmar Asistencia</span>
           <span *ngIf="isSubmitting">⏳ Confirmando...</span>
         </button>
@@ -175,11 +190,11 @@
             <span class="stat-number">{{ getConfirmationStats().total }}</span>
             <span class="stat-label">Total</span>
           </div>
-          <div class="stat-item" *ngIf="event.requiresTransport">
+          <div class="stat-item" *ngIf="getConfirmationStats().showCompanions">
             <span class="stat-number">{{ getConfirmationStats().totalCompanions }}</span>
             <span class="stat-label">Acompañantes</span>
           </div>
-          <div class="stat-item" *ngIf="event.requiresTransport">
+          <div class="stat-item" *ngIf="getConfirmationStats().showCompanions">
             <span class="stat-number">{{ getConfirmationStats().totalPeople }}</span>
             <span class="stat-label">Total personas</span>
           </div>
@@ -239,8 +254,8 @@
                 <button class="admin-btn delete-btn" (click)="deleteConfirmation(c)">🗑 Eliminar</button>
               </div>
             </div>
-            <div class="companions-count" *ngIf="event.requiresTransport && c.companions !== undefined">
-              <span class="companions-text">🚌 {{ c.companions }} acompañantes</span>
+            <div class="companions-count" *ngIf="canHaveCompanions() && c.companions">
+              <span class="companions-text">👥 {{ c.companions }} acompañante{{ c.companions !== 1 ? 's' : '' }}</span>
             </div>
           </div>
 
@@ -255,9 +270,9 @@
                 <option value="no-asistire">No asistiré</option>
               </select>
             </div>
-            <div class="edit-row" *ngIf="event.requiresTransport" style="display:flex; align-items:center; gap:1rem; margin-bottom:1rem;">
+            <div class="edit-row" *ngIf="canHaveCompanions()" style="display:flex; align-items:center; gap:1rem; margin-bottom:1rem;">
               <label style="min-width:90px; color:#555;">Acompañantes:</label>
-              <input type="number" min="0" [(ngModel)]="editCompanions" class="edit-input" style="padding:0.4rem 0.8rem; border-radius:8px; border:1px solid #e0e0e0; max-width:100px;" />
+              <input type="number" min="0" [max]="event.maxCompanions ?? 99" [(ngModel)]="editCompanions" class="edit-input" style="padding:0.4rem 0.8rem; border-radius:8px; border:1px solid #e0e0e0; max-width:100px;" />
             </div>
             <div class="admin-controls" style="display:flex; gap:0.5rem; justify-content:flex-end;">
               <button class="admin-btn save-btn" (click)="saveEditConfirmation(c)">💾 Guardar</button>
@@ -276,9 +291,9 @@
           </div>
         </div>
         
-        <div class="transport-summary" *ngIf="event.requiresTransport">
-          <h5>Resumen de Transporte</h5>
-          <p><strong>Total de personas:</strong> {{ getTotalPeople() }}</p>
+        <div class="transport-summary" *ngIf="canHaveCompanions()">
+          <h5>Resumen de Acompañantes</h5>
+          <p><strong>Total de personas (con acompañantes):</strong> {{ getTotalPeople() }}</p>
         </div>
       </div>
     </div>

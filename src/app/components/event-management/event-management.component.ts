@@ -18,26 +18,32 @@ export class EventManagementComponent implements OnInit {
   showCreateForm = false;
   activeTab: string = 'open';
   isCreatingEvent = false;
-  isEditingEvent = false;
-  editingEvent: any = null;
+  isEditing = false;
+  editingEventId: string | null = null;
   isChangingStatus: { [key: string]: boolean } = {};
   
-  newEvent = {
-    title: '',
-    description: '',
-    date: '',
-    location: '',
-    meetingPoint: '',
-    meetingTime: '',
-    startTime: '',
-    endTime: '',
-    hasTravelCost: false,
-    travelCost: '',
-    requiresTransport: false,
-    attire: 'ropa-normal',
-    type: 'ensayo',
-    status: 'abierto'
-  };
+  eventForm: any = this.getDefaultEventForm();
+
+  getDefaultEventForm() {
+    return {
+      title: '',
+      description: '',
+      date: '',
+      location: '',
+      meetingPoint: '',
+      meetingTime: '',
+      startTime: '',
+      endTime: '',
+      hasTravelCost: false,
+      travelCost: '',
+      requiresTransport: false,
+      allowCompanions: false,
+      maxCompanions: 2,
+      attire: 'ropa-normal',
+      type: 'ensayo',
+      status: 'abierto'
+    };
+  }
 
   constructor(
     private firestore: AngularFirestore,
@@ -88,7 +94,7 @@ export class EventManagementComponent implements OnInit {
       return; // Prevenir doble clic
     }
 
-    if (!this.newEvent.title || !this.newEvent.date) {
+    if (!this.eventForm.title || !this.eventForm.date) {
       Swal.fire('Error', 'Título y fecha son obligatorios', 'error');
       return;
     }
@@ -98,7 +104,7 @@ export class EventManagementComponent implements OnInit {
     // Mostrar loading
     Swal.fire({
       title: 'Creando evento...',
-      text: 'Enviando notificaciones',
+      text: 'Guardando evento',
       allowOutsideClick: false,
       didOpen: () => {
         Swal.showLoading();
@@ -106,7 +112,9 @@ export class EventManagementComponent implements OnInit {
     });
 
     const eventData = {
-      ...this.newEvent,
+      ...this.eventForm,
+      allowCompanions: !!this.eventForm.allowCompanions,
+      maxCompanions: this.eventForm.allowCompanions ? (Number(this.eventForm.maxCompanions) || 2) : 2,
       createdBy: this.user.uid,
       createdAt: new Date(),
       confirmations: []
@@ -115,13 +123,9 @@ export class EventManagementComponent implements OnInit {
     try {
       const eventRef = await this.firestore.collection('events').add(eventData);
       
-      if (this.newEvent.requiresTransport) {
+      if (this.eventForm.requiresTransport) {
         await this.createTransportRequest(eventRef.id, eventData);
       }
-      
-      // Enviar notificaciones a todos los usuarios
-      // NOTIFICACIONES DESACTIVADAS
-      // await this.sendEventNotifications(eventData);
       
       Swal.fire('Éxito', 'Evento creado correctamente', 'success');
       this.resetForm();
@@ -240,30 +244,33 @@ export class EventManagementComponent implements OnInit {
     }
   }
 
+  toggleCreateForm() {
+    if (this.showCreateForm && !this.isEditing) {
+      this.showCreateForm = false;
+    } else {
+      this.openCreateForm();
+    }
+  }
+
+  openCreateForm() {
+    this.isEditing = false;
+    this.editingEventId = null;
+    this.eventForm = this.getDefaultEventForm();
+    this.showCreateForm = true;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
   resetForm() {
-    this.newEvent = {
-      title: '',
-      description: '',
-      date: '',
-      location: '',
-      meetingPoint: '',
-      meetingTime: '',
-      startTime: '',
-      endTime: '',
-      hasTravelCost: false,
-      travelCost: '',
-      requiresTransport: false,
-      attire: 'ropa-normal',
-      type: 'ensayo',
-      status: 'abierto'
-    };
+    this.eventForm = this.getDefaultEventForm();
     this.showCreateForm = false;
-    this.editingEvent = null;
+    this.isEditing = false;
+    this.editingEventId = null;
   }
 
   openEditForm(event: any) {
-    this.editingEvent = {
-      id: event.id,
+    this.isEditing = true;
+    this.editingEventId = event.id;
+    this.eventForm = {
       title: event.title || '',
       description: event.description || '',
       date: event.date || '',
@@ -272,9 +279,11 @@ export class EventManagementComponent implements OnInit {
       meetingTime: event.meetingTime || '',
       startTime: event.startTime || '',
       endTime: event.endTime || '',
-      hasTravelCost: event.hasTravelCost || false,
+      hasTravelCost: !!event.hasTravelCost,
       travelCost: event.travelCost || '',
-      requiresTransport: event.requiresTransport || false,
+      requiresTransport: !!event.requiresTransport,
+      allowCompanions: !!event.allowCompanions,
+      maxCompanions: event.maxCompanions !== undefined && event.maxCompanions !== null ? Number(event.maxCompanions) : 2,
       attire: event.attire || 'ropa-normal',
       type: event.type || 'ensayo',
       status: event.status || 'abierto'
@@ -283,10 +292,20 @@ export class EventManagementComponent implements OnInit {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  async updateEvent() {
+  async saveEvent() {
     if (this.isCreatingEvent) return;
 
-    if (!this.editingEvent.title || !this.editingEvent.date) {
+    if (this.isEditing && this.editingEventId) {
+      await this.updateEvent();
+    } else {
+      await this.createEvent();
+    }
+  }
+
+  async updateEvent() {
+    if (this.isCreatingEvent || !this.editingEventId) return;
+
+    if (!this.eventForm.title || !this.eventForm.date) {
       Swal.fire('Error', 'Título y fecha son obligatorios', 'error');
       return;
     }
@@ -300,9 +319,14 @@ export class EventManagementComponent implements OnInit {
     });
 
     try {
-      const { id, ...dataToUpdate } = this.editingEvent;
-      dataToUpdate.updatedAt = new Date();
-      await this.firestore.collection('events').doc(id).update(dataToUpdate);
+      const dataToUpdate = {
+        ...this.eventForm,
+        allowCompanions: !!this.eventForm.allowCompanions,
+        maxCompanions: this.eventForm.allowCompanions ? (Number(this.eventForm.maxCompanions) || 2) : 2,
+        updatedAt: new Date()
+      };
+      
+      await this.firestore.collection('events').doc(this.editingEventId).update(dataToUpdate);
       Swal.fire('Éxito', 'Evento actualizado correctamente', 'success');
       this.resetForm();
     } catch (error) {

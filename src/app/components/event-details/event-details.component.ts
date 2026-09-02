@@ -72,10 +72,17 @@ export class EventDetailsComponent implements OnInit {
 
 
 
+  canHaveCompanions(): boolean {
+    return !!(this.event?.allowCompanions && (this.event?.maxCompanions === undefined || Number(this.event?.maxCompanions) > 0));
+  }
+
   selectResponse(response: string) {
     this.selectedResponse = response;
-    if (!this.event.requiresTransport) {
+    // Si la respuesta es no-asistire o el evento NO permite acompañantes, se guarda directo
+    if (response === 'no-asistire' || !this.canHaveCompanions()) {
+      this.companions = 0;
       this.submitConfirmation();
+      return;
     }
   }
 
@@ -103,8 +110,10 @@ export class EventDetailsComponent implements OnInit {
       timestamp: new Date()
     };
 
-    if (this.event.requiresTransport) {
-      confirmation.companions = parseInt(this.companions.toString()) || 0;
+    if (this.selectedResponse === 'no-asistire' || !this.canHaveCompanions()) {
+      confirmation.companions = 0;
+    } else {
+      confirmation.companions = parseInt(this.companions?.toString() || '0', 10) || 0;
     }
 
     const confirmations = this.event.confirmations || [];
@@ -179,7 +188,7 @@ export class EventDetailsComponent implements OnInit {
       }
 
       // Agregar información de acompañantes si aplica
-      if (this.event.requiresTransport && this.companions > 0) {
+      if (this.canHaveCompanions() && this.companions > 0) {
         body += `\n👥 Acompañantes: ${this.companions}`;
       }
 
@@ -247,7 +256,7 @@ export class EventDetailsComponent implements OnInit {
     confirmations[idx] = {
       ...confirmations[idx],
       response: this.editSelectedResponse || confirmations[idx].response,
-      companions: this.event.requiresTransport ? (parseInt(this.editCompanions?.toString()) || 0) : undefined,
+      companions: this.canHaveCompanions() ? (parseInt(this.editCompanions?.toString()) || 0) : 0,
       // keep original timestamp and userName/userId
     };
 
@@ -301,7 +310,7 @@ export class EventDetailsComponent implements OnInit {
         const name = c.userName || this.getUserName(c.userId);
         const icon = iconMap[c.response] || '';
         let line = `${idx + 1}. ${icon} ${name}`;
-        if (this.event && this.event.requiresTransport && c.companions && Number(c.companions) > 0) {
+        if (this.canHaveCompanions() && c.companions && Number(c.companions) > 0) {
           line += ` (${c.companions} acompañantes)`;
         }
         return line;
@@ -394,7 +403,8 @@ export class EventDetailsComponent implements OnInit {
       talVez: confirmations.filter((c: any) => c && c.response === 'tal-vez').length,
       total: confirmations.length,
       totalCompanions: totalCompanions,
-      totalPeople: totalPeople
+      totalPeople: totalPeople,
+      showCompanions: this.canHaveCompanions()
     };
   }
 
@@ -406,6 +416,11 @@ export class EventDetailsComponent implements OnInit {
       .reduce((total: number, c: any) => {
         return total + 1 + (parseInt(c?.companions) || 0);
       }, 0);
+  }
+
+  getCompanionOptions(): number[] {
+    const max = this.event?.maxCompanions ?? 5;
+    return Array.from({ length: max }, (_, i) => i + 1);
   }
 
   // Admin: Confirmar asistencia para todos los usuarios que no han respondido
@@ -530,10 +545,10 @@ export class EventDetailsComponent implements OnInit {
             <option value="no-asistire">No asistiré</option>
           </select>
         </div>
-        ${this.event.requiresTransport ? `
+        ${this.canHaveCompanions() ? `
         <div>
-          <label style="display: block; margin-bottom: 0.5rem;">Acompañantes:</label>
-          <input type="number" id="companions-input" class="swal2-input" min="0" value="0" style="width: 100%;">
+          <label style="display: block; margin-bottom: 0.5rem;">Acompañantes (máx. ${this.event.maxCompanions ?? '∞'}):</label>
+          <input type="number" id="companions-input" class="swal2-input" min="0" max="${this.event.maxCompanions ?? 99}" value="0" style="width: 100%;">
         </div>
         ` : ''}
       `,
@@ -559,7 +574,7 @@ export class EventDetailsComponent implements OnInit {
           userId: userSelect.value,
           userName: userOptions[userSelect.value],
           response: responseSelect.value,
-          companions: this.event.requiresTransport ? parseInt(companionsInput?.value || '0') : 0
+          companions: this.canHaveCompanions() ? parseInt(companionsInput?.value || '0') : 0
         };
       }
     });

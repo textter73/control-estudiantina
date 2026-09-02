@@ -72,6 +72,46 @@
 
           <!-- VISTA 1: ÍNDICE GENERAL -->
           <div class="general-index-section" *ngIf="!loading && songs.length > 0 && activeTab === 'index'">
+            <!-- Selector de categorías para el Índice General -->
+            <div class="index-category-selector">
+              <div class="category-selector-header">
+                <div class="selector-title-wrap">
+                  <span class="selector-icon">🏷️</span>
+                  <span class="selector-title">Filtrar por categorías:</span>
+                  <span class="selected-count-badge" *ngIf="selectedCategoriesForIndex.length > 0">
+                    {{ selectedCategoriesForIndex.length }} seleccionada{{ selectedCategoriesForIndex.length > 1 ? 's' : '' }}
+                  </span>
+                </div>
+                <div class="selector-actions">
+                  <button 
+                    class="category-select-all-btn" 
+                    [class.active]="selectedCategoriesForIndex.length === 0"
+                    (click)="selectAllCategoriesForIndex()">
+                    ✨ Ver todas ({{ songs.length }})
+                  </button>
+                  <button 
+                    class="category-clear-btn" 
+                    *ngIf="selectedCategoriesForIndex.length > 0"
+                    (click)="selectAllCategoriesForIndex()">
+                    ✕ Quitar filtros
+                  </button>
+                </div>
+              </div>
+              <div class="category-chips-grid">
+                <button 
+                  class="index-category-chip" 
+                  *ngFor="let cat of categories"
+                  [class.selected]="selectedCategoriesForIndex.includes(cat)"
+                  (click)="toggleCategoryForIndex(cat)">
+                  <span class="chip-checkbox">
+                    {{ selectedCategoriesForIndex.includes(cat) ? '☑' : '☐' }}
+                  </span>
+                  <span class="chip-text">{{ cat }}</span>
+                  <span class="chip-badge">{{ getCategorySongCount(cat) }}</span>
+                </button>
+              </div>
+            </div>
+
             <div class="index-toolbar">
               <div class="index-sort-buttons">
                 <span class="sort-label">Ordenar:</span>
@@ -93,6 +133,10 @@
                   (click)="setSort('category')">
                   📁 Categoría {{ indexSortBy === 'category' ? (sortDirection === 'asc' ? '↑' : '↓') : '' }}
                 </button>
+              </div>
+
+              <div class="index-stats-tag">
+                Mostrando <strong>{{ sortedIndexSongs.length }}</strong> de {{ songs.length }} canciones
               </div>
 
               <div class="index-admin-actions" *ngIf="isAdmin || canEditSongs">

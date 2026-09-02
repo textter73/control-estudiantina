@@ -1880,4 +1880,166 @@
   }
 }
 
+/* ===================================================
+   SELECTOR DE CATEGORÍAS (ÍNDICE GENERAL)
+   =================================================== */
+.index-category-selector {
+  background: white;
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1rem;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+
+.category-selector-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.85rem;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.selector-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.selector-icon {
+  font-size: 1.1rem;
+}
+
+.selector-title {
+  font-weight: 700;
+  color: #1e293b;
+  font-size: 0.95rem;
+}
+
+.selected-count-badge {
+  background: #f0fdfa;
+  color: #0f6b68;
+  border: 1px solid #99f6e4;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.15rem 0.6rem;
+  border-radius: 12px;
+}
+
+.selector-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.category-select-all-btn {
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  color: #475569;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.35rem 0.75rem;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.category-select-all-btn:hover {
+  background: #e2e8f0;
+}
+
+.category-select-all-btn.active {
+  background: #189d98;
+  color: white;
+  border-color: #189d98;
+  box-shadow: 0 2px 5px rgba(24, 157, 152, 0.25);
+}
+
+.category-clear-btn {
+  background: transparent;
+  border: none;
+  color: #ef4444;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0.35rem 0.5rem;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.category-clear-btn:hover {
+  background: #fee2e2;
+}
+
+.category-chips-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.index-category-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.75rem;
+  background: #f8fafc;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 20px;
+  font-size: 0.83rem;
+  color: #334155;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.index-category-chip:hover {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+  transform: translateY(-1px);
+}
+
+.index-category-chip.selected {
+  background: #189d98;
+  border-color: #0f6b68;
+  color: white;
+  font-weight: 600;
+  box-shadow: 0 2px 6px rgba(24, 157, 152, 0.3);
+}
+
+.chip-checkbox {
+  font-size: 0.95rem;
+  line-height: 1;
+}
+
+.chip-text {
+  text-transform: capitalize;
+}
+
+.chip-badge {
+  background: #e2e8f0;
+  color: #475569;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0.1rem 0.45rem;
+  border-radius: 10px;
+}
+
+.index-category-chip.selected .chip-badge {
+  background: rgba(255, 255, 255, 0.28);
+  color: white;
+}
+
+.index-stats-tag {
+  font-size: 0.85rem;
+  color: #64748b;
+  margin-left: auto;
+  padding: 0 0.5rem;
+}
+
+.index-stats-tag strong {
+  color: #0f6b68;
+}
+
+
 

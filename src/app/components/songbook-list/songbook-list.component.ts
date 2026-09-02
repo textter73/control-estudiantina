@@ -23,6 +23,7 @@ export class SongbookListComponent implements OnInit, OnDestroy {
   isEditing = false;
   songsByCategory: { [key: string]: any[] } = {};
   activeTab: 'index' | 'categories' = 'categories';
+  selectedCategoriesForIndex: string[] = [];
   indexSortBy: 'number' | 'title' | 'category' = 'number';
   sortDirection: 'asc' | 'desc' = 'asc';
   editedOrderNumber: number | null = null;
@@ -230,11 +231,30 @@ export class SongbookListComponent implements OnInit, OnDestroy {
     this.categories = uniqueCategories.filter(category => category); // Filtrar valores vacíos
   }
 
+  toggleCategoryForIndex(category: string) {
+    const idx = this.selectedCategoriesForIndex.indexOf(category);
+    if (idx >= 0) {
+      this.selectedCategoriesForIndex.splice(idx, 1);
+    } else {
+      this.selectedCategoriesForIndex.push(category);
+    }
+  }
+
+  selectAllCategoriesForIndex() {
+    this.selectedCategoriesForIndex = [];
+  }
+
+  getCategorySongCount(category: string): number {
+    return this.songsByCategory[category]?.length || 0;
+  }
+
   get sortedIndexSongs(): any[] {
     let result = [...this.songs];
 
-    // Filtrar por categoría seleccionada si hay una
-    if (this.selectedCategory) {
+    // Filtrar por categorías seleccionadas en el índice general (multiselección)
+    if (this.selectedCategoriesForIndex.length > 0) {
+      result = result.filter(s => this.selectedCategoriesForIndex.includes(s.category));
+    } else if (this.selectedCategory) {
       result = result.filter(s => s.category === this.selectedCategory);
     }
 

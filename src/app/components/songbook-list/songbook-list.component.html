@@ -162,7 +162,7 @@
                   <div class="index-song-meta">
                     <span class="index-meta-item">📁 {{ song.category || 'Sin categoría' }}</span>
                     <span class="index-meta-item" *ngIf="song.composers">✍️ {{ song.composers }}</span>
-                    <span class="index-meta-item video-tag" *ngIf="song.youtubeLink">🎥 Video</span>
+                    <span class="index-meta-item spotify-tag" *ngIf="song.youtubeLink">🟢 Spotify</span>
                   </div>
                 </div>
                 <div class="index-action-icon">›</div>
@@ -313,11 +313,11 @@
                       type="text">
                   </div>
                   <div class="edit-row">
-                    <label>Enlace de YouTube:</label>
+                    <label>🎧 Enlace de Spotify / Audio:</label>
                     <input 
                       [(ngModel)]="editedYoutubeLink"
                       class="edit-input"
-                      placeholder="https://www.youtube.com/watch?v=..."
+                      placeholder="https://open.spotify.com/... o enlace de audio"
                       type="url">
                   </div>
                 </div>
@@ -371,34 +371,26 @@
                   </button>
                 </div>
                 
-                <!-- Sección de Video -->
-                <div class="video-section" *ngIf="selectedSong.youtubeLink">
-                  <h3>Video</h3>
-                  <div class="video-container" 
-                       [class.active]="isWatchingVideo"
-                       [class.floating]="isVideoFloating"
-                       (mouseenter)="onVideoInteractionStart($event)" 
-                       (mouseleave)="onVideoInteractionEnd()"
-                       (click)="onVideoInteractionStart($event)"
-                       (touchstart)="onVideoInteractionStart($event)">
-                    <iframe 
-                      [src]="getYouTubeEmbedUrl(selectedSong.youtubeLink)" 
-                      frameborder="0" 
-                      allowfullscreen
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                      class="youtube-iframe"
-                      (mouseenter)="onVideoInteractionStart($event)"
-                      (click)="onVideoInteractionStart($event)">
-                    </iframe>
-                    <!-- Botón para minimizar/maximizar video -->
-                    <button class="video-toggle-btn" 
-                            *ngIf="isWatchingVideo"
-                            (click)="toggleVideoFloat($event)"
-                            [title]="isVideoFloating ? 'Maximizar video' : 'Minimizar video'">
-                      {{ isVideoFloating ? '⬆️' : '⬇️' }}
-                    </button>
+                <!-- Sección de Enlace de Spotify / Audio -->
+                <div class="spotify-link-section" *ngIf="selectedSong.youtubeLink">
+                  <h3>🎵 Escuchar Canción</h3>
+                  <div class="spotify-card">
+                    <div class="spotify-info">
+                      <span class="spotify-icon">🟢</span>
+                      <div class="spotify-text-wrap">
+                        <span class="spotify-title">Spotify / Audio</span>
+                        <span class="spotify-url" [title]="selectedSong.youtubeLink">{{ selectedSong.youtubeLink }}</span>
+                      </div>
+                    </div>
+                    <a 
+                      [href]="selectedSong.youtubeLink" 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      class="spotify-open-btn"
+                      (click)="$event.stopPropagation()">
+                      🎧 Abrir en Spotify ↗
+                    </a>
                   </div>
-                  <p class="video-hint">💡 Tip: Haz clic en el video para interactuar libremente con él</p>
                 </div>
               </div>
             </div>

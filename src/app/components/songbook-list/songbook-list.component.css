@@ -2041,5 +2041,104 @@
   color: #0f6b68;
 }
 
+/* ===================================================
+   ENLACE DE SPOTIFY / AUDIO
+   =================================================== */
+.spotify-link-section {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #e2e8f0;
+}
+
+.spotify-link-section h3 {
+  color: #1e293b;
+  font-size: 1.15rem;
+  margin-bottom: 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.spotify-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(135deg, #0d1117 0%, #161b22 100%);
+  border: 1px solid #30363d;
+  padding: 1rem 1.25rem;
+  border-radius: 14px;
+  gap: 1rem;
+  flex-wrap: wrap;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+}
+
+.spotify-info {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.spotify-icon {
+  font-size: 1.8rem;
+  line-height: 1;
+  filter: drop-shadow(0 2px 4px rgba(29, 185, 84, 0.4));
+}
+
+.spotify-text-wrap {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.spotify-title {
+  color: #f0f6fc;
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.spotify-url {
+  color: #8b949e;
+  font-size: 0.8rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 320px;
+}
+
+.spotify-open-btn {
+  background: #1DB954;
+  color: white;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 0.9rem;
+  padding: 0.65rem 1.25rem;
+  border-radius: 30px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(29, 185, 84, 0.35);
+  white-space: nowrap;
+}
+
+.spotify-open-btn:hover {
+  background: #1ed760;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(29, 185, 84, 0.5);
+  color: white;
+}
+
+.spotify-open-btn:active {
+  transform: translateY(0);
+}
+
+.spotify-tag {
+  background: #dcfce7;
+  color: #15803d;
+  font-weight: 600;
+}
+
 
 

@@ -18,6 +18,8 @@ export class EventManagementComponent implements OnInit {
   showCreateForm = false;
   activeTab: string = 'open';
   isCreatingEvent = false;
+  isEditingEvent = false;
+  editingEvent: any = null;
   isChangingStatus: { [key: string]: boolean } = {};
   
   newEvent = {
@@ -256,6 +258,58 @@ export class EventManagementComponent implements OnInit {
       status: 'abierto'
     };
     this.showCreateForm = false;
+    this.editingEvent = null;
+  }
+
+  openEditForm(event: any) {
+    this.editingEvent = {
+      id: event.id,
+      title: event.title || '',
+      description: event.description || '',
+      date: event.date || '',
+      location: event.location || '',
+      meetingPoint: event.meetingPoint || '',
+      meetingTime: event.meetingTime || '',
+      startTime: event.startTime || '',
+      endTime: event.endTime || '',
+      hasTravelCost: event.hasTravelCost || false,
+      travelCost: event.travelCost || '',
+      requiresTransport: event.requiresTransport || false,
+      attire: event.attire || 'ropa-normal',
+      type: event.type || 'ensayo',
+      status: event.status || 'abierto'
+    };
+    this.showCreateForm = true;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  async updateEvent() {
+    if (this.isCreatingEvent) return;
+
+    if (!this.editingEvent.title || !this.editingEvent.date) {
+      Swal.fire('Error', 'Título y fecha son obligatorios', 'error');
+      return;
+    }
+
+    this.isCreatingEvent = true;
+
+    Swal.fire({
+      title: 'Guardando cambios...',
+      allowOutsideClick: false,
+      didOpen: () => { Swal.showLoading(); }
+    });
+
+    try {
+      const { id, ...dataToUpdate } = this.editingEvent;
+      dataToUpdate.updatedAt = new Date();
+      await this.firestore.collection('events').doc(id).update(dataToUpdate);
+      Swal.fire('Éxito', 'Evento actualizado correctamente', 'success');
+      this.resetForm();
+    } catch (error) {
+      Swal.fire('Error', 'Error al actualizar el evento', 'error');
+    } finally {
+      this.isCreatingEvent = false;
+    }
   }
 
   viewEventDetails(eventId: string) {

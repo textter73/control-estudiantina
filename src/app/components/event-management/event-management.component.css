@@ -537,3 +537,20 @@
   padding: 2rem;
   box-shadow: 0 5px 15px rgba(0,0,0,0.08);
 }
+
+.edit-btn {
+  background: transparent;
+  color: #189d98;
+  border: 1.5px solid #189d98;
+  padding: 0.4rem 0.85rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.edit-btn:hover {
+  background: #189d98;
+  color: white;
+}

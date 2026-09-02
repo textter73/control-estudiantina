@@ -12,18 +12,18 @@
   </header>
 
   <main class="event-main">
-    <!-- Formulario de creación -->
+    <!-- Formulario de creación / edición -->
     <div class="create-form-container" *ngIf="showCreateForm">
       <div class="create-form">
-        <h3>Nuevo Evento</h3>
+        <h3>{{ editingEvent ? 'Editar Evento' : 'Nuevo Evento' }}</h3>
         <div class="form-row">
           <div class="form-group">
             <label>Título *</label>
-            <input type="text" [(ngModel)]="newEvent.title" placeholder="Nombre del evento">
+            <input type="text" [(ngModel)]="editingEvent ? editingEvent.title : newEvent.title" placeholder="Nombre del evento">
           </div>
           <div class="form-group">
             <label>Tipo</label>
-            <select [(ngModel)]="newEvent.type">
+            <select [(ngModel)]="editingEvent ? editingEvent.type : newEvent.type">
               <option value="ensayo">🎵 Ensayo</option>
               <option value="misa">⛪ Misa Dominical</option>
               <option value="callejoneada">🎭 Callejoneada</option>
@@ -37,7 +37,7 @@
         <div class="form-row">
           <div class="form-group">
             <label>Vestimenta</label>
-            <select [(ngModel)]="newEvent.attire">
+            <select [(ngModel)]="editingEvent ? editingEvent.attire : newEvent.attire">
               <option value="de-gala">De Gala</option>
               <option value="de-coro">De Coro</option>
               <option value="ropa-normal">Ropa Normal</option>
@@ -48,45 +48,45 @@
         <div class="form-row">
           <div class="form-group">
             <label>Fecha *</label>
-            <input type="date" [(ngModel)]="newEvent.date">
+            <input type="date" [(ngModel)]="editingEvent ? editingEvent.date : newEvent.date">
           </div>
           <div class="form-group">
             <label>Ubicación del Evento</label>
-            <input type="text" [(ngModel)]="newEvent.location" placeholder="Lugar donde se realizará">
+            <input type="text" [(ngModel)]="editingEvent ? editingEvent.location : newEvent.location" placeholder="Lugar donde se realizará">
           </div>
         </div>
 
         <div class="form-row">
           <div class="form-group">
             <label>Punto de Reunión</label>
-            <input type="text" [(ngModel)]="newEvent.meetingPoint" placeholder="Donde nos reunimos">
+            <input type="text" [(ngModel)]="editingEvent ? editingEvent.meetingPoint : newEvent.meetingPoint" placeholder="Donde nos reunimos">
           </div>
           <div class="form-group">
             <label>Hora de Reunión</label>
-            <input type="time" [(ngModel)]="newEvent.meetingTime">
+            <input type="time" [(ngModel)]="editingEvent ? editingEvent.meetingTime : newEvent.meetingTime">
           </div>
         </div>
 
         <div class="form-row">
           <div class="form-group">
             <label>Hora de Inicio</label>
-            <input type="time" [(ngModel)]="newEvent.startTime">
+            <input type="time" [(ngModel)]="editingEvent ? editingEvent.startTime : newEvent.startTime">
           </div>
           <div class="form-group">
             <label>Hora de Fin</label>
-            <input type="time" [(ngModel)]="newEvent.endTime">
+            <input type="time" [(ngModel)]="editingEvent ? editingEvent.endTime : newEvent.endTime">
           </div>
         </div>
 
         <div class="form-group">
           <label>Descripción</label>
-          <textarea [(ngModel)]="newEvent.description" placeholder="Detalles del evento" rows="3"></textarea>
+          <textarea [(ngModel)]="editingEvent ? editingEvent.description : newEvent.description" placeholder="Detalles del evento" rows="3"></textarea>
         </div>
 
         <div class="cost-section">
           <div class="form-group checkbox-group">
             <label class="checkbox-label">
-              <input type="checkbox" [(ngModel)]="newEvent.requiresTransport">
+              <input type="checkbox" [(ngModel)]="editingEvent ? editingEvent.requiresTransport : newEvent.requiresTransport">
               <span class="checkmark"></span>
               ¿Se requiere transporte?
             </label>
@@ -94,23 +94,23 @@
           
           <div class="form-group checkbox-group">
             <label class="checkbox-label">
-              <input type="checkbox" [(ngModel)]="newEvent.hasTravelCost">
+              <input type="checkbox" [(ngModel)]="editingEvent ? editingEvent.hasTravelCost : newEvent.hasTravelCost">
               <span class="checkmark"></span>
               ¿Tiene costo de traslado?
             </label>
           </div>
           
-          <div class="form-group" *ngIf="newEvent.hasTravelCost">
+          <div class="form-group" *ngIf="editingEvent ? editingEvent.hasTravelCost : newEvent.hasTravelCost">
             <label>Costo Aproximado del Traslado</label>
-            <input type="text" [(ngModel)]="newEvent.travelCost" placeholder="Ej: $50 - $80 por persona">
+            <input type="text" [(ngModel)]="editingEvent ? editingEvent.travelCost : newEvent.travelCost" placeholder="Ej: $50 - $80 por persona">
           </div>
         </div>
 
         <div class="form-actions">
           <button class="cancel-btn" (click)="resetForm()" [disabled]="isCreatingEvent">Cancelar</button>
-          <button class="save-btn" (click)="createEvent()" [disabled]="isCreatingEvent">
-            <span *ngIf="!isCreatingEvent">Crear Evento</span>
-            <span *ngIf="isCreatingEvent">⏳ Creando...</span>
+          <button class="save-btn" (click)="editingEvent ? updateEvent() : createEvent()" [disabled]="isCreatingEvent">
+            <span *ngIf="!isCreatingEvent">{{ editingEvent ? '💾 Guardar Cambios' : 'Crear Evento' }}</span>
+            <span *ngIf="isCreatingEvent">⏳ {{ editingEvent ? 'Guardando...' : 'Creando...' }}</span>
           </button>
         </div>
       </div>
@@ -203,6 +203,10 @@
           <div class="event-actions">
             <button class="view-btn" (click)="viewEventDetails(event.id)">
               Ver Detalles
+            </button>
+
+            <button class="edit-btn" (click)="openEditForm(event)">
+              ✏️ Editar
             </button>
             
             <div class="status-actions" *ngIf="event.status !== 'finalizado' && event.status !== 'cancelado'">

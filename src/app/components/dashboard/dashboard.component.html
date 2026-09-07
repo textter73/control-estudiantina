@@ -330,6 +330,10 @@
           <div class="events-list">
             <div class="event-item" *ngFor="let event of group.events">
               <div class="event-main-info">
+                <div class="event-badges" style="margin-bottom: 0.6rem;">
+                  <span class="type-badge" [class]="event.type">{{ getTypeText(event.type) }}</span>
+                  <span class="attire-badge" [class]="event.attire">{{ getAttireText(event.attire) }}</span>
+                </div>
                 <div class="event-header">
                   <div class="event-title-container">
                     <span class="event-date-chip">
@@ -338,10 +342,6 @@
                     </span>
                     <span class="date-title-divider">-</span>
                     <h4 class="event-title">{{ event.title }}</h4>
-                  </div>
-                  <div class="event-badges">
-                    <span class="type-badge" [class]="event.type">{{ getTypeText(event.type) }}</span>
-                    <span class="attire-badge" [class]="event.attire">{{ getAttireText(event.attire) }}</span>
                   </div>
                 </div>
                 

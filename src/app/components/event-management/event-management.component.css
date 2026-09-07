@@ -11,7 +11,7 @@
 }
 
 .header-content {
-  max-width: 1200px;
+  max-width: 95%;
   margin: 0 auto;
   padding: 0 1rem;
   display: flex;
@@ -35,7 +35,7 @@
 }
 
 .event-main {
-  max-width: 1200px;
+  max-width: 95%;
   margin: 0 auto;
   padding: 2rem;
 }
@@ -147,10 +147,8 @@
 }
 
 .events-container {
-  background: white;
-  border-radius: 15px;
-  padding: 2rem;
-  box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+  /* Contenedor transparente para evitar exceso de tarjetas anidadas */
+  margin-top: 1rem;
 }
 
 .events-grid {

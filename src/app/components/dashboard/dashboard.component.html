@@ -328,7 +328,7 @@
           </div>
 
           <div class="events-list">
-            <div class="event-item" *ngFor="let event of group.events">
+            <div class="event-item" *ngFor="let event of group.events" [ngClass]="getConfirmationClass(event.userConfirmation)">
               <div class="event-main-info">
                 <div class="event-badges" style="margin-bottom: 0.6rem;">
                   <span class="type-badge" [class]="event.type">{{ getTypeText(event.type) }}</span>

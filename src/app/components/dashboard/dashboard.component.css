@@ -549,43 +549,74 @@
   gap: 0.7rem;
 }
 
+/* Estilos dinámicos para toda la tarjeta del evento según confirmación */
+.event-item.confirmation-yes {
+  border-left-color: #10b981;
+  background: linear-gradient(to right, rgba(16, 185, 129, 0.05), #ffffff 30%);
+}
+
+.event-item.confirmation-no {
+  border-left-color: #ef4444;
+  background: linear-gradient(to right, rgba(239, 68, 68, 0.05), #ffffff 30%);
+}
+
+.event-item.confirmation-maybe {
+  border-left-color: #f59e0b;
+  background: linear-gradient(to right, rgba(245, 158, 11, 0.05), #ffffff 30%);
+}
+
+.event-item.confirmation-pending {
+  border-left-color: #94a3b8;
+  background: linear-gradient(to right, rgba(148, 163, 184, 0.05), #ffffff 30%);
+}
+
 .confirmation-status {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 0.25rem;
+  gap: 0.35rem;
 }
 
 .confirmation-label {
-  font-size: 0.75rem;
-  color: #666;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #475569;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .confirmation-badge {
-  padding: 0.25rem 0.7rem;
-  border-radius: 12px;
-  font-size: 0.75rem;
-  font-weight: 600;
+  padding: 0.4rem 1rem;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.08);
 }
 
-.confirmation-pending {
-  background: #fff3e0;
-  color: #f57c00;
+.confirmation-badge.confirmation-pending {
+  background: #f1f5f9;
+  color: #64748b;
+  border: 1px solid #cbd5e1;
 }
 
-.confirmation-yes {
-  background: #e8f5e8;
-  color: #2e7d32;
+.confirmation-badge.confirmation-yes {
+  background: #ecfdf5;
+  color: #059669;
+  border: 1px solid #a7f3d0;
 }
 
-.confirmation-no {
-  background: #ffebee;
-  color: #c62828;
+.confirmation-badge.confirmation-no {
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
 }
 
-.confirmation-maybe {
-  background: #fff3e0;
-  color: #f57c00;
+.confirmation-badge.confirmation-maybe {
+  background: #fffbeb;
+  color: #d97706;
+  border: 1px solid #fde68a;
 }
 
 .view-event-btn {

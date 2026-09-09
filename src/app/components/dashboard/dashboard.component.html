@@ -382,14 +382,14 @@
                   <button class="transport-btn" (click)="viewTransportMap(event.id)">
                     🗺️ Ver Mapa de Asientos
                   </button>
-                  <div class="payment-status-info">
-                    <div class="payment-status" [class]="getPaymentStatusClass(getPaymentStatusForEvent(event.id).status)">
-                      <span class="payment-label">Estado de Pago:</span>
+                  <div class="payment-status-info" [class]="getPaymentStatusClass(getPaymentStatusForEvent(event.id).status)">
+                    <div class="payment-status">
+                      <span class="payment-label">Boleto de Transporte:</span>
                       <span class="payment-text">{{ getPaymentStatusText(getPaymentStatusForEvent(event.id).status) }}</span>
                     </div>
                     <div class="payment-amounts" *ngIf="getPaymentStatusForEvent(event.id).total > 0">
                       <span class="payment-amount">Total: ${{ getPaymentStatusForEvent(event.id).total }}</span>
-                      <span class="payment-paid" *ngIf="getPaymentStatusForEvent(event.id).paid > 0">Pagado: ${{ getPaymentStatusForEvent(event.id).paid }}</span>
+                      <span class="payment-paid-text" *ngIf="getPaymentStatusForEvent(event.id).paid > 0">Pagado: ${{ getPaymentStatusForEvent(event.id).paid }}</span>
                     </div>
                   </div>
                   <div class="cost-info" *ngIf="getTransportCost(event.id) > 0 && getPaymentStatusForEvent(event.id).status === 'sin-boletos'">

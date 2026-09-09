@@ -361,8 +361,14 @@
               <div class="event-confirmation">
                 <div class="confirmation-status">
                   <span class="confirmation-label">Tu confirmación:</span>
-                  <span class="confirmation-badge" [class]="getConfirmationClass(event.userConfirmation)">
+                  <span class="confirmation-badge" [class]="getConfirmationClass(event.userConfirmation)"
+                        *ngIf="event.userConfirmation || (!hasTransportConfig(event.id) && !hasAnyTicketsDistributed(event.id))">
                     {{ getConfirmationText(event.userConfirmation) }}
+                  </span>
+                  <span class="confirmation-badge confirmation-closed" 
+                        *ngIf="!event.userConfirmation && (hasTransportConfig(event.id) || hasAnyTicketsDistributed(event.id))"
+                        style="background: #fee2e2; color: #991b1b; border: 1px solid #fecaca;">
+                    CERRADA
                   </span>
                 </div>
                 <div class="companions-info" *ngIf="event.requiresTransport && event.userConfirmation?.companions !== undefined && event.userConfirmation?.companions !== null">

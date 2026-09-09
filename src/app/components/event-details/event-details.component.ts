@@ -20,6 +20,7 @@ export class EventDetailsComponent implements OnInit {
   selectedResponse: string = '';
   companions: number = 0;
   isSubmitting = false;
+  disableConfirm = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -40,6 +41,7 @@ export class EventDetailsComponent implements OnInit {
 
   ngOnInit() {
     this.eventId = this.route.snapshot.params['id'];
+    this.disableConfirm = this.route.snapshot.queryParams['disableConfirm'] === 'true';
     
     this.afAuth.authState.subscribe(async (user) => {
       if (user) {

@@ -465,7 +465,13 @@ export class DashboardComponent implements OnInit {
   }
 
   viewEventDetails(eventId: string) {
-    this.router.navigate(['/event-details', eventId], { queryParams: { returnUrl: '/dashboard' } });
+    const isClosed = this.hasTransportConfig(eventId) || this.hasAnyTicketsDistributed(eventId);
+    this.router.navigate(['/event-details', eventId], { 
+      queryParams: { 
+        returnUrl: '/dashboard',
+        disableConfirm: isClosed ? 'true' : 'false'
+      } 
+    });
   }
 
   getTotalPeopleForEvent(event: any): number {
@@ -613,17 +619,26 @@ export class DashboardComponent implements OnInit {
     return Math.round(totalCost * 100) / 100;
   }
 
+  globalEventsWithTickets = new Set<string>();
+
   loadTicketSales() {
     if (!this.user) return;
     
     const userName = this.userProfile?.name || this.user?.email;
     this.firestore.collection('ticket-sales').valueChanges({ idField: 'id' }).subscribe((allTickets: any[]) => {
+      // Guardar un registro de qué eventos ya tienen boletos generados en general
+      this.globalEventsWithTickets = new Set(allTickets.map(t => t.eventId));
+      
       // Filtrar tickets propios y de acompañantes
       this.ticketSales = allTickets.filter(ticket => 
         ticket.passengerName === userName || 
         ticket.passengerName?.includes(`Acompañante de ${userName}`)
       );
     });
+  }
+
+  hasAnyTicketsDistributed(eventId: string): boolean {
+    return this.globalEventsWithTickets.has(eventId);
   }
 
   getMyTicketsForEvent(eventId: string): any[] {

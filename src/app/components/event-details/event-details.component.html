@@ -118,7 +118,7 @@
         <p class="final-note">Tu confirmación ha sido registrada y no puede ser modificada.</p>
       </div>
 
-      <div class="response-section" *ngIf="!userConfirmation">
+      <div class="response-section" *ngIf="!userConfirmation && !disableConfirm">
         <p class="instruction-text">Selecciona tu confirmación de asistencia:</p>
         
         <div class="response-buttons">
@@ -169,6 +169,13 @@
           <span *ngIf="!isSubmitting">Confirmar Asistencia</span>
           <span *ngIf="isSubmitting">⏳ Confirmando...</span>
         </button>
+      </div>
+
+      <div class="response-section" *ngIf="!userConfirmation && disableConfirm">
+        <div style="background: #fee2e2; padding: 1.5rem; border-radius: 12px; border: 1px solid #fecaca; text-align: center; margin-bottom: 1.5rem;">
+          <h4 style="color: #991b1b; margin-bottom: 0.5rem;">Asistencia Cerrada</h4>
+          <p style="color: #7f1d1d; margin: 0;">Ya no es posible confirmar asistencia porque los boletos o lugares de transporte ya han sido distribuidos para este evento.</p>
+        </div>
       </div>
 
       <div class="stats-summary">

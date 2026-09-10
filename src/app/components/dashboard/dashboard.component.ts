@@ -6,6 +6,8 @@ import { AuthService } from '../../services/auth.service';
 import { UserEvaluationService } from '../../services/user-evaluation.service';
 import { InsumoService } from '../../services/insumo.service';
 import { NotificationService } from '../../services/notification.service';
+import { MaintenanceService } from '../../services/maintenance.service';
+import { InstrumentMaintenance } from '../../models/maintenance.model';
 import { Insumo } from '../../models/insumo.model';
 import Swal from 'sweetalert2';
 import jsPDF from 'jspdf';
@@ -97,6 +99,10 @@ export class DashboardComponent implements OnInit {
   insumosStockBajo: Insumo[] = [];
   insumosAgrupadosPorCategoria: { categoria: string, insumos: Insumo[], count: number, expanded: boolean }[] = [];
   
+  // Mantenimiento de instrumento
+  latestMaintenance: InstrumentMaintenance | null = null;
+  maintenanceLoaded = false;
+
   // Notificaciones
   notificationsEnabled: boolean = false;
   
@@ -197,7 +203,8 @@ export class DashboardComponent implements OnInit {
     private authService: AuthService,
     private insumoService: InsumoService,
     private evaluationService: UserEvaluationService,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private maintenanceService: MaintenanceService
   ) {}
 
   ngOnInit() {
@@ -207,6 +214,7 @@ export class DashboardComponent implements OnInit {
         const userDoc = await this.firestore.collection('users').doc(user.uid).get().toPromise();
         this.userProfile = userDoc?.data();
         this.loadUserLevel(user.uid); // Cargar nivel del usuario
+        this.loadLatestMaintenance(user.uid); // Cargar último mantenimiento
         // Cargar última evaluación - ahora con el nombre del perfil disponible
         this.loadLastEvaluation(user.uid, this.userProfile?.name); 
         this.loadAttendanceData();
@@ -709,6 +717,23 @@ export class DashboardComponent implements OnInit {
 
   getUserName(userId: string): string {
     return this.usersMap[userId] || 'Usuario desconocido';
+  }
+
+  loadLatestMaintenance(userId: string) {
+    this.maintenanceService.getLatestMaintenanceForUser(userId).subscribe(record => {
+      this.latestMaintenance = record;
+      this.maintenanceLoaded = true;
+    });
+  }
+
+  isMaintenanceExpired(date: any): boolean {
+    if (!date) return false;
+    const nextDate = date.toDate ? date.toDate() : new Date(date);
+    const today = new Date();
+    // Set time to 00:00:00 to only compare dates
+    today.setHours(0,0,0,0);
+    nextDate.setHours(0,0,0,0);
+    return nextDate < today;
   }
 
   viewCardMovements() {

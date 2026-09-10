@@ -6322,3 +6322,141 @@
     font-size: 0.9rem;
   }
 }
+
+/* =========================================================
+   ESTILOS PARA MANTENIMIENTO DE INSTRUMENTOS
+   ========================================================= */
+.maintenance-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 1.5rem;
+  background: #f8fafc;
+  border-radius: 10px;
+  border: 1px dashed #cbd5e1;
+  margin-top: 10px;
+}
+
+.maintenance-state .state-icon {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+}
+
+.maintenance-state.no-instrument {
+  background: #fffbeb;
+  border-color: #fcd34d;
+}
+
+.maintenance-state.no-maintenance {
+  background: #f1f5f9;
+}
+
+.maintenance-state.has-maintenance {
+  background: #ecfdf5;
+  border: 1px solid #6ee7b7;
+}
+
+.maintenance-info-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  width: 100%;
+  text-align: left;
+}
+
+.info-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.8rem;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.info-item.next-date {
+  background: #fef3c7;
+  border-left: 4px solid #d97706;
+}
+
+.info-label {
+  font-weight: 600;
+  color: #475569;
+}
+
+.info-value {
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.info-value.highlight {
+  color: #b45309;
+  font-size: 1.1rem;
+}
+
+@media (min-width: 600px) {
+  .maintenance-info-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .info-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+}
+
+.maintenance-description {
+  margin-top: 1rem;
+  width: 100%;
+  text-align: left;
+  background: white;
+  padding: 1rem;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  border-left: 4px solid #189d98;
+}
+
+.maintenance-description p {
+  margin: 0.5rem 0 0 0;
+  color: #334155;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.status-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.status-badge {
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.status-badge.on-time {
+  background-color: #dcfce7;
+  color: #166534;
+  border: 1px solid #86efac;
+}
+
+.status-badge.expired {
+  background-color: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fca5a5;
+}
+
+.info-item.next-date.expired {
+  background: #fef2f2;
+  border-left: 4px solid #ef4444;
+}
+
+.info-item.next-date.expired .highlight {
+  color: #b91c1c;
+}

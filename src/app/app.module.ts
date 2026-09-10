@@ -42,6 +42,7 @@ import { InsumoService } from './services/insumo.service';
 import { UserEvaluationService } from './services/user-evaluation.service';
 import { ServiceWorkerModule } from '@angular/service-worker';
 import { environment } from '../environments/environment';
+import { InstrumentMaintenanceComponent } from './components/instrument-maintenance/instrument-maintenance.component';
 
 @NgModule({
   declarations: [
@@ -69,7 +70,8 @@ import { environment } from '../environments/environment';
     ContractDistributionComponent,
     PayrollHistoryComponent,
     CalendarViewComponent,
-    SafePipe
+    SafePipe,
+    InstrumentMaintenanceComponent
   ],
   imports: [
     BrowserModule,

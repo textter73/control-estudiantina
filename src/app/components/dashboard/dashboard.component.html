@@ -913,6 +913,55 @@
         </div>
       </div>
     </div>
+
+    <!-- Mantenimiento de Instrumento -->
+    <div class="user-card" *ngIf="maintenanceLoaded" style="margin-top: 2rem;">
+      <div class="card-header">
+        <h3>🛠️ Mantenimiento de Instrumento</h3>
+      </div>
+      <div class="card-body">
+        
+        <!-- Estado 1: Sin instrumento -->
+        <div class="maintenance-state no-instrument" *ngIf="!userProfile?.instrument">
+          <div class="state-icon">⚠️</div>
+          <p>Debes capturar tu instrumento principal en tu perfil para ser considerado para mantenimiento.</p>
+          <button class="action-btn" (click)="openProfileModal()" style="margin-top: 10px;">Capturar Instrumento</button>
+        </div>
+
+        <!-- Estado 2: Con instrumento pero sin mantenimiento -->
+        <div class="maintenance-state no-maintenance" *ngIf="userProfile?.instrument && !latestMaintenance">
+          <div class="state-icon">🎸</div>
+          <p>No se cuenta con ningún mantenimiento registrado para tu <strong>{{ userProfile.instrument }}</strong>.</p>
+        </div>
+
+        <!-- Estado 3: Con mantenimiento -->
+        <div class="maintenance-state has-maintenance" *ngIf="latestMaintenance">
+          <div class="maintenance-info-grid">
+            <div class="info-item">
+              <span class="info-label">Instrumento:</span>
+              <span class="info-value">🎸 {{ latestMaintenance.instrument }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Último Mantenimiento:</span>
+              <span class="info-value">{{ latestMaintenance.maintenanceDate?.toDate ? (latestMaintenance.maintenanceDate.toDate() | date:'mediumDate') : (latestMaintenance.maintenanceDate | date:'mediumDate') }}</span>
+            </div>
+            <div class="info-item next-date" [ngClass]="{'expired': isMaintenanceExpired(latestMaintenance.nextMaintenanceDate)}">
+              <span class="info-label">Próximo Mantenimiento:</span>
+              <div class="status-container">
+                <span class="info-value highlight">{{ latestMaintenance.nextMaintenanceDate?.toDate ? (latestMaintenance.nextMaintenanceDate.toDate() | date:'mediumDate') : (latestMaintenance.nextMaintenanceDate | date:'mediumDate') }}</span>
+                <span class="status-badge on-time" *ngIf="!isMaintenanceExpired(latestMaintenance.nextMaintenanceDate)">✅ A tiempo</span>
+                <span class="status-badge expired" *ngIf="isMaintenanceExpired(latestMaintenance.nextMaintenanceDate)">⚠️ Vencido</span>
+              </div>
+            </div>
+          </div>
+          <div class="maintenance-description">
+            <span class="info-label">Observaciones:</span>
+            <p>{{ latestMaintenance.description }}</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
   </main>
   
   <!-- Modal de Mapa de Asientos -->

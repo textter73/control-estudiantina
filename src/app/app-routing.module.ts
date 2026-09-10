@@ -30,6 +30,7 @@ import { MemberEvaluationComponent } from './components/member-evaluation/member
 import { ContractDistributionComponent } from './components/contract-distribution/contract-distribution.component';
 import { PayrollHistoryComponent } from './components/payroll-history/payroll-history.component';
 import { CalendarViewComponent } from './components/calendar-view/calendar-view.component';
+import { InstrumentMaintenanceComponent } from './components/instrument-maintenance/instrument-maintenance.component';
 
 const routes: Routes = [
   { path: '', component: LoginComponent },
@@ -55,6 +56,7 @@ const routes: Routes = [
   { path: 'contract-distribution', component: ContractDistributionComponent, canActivate: [AdminGuard] },
   { path: 'payroll-history', component: PayrollHistoryComponent, canActivate: [AdminGuard] },
   { path: 'calendar-view', component: CalendarViewComponent, canActivate: [AuthGuard] },
+  { path: 'instrument-maintenance', component: InstrumentMaintenanceComponent, canActivate: [InventoryGuard] },
   { path: '**', redirectTo: '' }
 ];
 

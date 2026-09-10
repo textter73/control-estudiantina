@@ -1,0 +1,103 @@
+<div class="maintenance-container">
+  <div class="header">
+    <button class="back-btn" routerLink="/dashboard">← Volver al Dashboard</button>
+    <h2>🛠️ Mantenimiento de Instrumentos</h2>
+    <p>Registra el mantenimiento de los instrumentos principales de los integrantes</p>
+  </div>
+
+  <div class="main-content">
+    <div class="users-list">
+      <h3>Integrantes con Instrumento Principal</h3>
+      <div class="list-group">
+        <button 
+          *ngFor="let user of usersWithInstruments" 
+          class="list-group-item" 
+          [class.active]="selectedUser?.uid === user.uid"
+          (click)="selectUser(user)">
+          <div class="user-info">
+            <span class="user-name">{{ user.name }}</span>
+            <div class="user-instrument-row">
+              <span class="user-instrument">🎸 {{ user.instrument }}</span>
+              <span class="status-badge on-time" *ngIf="user.maintenanceStatus === 'a-tiempo'">✅ A tiempo</span>
+              <span class="status-badge expired" *ngIf="user.maintenanceStatus === 'vencido'">⚠️ Vencido</span>
+              <span class="status-badge no-maintenance" *ngIf="user.maintenanceStatus === 'sin-mantenimiento'">Sin registro</span>
+            </div>
+          </div>
+        </button>
+        <div *ngIf="usersWithInstruments.length === 0" class="empty-state">
+          No hay usuarios que hayan capturado su instrumento principal.
+        </div>
+      </div>
+    </div>
+
+    <div class="maintenance-details" *ngIf="selectedUser">
+      <div class="details-header">
+        <h3>Historial de Mantenimiento</h3>
+        <button class="action-btn add-btn" (click)="openMaintenanceModal()">
+          + Registrar Mantenimiento
+        </button>
+      </div>
+
+      <div class="selected-user-card">
+        <h4>{{ selectedUser.name }}</h4>
+        <p>Instrumento: <strong>{{ selectedUser.instrument }}</strong></p>
+      </div>
+
+      <div class="history-list">
+        <div class="history-card" *ngFor="let record of maintenances">
+          <div class="history-date">
+            <span class="date-badge">Realizado: {{ record.maintenanceDate?.toDate ? (record.maintenanceDate.toDate() | date:'mediumDate') : (record.maintenanceDate | date:'mediumDate') }}</span>
+          </div>
+          <p class="history-desc"><strong>Descripción:</strong> {{ record.description }}</p>
+          <div class="history-footer">
+            <span class="history-cost">Costo: ${{ record.cost }}</span>
+            <span class="history-next">Próximo: {{ record.nextMaintenanceDate?.toDate ? (record.nextMaintenanceDate.toDate() | date:'mediumDate') : (record.nextMaintenanceDate | date:'mediumDate') }}</span>
+          </div>
+        </div>
+
+        <div *ngIf="maintenances.length === 0" class="empty-state">
+          Este instrumento no tiene mantenimientos registrados.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Registrar Mantenimiento -->
+  <div class="modal-backdrop" *ngIf="showModal" (click)="closeModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Registrar Mantenimiento</h3>
+        <button class="close-btn" (click)="closeModal()">✕</button>
+      </div>
+      
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Fecha del Mantenimiento</label>
+          <input type="date" [(ngModel)]="maintenanceForm.maintenanceDate" class="form-control">
+        </div>
+        
+        <div class="form-group">
+          <label>Descripción del Mantenimiento</label>
+          <textarea [(ngModel)]="maintenanceForm.description" rows="3" class="form-control" placeholder="¿Qué se le hizo al instrumento?"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>Costo del Mantenimiento ($)</label>
+          <input type="number" [(ngModel)]="maintenanceForm.cost" class="form-control" placeholder="0.00">
+        </div>
+
+        <div class="form-group">
+          <label>Próxima Fecha Sugerida (9 meses)</label>
+          <input type="date" [(ngModel)]="maintenanceForm.nextMaintenanceDate" class="form-control">
+        </div>
+      </div>
+      
+      <div class="modal-footer">
+        <button class="action-btn cancel-btn" (click)="closeModal()">Cancelar</button>
+        <button class="action-btn confirm-btn" (click)="saveMaintenance()" [disabled]="!maintenanceForm.description || !maintenanceForm.maintenanceDate">
+          Guardar Registro
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

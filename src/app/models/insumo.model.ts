@@ -24,6 +24,7 @@ export enum CategoriaInsumo {
   FUNDAS = 'fundas',
   GUITARRA = 'guitarra',
   TRICORDIO = 'tricordio',
+  BANDURRIA = 'bandurria',
   ACCESORIOS = 'accesorios',
   MANTENIMIENTO = 'mantenimiento',
   OTROS = 'otros'

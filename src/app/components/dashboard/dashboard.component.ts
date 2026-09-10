@@ -62,7 +62,8 @@ export class DashboardComponent implements OnInit {
     nickname: '',
     profileImage: '',
     birthDay: '',
-    birthMonth: ''
+    birthMonth: '',
+    instrument: ''
   };
   
   months = [
@@ -1535,7 +1536,8 @@ export class DashboardComponent implements OnInit {
       nickname: this.userProfile?.nickname || '',
       profileImage: this.userProfile?.profileImage || '',
       birthDay: this.userProfile?.birthDay || '',
-      birthMonth: this.userProfile?.birthMonth || ''
+      birthMonth: this.userProfile?.birthMonth || '',
+      instrument: this.userProfile?.instrument || ''
     };
     this.showProfileModal = true;
     
@@ -1578,6 +1580,7 @@ export class DashboardComponent implements OnInit {
         nickname: this.profileForm.nickname.trim(),
         birthDay: this.profileForm.birthDay,
         birthMonth: this.profileForm.birthMonth,
+        instrument: this.profileForm.instrument,
         updatedAt: new Date()
       };
 

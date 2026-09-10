@@ -15,6 +15,9 @@
         <div class="user-text">
           <span class="user-name">{{ userProfile?.nickname || userProfile?.name || 'Usuario' }}</span>
           <span class="user-email">{{ user?.email }}</span>
+          <span class="user-instrument" *ngIf="userProfile?.instrument">
+            🎸 {{ userProfile.instrument }}
+          </span>
           <!-- Información del nivel e impuesto -->
           <div class="user-level-info" *ngIf="userLevel">
             <span class="level-badge" [class]="getLevelBadgeClass(userLevel.level)">
@@ -1406,6 +1409,24 @@
               name="nickname"
               class="form-input"
               placeholder="Como te gusta que te digan">
+          </div>
+
+          <!-- Instrumento Principal -->
+          <div class="form-group">
+            <label for="instrument" class="form-label">Instrumento Principal</label>
+            <select 
+              id="instrument" 
+              [(ngModel)]="profileForm.instrument" 
+              name="instrument"
+              class="form-select">
+              <option value="">-- Selecciona un instrumento --</option>
+              <option value="Acordion">Acordion</option>
+              <option value="Guitarra">Guitarra</option>
+              <option value="Tricordio">Tricordio</option>
+              <option value="Bandurria">Bandurria</option>
+              <option value="Pandero">Pandero</option>
+              <option value="Cabaza">Cabaza</option>
+            </select>
           </div>
 
           <!-- Cumpleaños -->

@@ -10,6 +10,7 @@ export interface UserProfile {
   email: string;
   profiles: string[];
   createdAt: Date;
+  instrument?: string;
 }
 
 @Injectable({

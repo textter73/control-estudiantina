@@ -1370,10 +1370,10 @@ export class DashboardComponent implements OnInit {
   }
 
   loadAllMembersAttendance() {
-    // Calcular fecha de inicio (10 meses atrás)
-    const tenMonthsAgo = new Date();
-    tenMonthsAgo.setMonth(tenMonthsAgo.getMonth() - 10);
-    this.rankingStartDate = tenMonthsAgo;
+    // Calcular fecha de inicio (6 meses atrás)
+    const sixMonthsAgo = new Date();
+    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+    this.rankingStartDate = sixMonthsAgo;
 
     // Cargar usuarios y asistencias para calcular estadísticas de todos
     Promise.all([
@@ -1393,11 +1393,11 @@ export class DashboardComponent implements OnInit {
         user.email !== 'estudiantina@tonantzin.com'
       );
       
-      // Filtrar asistencias de los últimos 10 meses
+      // Filtrar asistencias de los últimos 6 meses
       const allAttendances = attendanceSnapshot?.docs.map(doc => doc.data()) || [];
       const attendances = allAttendances.filter((attendance: any) => {
         const attendanceDate = attendance.date?.toDate ? attendance.date.toDate() : new Date(attendance.date);
-        return attendanceDate >= tenMonthsAgo;
+        return attendanceDate >= sixMonthsAgo;
       });
       
       const memberStats = users.map(user => {

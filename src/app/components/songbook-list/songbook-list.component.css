@@ -56,44 +56,73 @@
 }
 
 .song-item {
-  padding: 0.8rem;
+  padding: 0.75rem 1rem;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  border-radius: 4px;
-  transition: background-color 0.2s;
+  justify-content: flex-start;
+  gap: 0.85rem;
+  border-radius: 8px;
+  border: 1px solid #edf2f7;
+  margin-bottom: 0.4rem;
+  background: #ffffff;
+  transition: all 0.2s ease;
   cursor: pointer;
 }
 
 .song-item:hover {
-  background: #f8f8f8;
+  background: #f8fafc;
+  border-color: #cbd5e1;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
 }
 
 .song-info {
   display: flex;
   flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  gap: 0.15rem;
 }
 
 .song-title {
-  font-weight: 500;
-  margin-bottom: 0.2rem;
+  font-weight: 600;
+  color: #1e293b;
+  font-size: 0.95rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .song-composer {
-  font-size: 0.9rem;
-  color: #666;
+  font-size: 0.82rem;
+  color: #64748b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.song-right-badges {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+  margin-left: auto;
 }
 
 .song-status {
-  min-width: 80px;
   text-align: right;
+  flex-shrink: 0;
 }
 
 .status-badge {
   padding: 0.2rem 0.6rem;
   border-radius: 12px;
-  font-size: 0.8rem;
-  background: #e0e0e0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: #f1f5f9;
+  color: #475569;
+  border: 1px solid #e2e8f0;
+  white-space: nowrap;
 }
 
 .status-ready {
@@ -474,6 +503,379 @@
   border-radius: 20px;
   font-size: 0.85rem;
   font-weight: 500;
+}
+
+/* Píldora de aprendizaje en filas de canciones */
+.learning-pill {
+  background: #ebf8ff;
+  color: #2b6cb0;
+  border: 1px solid #bee3f8;
+  padding: 0.2rem 0.6rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  white-space: nowrap;
+}
+
+.learning-pill.complete {
+  background: #f0fff4;
+  color: #22543d;
+  border-color: #9ae6b4;
+}
+
+/* ==========================================
+   PANEL DE CONTROL DE APRENDIZAJE EN EL MODAL
+   ========================================== */
+.learning-control-panel {
+  background: #ffffff;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 1.25rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+}
+
+.learning-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.learning-header-title {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.learning-icon {
+  font-size: 1.6rem;
+  background: #e6fffa;
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #b2f5ea;
+}
+
+.learning-titles-wrap h4 {
+  margin: 0;
+  color: #2d3748;
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.learning-subtitle {
+  color: #718096;
+  font-size: 0.8rem;
+  display: block;
+  margin-top: 2px;
+}
+
+.learning-header-actions {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.learning-quick-btn {
+  border: 1px solid #cbd5e0;
+  background: #f7fafc;
+  color: #4a5568;
+  padding: 0.35rem 0.7rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.learning-quick-btn.mark-all:hover {
+  background: #38a169;
+  color: white;
+  border-color: #38a169;
+}
+
+.learning-quick-btn.unmark-all:hover {
+  background: #e2e8f0;
+  color: #2d3748;
+}
+
+/* Barra de progreso */
+.learning-progress-wrap {
+  background: #f8fafc;
+  border: 1px solid #edf2f7;
+  padding: 0.85rem 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+}
+
+.learning-stats-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.stat-group {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.stat-badge {
+  font-size: 0.85rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: #4a5568;
+}
+
+.stat-badge.learned .stat-dot {
+  color: #38a169;
+}
+
+.stat-badge.pending .stat-dot {
+  color: #dd6b20;
+}
+
+.learning-percent-badge {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #3182ce;
+  background: #ebf8ff;
+  padding: 0.2rem 0.55rem;
+  border-radius: 6px;
+}
+
+.learning-percent-badge.complete {
+  color: #22543d;
+  background: #c6f6d5;
+}
+
+.learning-progress-bar {
+  height: 8px;
+  background: #e2e8f0;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.learning-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #189d98, #38a169);
+  border-radius: 999px;
+  transition: width 0.35s ease;
+}
+
+.learning-progress-fill.complete {
+  background: #38a169;
+}
+
+/* Toolbar de filtros y búsqueda */
+.learning-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.9rem;
+  flex-wrap: wrap;
+}
+
+.learning-filter-tabs {
+  display: flex;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.learning-filter-btn {
+  background: #edf2f7;
+  border: none;
+  color: #4a5568;
+  padding: 0.35rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.learning-filter-btn:hover {
+  background: #e2e8f0;
+}
+
+.learning-filter-btn.active {
+  background: #189d98;
+  color: white;
+}
+
+.learning-filter-btn.learned.active {
+  background: #38a169;
+  color: white;
+}
+
+.learning-filter-btn.pending.active {
+  background: #dd6b20;
+  color: white;
+}
+
+.learning-search-box {
+  flex: 1;
+  min-width: 180px;
+}
+
+.learning-search-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.4rem 0.75rem;
+  border: 1px solid #cbd5e0;
+  border-radius: 6px;
+  font-size: 0.82rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.learning-search-input:focus {
+  border-color: #189d98;
+  box-shadow: 0 0 0 2px rgba(24, 157, 152, 0.2);
+}
+
+/* Grid de integrantes */
+.learning-members-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 0.6rem;
+  max-height: 280px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.learning-members-grid::-webkit-scrollbar {
+  width: 6px;
+}
+
+.learning-members-grid::-webkit-scrollbar-thumb {
+  background: #cbd5e0;
+  border-radius: 3px;
+}
+
+.learning-member-card {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.55rem 0.75rem;
+  background: #f7fafc;
+  border: 1.5px solid #edf2f7;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.learning-member-card:hover {
+  background: #edf2f7;
+  border-color: #cbd5e0;
+  transform: translateY(-1px);
+}
+
+.learning-member-card.is-learned {
+  background: #f0fff4;
+  border-color: #c6f6d5;
+}
+
+.learning-member-card.is-learned:hover {
+  background: #e6fffa;
+  border-color: #9ae6b4;
+}
+
+.member-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #cbd5e0;
+  color: #2d3748;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.learning-member-card.is-learned .member-avatar {
+  background: #38a169;
+  color: white;
+}
+
+.member-details {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.member-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #2d3748;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.member-instrument {
+  font-size: 0.72rem;
+  color: #718096;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.learning-toggle-btn {
+  border: none;
+  padding: 0.3rem 0.6rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.2s;
+}
+
+.learning-toggle-btn.btn-learned {
+  background: #c6f6d5;
+  color: #22543d;
+}
+
+.learning-toggle-btn.btn-learned:hover {
+  background: #fed7d7;
+  color: #9b2c2c;
+}
+
+.learning-toggle-btn.btn-pending {
+  background: #feebc8;
+  color: #7b341e;
+}
+
+.learning-toggle-btn.btn-pending:hover {
+  background: #38a169;
+  color: white;
+}
+
+.learning-empty-list {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 1.5rem;
+  color: #718096;
+  font-size: 0.85rem;
+  background: #f7fafc;
+  border-radius: 8px;
 }
 
 .instrumentation-section {
@@ -1811,14 +2213,46 @@
 
 /* Badge de orden en la vista de carpetas */
 .song-order-tag {
-  background: #e0f2fe;
-  color: #0369a1;
-  font-size: 0.8rem;
+  background: #f0fdfa;
+  color: #0f766e;
+  border: 1px solid #ccfbf1;
+  font-size: 0.82rem;
   font-weight: 700;
-  padding: 0.2rem 0.5rem;
-  border-radius: 6px;
-  margin-right: 0.75rem;
+  padding: 0.25rem 0.6rem;
+  border-radius: 8px;
+  min-width: 44px;
+  text-align: center;
   flex-shrink: 0;
+}
+
+.song-order-tag.no-number {
+  background: #f1f5f9;
+  color: #94a3b8;
+  border-color: #e2e8f0;
+}
+
+/* Ícono de aprendizaje personal */
+.learned-icon-badge {
+  font-size: 1.15rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+}
+
+.learned-icon-badge.learned {
+  background: #f0fdf4;
+  border-color: #86efac;
+}
+
+.song-item:hover .learned-icon-badge {
+  transform: scale(1.1);
 }
 
 /* Modal header con número */
@@ -2140,5 +2574,919 @@
   font-weight: 600;
 }
 
+/* ===================================================
+   PESTAÑAS INTERNAS DEL MODAL (LETRA VS APRENDIZAJE)
+   =================================================== */
+.modal-tabs-bar {
+  display: flex;
+  gap: 0.5rem;
+  background: #f1f5f9;
+  padding: 0.35rem;
+  border-radius: 10px;
+  margin-bottom: 1.25rem;
+  border: 1px solid #e2e8f0;
+}
+
+.modal-tab-btn {
+  flex: 1;
+  border: none;
+  background: transparent;
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #64748b;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: all 0.2s ease;
+}
+
+.modal-tab-btn:hover {
+  color: #1e293b;
+  background: rgba(255, 255, 255, 0.6);
+}
+
+.modal-tab-btn.active {
+  background: #ffffff;
+  color: #0f766e;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.modal-tab-badge {  border-radius: 12px;
+  font-weight: 700;
+}
+
+.modal-tab-badge.complete {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+/* ===================================================
+   REDISEÑO MOBILE-FIRST PARA CANCIONERO (SONGBOOK)
+   =================================================== */
+@media (max-width: 768px) {
+  /* Cabecera compacta tipo app */
+  .transport-header {
+    padding: 0.75rem 0;
+  }
+
+  .transport-header .header-content {
+    padding: 0 0.85rem;
+  }
+
+  .logo-section h2 {
+    font-size: 1.15rem;
+    font-weight: 700;
+  }
+
+  .back-btn {
+    min-height: 38px;
+    padding: 0.45rem 0.85rem;
+    font-size: 0.82rem;
+    border-radius: 8px;
+  }
+
+  /* Pestañas de alto contraste tipo segmented control */
+  .songbook-tabs-container {
+    padding: 0.65rem 0.85rem;
+    background: #ffffff;
+    border-bottom: 1px solid #edf2f7;
+  }
+
+  .songbook-tabs {
+    max-width: 100%;
+    padding: 0.25rem;
+    gap: 0.35rem;
+    background: #f1f5f9;
+    border-radius: 10px;
+  }
+
+  .songbook-tab-btn {
+    min-height: 42px;
+    font-size: 0.85rem;
+    padding: 0.45rem 0.6rem;
+    gap: 0.35rem;
+  }
+
+  .tab-count-badge {
+    font-size: 0.72rem;
+    padding: 0.1rem 0.45rem;
+  }
+
+  /* Barra de búsqueda y selector en móvil */
+  .search-container {
+    padding: 0.75rem 0.85rem;
+    gap: 0.65rem;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .search-box {
+    min-width: 100%;
+    width: 100%;
+  }
+
+  .search-input {
+    font-size: 0.9rem;
+    padding: 0.7rem 2.2rem 0.7rem 0.9rem;
+    border-radius: 10px;
+    min-height: 44px;
+  }
+
+  .category-filter {
+    min-width: 100%;
+    width: 100%;
+  }
+
+  .category-select {
+    font-size: 0.88rem;
+    padding: 0.7rem 0.9rem;
+    border-radius: 10px;
+    min-height: 44px;
+  }
+
+  /* Carpetas de Categorías: diseño tipo tarjeta táctil */
+  .folders-container {
+    padding: 0.75rem 0.85rem;
+  }
+
+  .folder {
+    border-radius: 12px;
+    margin-bottom: 0.75rem;
+    border: 1.5px solid #e2e8f0;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  }
+
+  .folder-header {
+    padding: 0.85rem 1rem;
+    min-height: 48px;
+    gap: 0.6rem;
+  }
+
+  .folder-icon {
+    margin-right: 0;
+    font-size: 1.15rem;
+  }
+
+  .folder-name {
+    font-size: 0.92rem;
+    font-weight: 600;
+  }
+
+  .folder-count {
+    font-size: 0.78rem;
+    padding: 0.2rem 0.55rem;
+    font-weight: 700;
+  }
+
+  .folder-content {
+    padding: 0.5rem;
+    background: #f8fafc;
+  }
+
+  .song-item {
+    padding: 0.75rem 0.85rem;
+    min-height: 48px;
+    border-radius: 8px;
+    margin-bottom: 0.35rem;
+    background: #ffffff;
+    border: 1px solid #edf2f7;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 0.65rem;
+  }
+
+  .song-item:active {
+    background: #f0fdfa;
+    border-color: #189d98;
+    transform: scale(0.99);
+  }
+
+  .song-order-tag {
+    font-size: 0.78rem;
+    padding: 0.2rem 0.45rem;
+    border-radius: 6px;
+    margin-right: 0;
+  }
+
+  .song-info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .song-title {
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: #1e293b;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+  }
+
+  .song-composer {
+    font-size: 0.78rem;
+    color: #64748b;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .song-right-badges {
+    margin-left: auto;
+    flex-shrink: 0;
+    gap: 0.35rem;
+  }
+
+  /* Índice General en Móvil */
+  .general-index-section {
+    padding: 0.5rem 0.85rem;
+  }
+
+  .index-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.65rem;
+    padding: 0.75rem;
+  }
+
+  .index-sort-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  .sort-btn {
+    flex: 1;
+    min-height: 38px;
+    font-size: 0.78rem;
+    justify-content: center;
+    padding: 0.4rem 0.5rem;
+  }
+
+  .index-song-row {
+    padding: 0.75rem 0.85rem;
+    gap: 0.65rem;
+  }
+
+  .index-number-badge {
+    min-width: 38px;
+    height: 34px;
+    font-size: 0.8rem;
+    border-radius: 8px;
+  }
+
+  .index-song-title {
+    font-size: 0.92rem;
+    line-height: 1.25;
+  }
+
+  .index-song-meta {
+    font-size: 0.75rem;
+    gap: 0.35rem;
+    flex-wrap: wrap;
+  }
+
+  /* Modal de Canción en Móvil (Full-Width Drawer) */
+  .song-modal .modal-content {
+    width: 96% !important;
+    max-width: 96% !important;
+    max-height: 92vh !important;
+    padding: 1rem 0.85rem !important;
+    border-radius: 16px !important;
+    margin: 0.5rem auto !important;
+  }
+
+  .modal-header h2 {
+    font-size: 1.2rem;
+    line-height: 1.25;
+  }
+
+  .zoom-controls {
+    top: 0.75rem;
+    right: 3.5rem;
+    gap: 0.25rem;
+  }
+
+  .zoom-btn {
+    width: 32px;
+    height: 32px;
+    font-size: 0.8rem;
+  }
+
+  .modal-tabs-bar {
+    gap: 0.35rem;
+    padding: 0.25rem;
+  }
+
+  .modal-tab-btn {
+    font-size: 0.8rem;
+    padding: 0.5rem 0.4rem;
+  }
+
+  .learning-toolbar {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .learning-filter-tabs {
+    overflow-x: auto;
+    width: 100%;
+    padding-bottom: 0.25rem;
+  }
+
+  .learning-member-card {
+    padding: 0.65rem 0.75rem;
+  }
+
+  .lyrics-content, .instrumentation-content {
+    font-size: 0.95rem;
+    line-height: 1.6;
+    padding: 0.85rem;
+  }
+}
+
+/* ===================================================
+   BANNER DE PROGRESO DE APRENDIZAJE DEL INTEGRANTE
+   =================================================== */
+.my-learning-banner {
+  margin: 0.75rem 2rem 0.25rem 2rem;
+  background: linear-gradient(135deg, #f0fdfa 0%, #e6fffa 100%);
+  border: 1.5px solid #99f6e4;
+  border-radius: 14px;
+  padding: 0.9rem 1.25rem;
+  box-shadow: 0 2px 6px rgba(24, 157, 152, 0.08);
+}
+
+.learning-banner-content {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.learning-banner-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: #189d98;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  flex-shrink: 0;
+  box-shadow: 0 4px 10px rgba(24, 157, 152, 0.3);
+}
+
+.learning-banner-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.learning-banner-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.learning-banner-title {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #0f6b68;
+}
+
+.learning-banner-percent {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #0f766e;
+  background: white;
+  padding: 0.15rem 0.65rem;
+  border-radius: 12px;
+  border: 1px solid #99f6e4;
+}
+
+.learning-banner-percent.complete {
+  background: #dcfce7;
+  color: #15803d;
+  border-color: #86efac;
+}
+
+.learning-banner-bar {
+  width: 100%;
+  height: 8px;
+  background: rgba(24, 157, 152, 0.15);
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+.learning-banner-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #189d98 0%, #10b981 100%);
+  border-radius: 9999px;
+  transition: width 0.4s ease;
+}
+
+.learning-banner-bar-fill.complete {
+  background: #16a34a;
+}
+
+.learning-banner-stats {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  color: #334155;
+  flex-wrap: wrap;
+}
+
+.learning-banner-stats .pending-count {
+  color: #d97706;
+  font-weight: 600;
+}
+
+.learning-banner-stats .all-learned-badge {
+  color: #15803d;
+  font-weight: 700;
+}
+
+/* Indicadores en canciones individuales */
+.song-right-badges {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.my-learned-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  background: #dcfce7;
+  color: #166534;
+  border: 1px solid #86efac;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.15rem 0.5rem;
+  border-radius: 12px;
+  white-space: nowrap;
+}
+
+.badge-learned {
+  background: #dcfce7 !important;
+  color: #166534 !important;
+  border: 1px solid #86efac !important;
+  font-weight: 700 !important;
+}
+
+.badge-pending {
+  background: #fef3c7 !important;
+  color: #92400e !important;
+  border: 1px solid #fcd34d !important;
+  font-weight: 600 !important;
+}
+
+.badge-excluded {
+  background: #f1f5f9 !important;
+  color: #64748b !important;
+  border: 1px solid #cbd5e1 !important;
+  font-weight: 600 !important;
+}
+
+.my-learned-indicator.excluded-tag {
+  background: #f1f5f9;
+  color: #64748b;
+  border-color: #cbd5e1;
+}
+
+.learned-icon-badge.excluded {
+  background: #f1f5f9;
+  color: #94a3b8;
+  border-color: #e2e8f0;
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+/* Botón de exclusión rápida para administrador */
+.exclude-toggle-btn {
+  background: #ffffff;
+  border: 1.5px solid #cbd5e1;
+  color: #475569;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 0.35rem 0.75rem;
+  border-radius: 20px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  transition: all 0.2s ease;
+  margin-left: 0.25rem;
+}
+
+.exclude-toggle-btn:hover {
+  background: #f8fafc;
+  border-color: #94a3b8;
+  color: #1e293b;
+}
+
+.exclude-toggle-btn.is-excluded {
+  background: #f0fdf4;
+  border-color: #86efac;
+  color: #166534;
+}
+
+.exclude-toggle-btn.is-excluded:hover {
+  background: #dcfce7;
+}
+
+/* Checkbox en modo edición */
+.checkbox-row {
+  margin-top: 0.5rem;
+  padding: 0.75rem;
+  background: #f8fafc;
+  border-radius: 8px;
+  border: 1px dashed #cbd5e1;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  cursor: pointer;
+  font-size: 0.88rem;
+  color: #334155;
+}
+
+.edit-checkbox {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: #189d98;
+}
+
+@media (max-width: 768px) {
+  .my-learning-banner {
+    margin: 0.65rem 0.85rem 0.25rem 0.85rem;
+    padding: 0.75rem 0.85rem;
+  }
+
+  .learning-banner-icon {
+    width: 38px;
+    height: 38px;
+    font-size: 1.2rem;
+  }
+
+  .learning-banner-title {
+    font-size: 0.85rem;
+  }
+
+  .learning-banner-percent {
+    font-size: 0.88rem;
+  }
+
+  .learning-banner-stats {
+    font-size: 0.75rem;
+  }
+
+  .exclude-toggle-btn {
+    width: 100%;
+    justify-content: center;
+    margin-left: 0;
+    margin-top: 0.25rem;
+  }
+}
+
+/* ===============================================================
+   VISTA DE PÁGINA COMPLETA PARA DETALLE DE CANCIÓN (ANCHO COMPLETO)
+   =============================================================== */
+.song-detail-page-view {
+  width: 100%;
+  max-width: 100%;
+  min-height: 100vh;
+  background: #f8fafc;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* Header superior de la página de canción */
+.song-page-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: #189d98;
+  color: white;
+  box-shadow: 0 4px 14px rgba(24, 157, 152, 0.25);
+  padding: 0.85rem 1.75rem;
+}
+
+.song-page-header-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.song-page-nav-left {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.song-page-back-btn {
+  background: rgba(255, 255, 255, 0.16);
+  color: white;
+  border: 1.5px solid rgba(255, 255, 255, 0.35);
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.88rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.song-page-back-btn:hover {
+  background: rgba(255, 255, 255, 0.28);
+  border-color: rgba(255, 255, 255, 0.6);
+  transform: translateX(-2px);
+}
+
+.song-page-back-btn .back-arrow {
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+/* Caja de título */
+.song-page-title-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.song-page-order-badge {
+  background: white;
+  color: #0f6b68;
+  font-weight: 800;
+  font-size: 0.95rem;
+  padding: 0.25rem 0.65rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  flex-shrink: 0;
+}
+
+.song-page-heading {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: white;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  letter-spacing: -0.01em;
+}
+
+.song-page-title-input {
+  flex: 1;
+  max-width: 500px;
+  padding: 0.45rem 0.85rem;
+  border-radius: 8px;
+  border: 2px solid white;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #1e293b;
+  outline: none;
+  background: white;
+}
+
+/* Acciones en la cabecera */
+.song-page-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  flex-shrink: 0;
+}
+
+.song-zoom-toolbar {
+  display: flex;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.16);
+  padding: 0.2rem;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  gap: 2px;
+}
+
+.song-zoom-btn {
+  background: transparent;
+  border: none;
+  color: white;
+  padding: 0.35rem 0.6rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.song-zoom-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.song-zoom-btn.reset {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.song-zoom-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.song-page-edit-btn {
+  background: white;
+  color: #0f6b68;
+  border: none;
+  font-weight: 700;
+  font-size: 0.88rem;
+  padding: 0.5rem 0.95rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.song-page-edit-btn:hover {
+  background: #f0fdfa;
+  transform: translateY(-1px);
+}
+
+/* Cuerpo de la página de canción */
+.song-page-body {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  padding: 1.5rem 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  flex: 1;
+}
+
+.song-page-badges-row {
+  margin-bottom: 0.5rem;
+}
+
+.song-page-tabs-bar {
+  margin-bottom: 0.75rem;
+}
+
+/* Tarjetas y secciones a ancho completo */
+.full-width-card,
+.full-width-panel,
+.full-width-section {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  background: #ffffff;
+  border-radius: 14px;
+  border: 1.5px solid #e2e8f0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+  padding: 1.5rem;
+}
+
+.song-info-edit.full-width-card {
+  margin-bottom: 1.25rem;
+}
+
+.lyrics-header-row h3 {
+  color: #189d98;
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0 0 1rem 0;
+  border-bottom: 2px solid #e2e8f0;
+  padding-bottom: 0.6rem;
+}
+
+.full-width-lyrics {
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box;
+  background: #f8fafc;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 2rem 2.5rem;
+  line-height: 2;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, monospace;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  letter-spacing: 0.25px;
+  color: #1e293b;
+  margin: 0;
+  overflow-x: auto;
+}
+
+.instrumentation-section.full-width-card {
+  margin-bottom: 1.25rem;
+}
+
+.spotify-link-section.full-width-card {
+  margin-bottom: 1.25rem;
+  margin-top: 0;
+}
+
+/* Responsive móvil para la página de canción */
+@media (max-width: 768px) {
+  .song-page-header {
+    padding: 0.75rem 0.85rem;
+  }
+
+  .song-page-header-container {
+    flex-wrap: wrap;
+    gap: 0.65rem;
+  }
+
+  .song-page-nav-left {
+    order: 1;
+  }
+
+  .song-page-back-btn {
+    padding: 0.4rem 0.75rem;
+    font-size: 0.82rem;
+  }
+
+  .song-page-back-btn .back-label {
+    display: inline;
+  }
+
+  .song-page-actions {
+    order: 2;
+    margin-left: auto;
+  }
+
+  .song-page-title-box {
+    order: 3;
+    width: 100%;
+    justify-content: flex-start;
+    padding-top: 0.25rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  .song-page-order-badge {
+    font-size: 0.82rem;
+    padding: 0.2rem 0.5rem;
+  }
+
+  .song-page-heading {
+    font-size: 1.15rem;
+    text-align: left;
+  }
+
+  .song-page-title-input {
+    font-size: 0.95rem;
+    max-width: 100%;
+  }
+
+  .song-page-body {
+    padding: 0.85rem 0.75rem;
+    gap: 0.85rem;
+  }
+
+  .full-width-card,
+  .full-width-panel,
+  .full-width-section {
+    padding: 1rem 0.85rem;
+    border-radius: 10px;
+  }
+
+  .full-width-lyrics {
+    padding: 1.25rem 0.85rem;
+    line-height: 1.85;
+    font-size: 1.05rem;
+  }
+}
 
 

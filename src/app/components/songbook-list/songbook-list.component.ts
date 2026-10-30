@@ -23,6 +23,12 @@ export class SongbookListComponent implements OnInit, OnDestroy {
   isEditing = false;
   songsByCategory: { [key: string]: any[] } = {};
   activeTab: 'index' | 'categories' = 'categories';
+  modalActiveTab: 'lyrics' | 'learning' = 'lyrics';
+  activeUsers: any[] = [];
+  currentUserId: string | null = null;
+  learningSearchTerm = '';
+  learningFilter: 'all' | 'learned' | 'pending' = 'all';
+  isLearningExpanded = true;
   selectedCategoriesForIndex: string[] = [];
   indexSortBy: 'number' | 'title' | 'category' = 'number';
   sortDirection: 'asc' | 'desc' = 'asc';
@@ -34,10 +40,11 @@ export class SongbookListComponent implements OnInit, OnDestroy {
   editedStatus = '';
   editedComposers = '';
   editedYoutubeLink = '';
+  editedExcludeFromLearning = false;
   isSaving = false;
   isWatchingVideo = false;
   isVideoFloating = false;
-  
+
   // Variables para zoom de texto
   fontSize = 16; // Tamaño base en píxeles
   minFontSize = 12;
@@ -57,15 +64,24 @@ export class SongbookListComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private sanitizer: DomSanitizer,
     private roleService: RoleService
-  ) {}
+  ) { }
 
   ngOnInit() {
+    // Cargar usuarios activos para control de aprendizaje
+    this.loadActiveUsers();
+
     // Cargar canciones
     this.songbookService.getSongs().subscribe((res: any) => {
       this.songs = res.map((doc: any) => ({ id: doc.payload.doc.id, ...doc.payload.doc.data() }));
       this.filteredSongs = [...this.songs];
       this.extractCategories();
       this.organizeSongsByCategory();
+      if (this.selectedSong) {
+        const currentSelected = this.songs.find(s => s.id === this.selectedSong.id);
+        if (currentSelected) {
+          this.selectedSong = currentSelected;
+        }
+      }
       this.loading = false;
     });
 
@@ -84,18 +100,20 @@ export class SongbookListComponent implements OnInit, OnDestroy {
     // Obtener el perfil del usuario actual
     this.authService.afAuth.authState.subscribe(async (user) => {
       if (user) {
+        this.currentUserId = user.uid;
         const userDoc = await this.authService.firestore.collection('users').doc(user.uid).get().toPromise();
         const userData = userDoc?.data() as any;
 
         this.isAdmin = userData?.profiles?.includes('administrador');
       } else {
+        this.currentUserId = null;
         this.isAdmin = false;
       }
     });
 
     // Activar protecciones contra capturas de pantalla
     this.enableScreenshotProtection();
-    
+
     // Activar protecciones específicas para móviles
     this.enableMobileScreenshotProtection();
   }
@@ -121,35 +139,35 @@ export class SongbookListComponent implements OnInit, OnDestroy {
       this.showProtectionWarning();
       return false;
     }
-    
+
     // Prevenir Ctrl+Shift+I (DevTools)
     if (event.ctrlKey && event.shiftKey && event.key === 'I') {
       event.preventDefault();
       this.showProtectionWarning();
       return false;
     }
-    
+
     // Prevenir Ctrl+U (Ver código fuente)
     if (event.ctrlKey && event.key === 'u') {
       event.preventDefault();
       this.showProtectionWarning();
       return false;
     }
-    
+
     // Prevenir Print Screen
     if (event.key === 'PrintScreen') {
       event.preventDefault();
       this.showProtectionWarning();
       return false;
     }
-    
+
     // Prevenir Ctrl+P (Imprimir)
     if (event.ctrlKey && event.key === 'p') {
       event.preventDefault();
       this.showProtectionWarning();
       return false;
     }
-    
+
     // Prevenir Ctrl+S (Guardar) - excepto si está editando
     if (event.ctrlKey && event.key === 's') {
       event.preventDefault();
@@ -167,7 +185,7 @@ export class SongbookListComponent implements OnInit, OnDestroy {
     if (this.isEditing || this.isWatchingVideo) {
       return true;
     }
-    
+
     if (this.selectedSong) {
       event.preventDefault();
       event.stopPropagation();
@@ -184,7 +202,7 @@ export class SongbookListComponent implements OnInit, OnDestroy {
     if (this.isEditing || this.isWatchingVideo) {
       return true;
     }
-    
+
     if (this.selectedSong) {
       event.preventDefault();
       return false;
@@ -199,7 +217,7 @@ export class SongbookListComponent implements OnInit, OnDestroy {
       if (this.isEditing || this.isWatchingVideo) {
         return true;
       }
-      
+
       if (this.selectedSong) {
         e.preventDefault();
         return false;
@@ -312,6 +330,48 @@ export class SongbookListComponent implements OnInit, OnDestroy {
     return result;
   }
 
+  get fullyLearnedSongsCount(): number {
+    if (this.activeUsers.length === 0) return 0;
+    return this.songs.filter(s => this.getLearnedPercentage(s) === 100).length;
+  }
+
+  get inProgressSongsCount(): number {
+    if (this.activeUsers.length === 0) return 0;
+    return this.songs.filter(s => {
+      const p = this.getLearnedPercentage(s);
+      return p > 0 && p < 100;
+    }).length;
+  }
+
+  get notStartedSongsCount(): number {
+    if (this.activeUsers.length === 0) return 0;
+    return this.songs.filter(s => this.getLearnedPercentage(s) === 0).length;
+  }
+
+  get learningTabSongs(): any[] {
+    let result = [...this.songs];
+    if (this.selectedCategory) {
+      result = result.filter(s => s.category === this.selectedCategory);
+    }
+    if (this.searchTerm && this.searchTerm.trim()) {
+      const term = this.searchTerm.toLowerCase().trim();
+      result = result.filter(s =>
+        (s.title && s.title.toLowerCase().includes(term)) ||
+        (s.category && s.category.toLowerCase().includes(term)) ||
+        (s.orderNumber !== undefined && s.orderNumber !== null && s.orderNumber.toString().includes(term))
+      );
+    }
+    result.sort((a, b) => {
+      const hasA = a.orderNumber != null && !isNaN(Number(a.orderNumber));
+      const hasB = b.orderNumber != null && !isNaN(Number(b.orderNumber));
+      if (hasA && hasB) return Number(a.orderNumber) - Number(b.orderNumber);
+      if (hasA && !hasB) return -1;
+      if (!hasA && hasB) return 1;
+      return (a.title || '').localeCompare(b.title || '');
+    });
+    return result;
+  }
+
   setSort(criterion: 'number' | 'title' | 'category') {
     if (this.indexSortBy === criterion) {
       this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
@@ -389,8 +449,9 @@ export class SongbookListComponent implements OnInit, OnDestroy {
     }
   }
 
-  openSongDetail(song: any) {
+  openSongDetail(song: any, tab: 'lyrics' | 'learning' = 'lyrics') {
     this.selectedSong = song;
+    this.modalActiveTab = tab;
     this.isModalOpen = true;
     this.editedOrderNumber = song.orderNumber != null && !isNaN(Number(song.orderNumber)) ? Number(song.orderNumber) : null;
     this.editedStructure = song.structure || '';
@@ -400,9 +461,11 @@ export class SongbookListComponent implements OnInit, OnDestroy {
     this.editedStatus = song.status || '';
     this.editedComposers = song.composers || '';
     this.editedYoutubeLink = song.youtubeLink || '';
+    this.editedExcludeFromLearning = !!song.excludeFromLearning;
     this.isEditing = false;
-    document.body.style.overflow = 'hidden'; // Evitar scroll del fondo
-    
+    document.body.style.overflow = 'auto';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
     // Reset contadores de protección móvil
     this.screenshotAttempts = 0;
     this.powerButtonPresses = 0;
@@ -411,6 +474,7 @@ export class SongbookListComponent implements OnInit, OnDestroy {
 
   closeSongDetail() {
     this.selectedSong = null;
+    this.modalActiveTab = 'lyrics';
     this.isModalOpen = false;
     this.isEditing = false;
     this.editedOrderNumber = null;
@@ -421,11 +485,13 @@ export class SongbookListComponent implements OnInit, OnDestroy {
     this.editedStatus = '';
     this.editedComposers = '';
     this.editedYoutubeLink = '';
+    this.editedExcludeFromLearning = false;
     this.isWatchingVideo = false;
     this.isVideoFloating = false;
-    
+
     document.body.style.overflow = 'auto'; // Restaurar scroll
-    
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
     // Reset contadores de protección móvil
     this.screenshotAttempts = 0;
     this.powerButtonPresses = 0;
@@ -442,11 +508,12 @@ export class SongbookListComponent implements OnInit, OnDestroy {
     this.editedStatus = this.selectedSong.status || '';
     this.editedComposers = this.selectedSong.composers || '';
     this.editedYoutubeLink = this.selectedSong.youtubeLink || '';
+    this.editedExcludeFromLearning = !!this.selectedSong?.excludeFromLearning;
   }
 
   async cancelEditing() {
     // Verificar si hay cambios sin guardar
-    const hasChanges = 
+    const hasChanges =
       this.editedOrderNumber !== (this.selectedSong.orderNumber ?? null) ||
       this.editedStructure !== (this.selectedSong.structure || '') ||
       this.editedInstrumentation !== (this.selectedSong.instrumentation || '') ||
@@ -454,7 +521,8 @@ export class SongbookListComponent implements OnInit, OnDestroy {
       this.editedCategory !== (this.selectedSong.category || '') ||
       this.editedStatus !== (this.selectedSong.status || '') ||
       this.editedComposers !== (this.selectedSong.composers || '') ||
-      this.editedYoutubeLink !== (this.selectedSong.youtubeLink || '');
+      this.editedYoutubeLink !== (this.selectedSong.youtubeLink || '') ||
+      this.editedExcludeFromLearning !== (!!this.selectedSong.excludeFromLearning);
 
     if (hasChanges) {
       const result = await Swal.fire({
@@ -475,6 +543,7 @@ export class SongbookListComponent implements OnInit, OnDestroy {
     this.editedOrderNumber = this.selectedSong?.orderNumber ?? null;
     this.editedStructure = this.selectedSong.structure || '';
     this.editedInstrumentation = this.selectedSong.instrumentation || '';
+    this.editedExcludeFromLearning = !!this.selectedSong?.excludeFromLearning;
   }
 
   async saveChanges() {
@@ -509,11 +578,12 @@ export class SongbookListComponent implements OnInit, OnDestroy {
         composers: this.editedComposers,
         youtubeLink: this.editedYoutubeLink,
         structure: this.editedStructure,
-        instrumentation: this.editedInstrumentation
+        instrumentation: this.editedInstrumentation,
+        excludeFromLearning: !!this.editedExcludeFromLearning
       };
 
       await this.songbookService.updateSong(this.selectedSong.id, updatedData);
-      
+
       // Actualizar la canción en la lista local
       this.selectedSong.title = this.editedTitle;
       this.selectedSong.orderNumber = parsedOrder;
@@ -523,7 +593,8 @@ export class SongbookListComponent implements OnInit, OnDestroy {
       this.selectedSong.youtubeLink = this.editedYoutubeLink;
       this.selectedSong.structure = this.editedStructure;
       this.selectedSong.instrumentation = this.editedInstrumentation;
-      
+      this.selectedSong.excludeFromLearning = !!this.editedExcludeFromLearning;
+
       // Actualizar también en la lista principal
       const songIndex = this.songs.findIndex(s => s.id === this.selectedSong.id);
       if (songIndex !== -1) {
@@ -532,35 +603,86 @@ export class SongbookListComponent implements OnInit, OnDestroy {
       this.organizeSongsByCategory();
 
       this.isEditing = false;
-      
+
       Swal.fire({
         title: '¡Éxito!',
         text: 'Los cambios han sido guardados exitosamente',
         icon: 'success',
         confirmButtonColor: '#189d98',
-        confirmButtonText: 'Continuar'
+        confirmButtonText: 'Genial'
       });
     } catch (error) {
       console.error('Error al guardar cambios:', error);
-      
       Swal.fire({
         title: 'Error',
-        text: 'No se pudieron guardar los cambios. Por favor, intenta de nuevo.',
+        text: 'Hubo un problema al guardar los cambios: ' + error,
         icon: 'error',
         confirmButtonColor: '#dc3545',
-        confirmButtonText: 'Intentar de nuevo'
+        confirmButtonText: 'Entendido'
       });
     } finally {
       this.isSaving = false;
     }
   }
 
+  async toggleExcludeFromLearning(song: any) {
+    if (!this.isAdmin && !this.canEditSongs) return;
+    if (!song || !song.id) return;
+
+    const newValue = !song.excludeFromLearning;
+    const actionText = newValue
+      ? 'excluir esta canción del porcentaje de aprendizaje'
+      : 'incluir nuevamente esta canción en el porcentaje de aprendizaje';
+
+    const result = await Swal.fire({
+      title: newValue ? '🚫 Excluir de aprendizaje' : '✅ Incluir en aprendizaje',
+      text: `¿Deseas ${actionText}?`,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#189d98',
+      cancelButtonColor: '#718096',
+      confirmButtonText: newValue ? 'Sí, excluir' : 'Sí, incluir',
+      cancelButtonText: 'Cancelar'
+    });
+
+    if (!result.isConfirmed) return;
+
+    try {
+      await this.songbookService.updateSong(song.id, { excludeFromLearning: newValue });
+      song.excludeFromLearning = newValue;
+      const songIndex = this.songs.findIndex(s => s.id === song.id);
+      if (songIndex !== -1) {
+        this.songs[songIndex].excludeFromLearning = newValue;
+      }
+      this.editedExcludeFromLearning = newValue;
+
+      Swal.fire({
+        icon: 'success',
+        title: newValue ? 'Excluida del cálculo' : 'Incluida en el cálculo',
+        text: newValue
+          ? 'Esta canción ya no contará en los porcentajes ni totales de aprendizaje.'
+          : 'Esta canción ahora sí contará en los porcentajes de aprendizaje.',
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 3000
+      });
+    } catch (error) {
+      console.error('Error al actualizar exclusión de aprendizaje:', error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'No se pudo guardar la preferencia: ' + error
+      });
+    }
+  }
+
   getYouTubeEmbedUrl(url: string): SafeResourceUrl {
     if (!url) return '';
-    
+
     // Extraer el ID del video de diferentes formatos de URL de YouTube
     let videoId = '';
-    
+
     if (url.includes('youtube.com/watch?v=')) {
       videoId = url.split('v=')[1].split('&')[0];
     } else if (url.includes('youtu.be/')) {
@@ -568,13 +690,13 @@ export class SongbookListComponent implements OnInit, OnDestroy {
     } else if (url.includes('youtube.com/embed/')) {
       videoId = url.split('embed/')[1].split('?')[0];
     }
-    
+
     if (videoId) {
       // Agregar parámetros para permitir reproducción y controles
       const embedUrl = `https://www.youtube.com/embed/${videoId}?enablejsapi=1&origin=${window.location.origin}&widget_referrer=${window.location.origin}`;
       return this.sanitizer.bypassSecurityTrustResourceUrl(embedUrl);
     }
-    
+
     return '';
   }
 
@@ -582,13 +704,13 @@ export class SongbookListComponent implements OnInit, OnDestroy {
   private enableMobileScreenshotProtection() {
     // Detectar combinación de teclas de volumen + power
     this.addMobileKeyListeners();
-    
+
     // Detectar gestos de captura de pantalla
     this.addMobileTouchListeners();
-    
+
     // Protección contra app switching (Android)
     this.addAppSwitchProtection();
-    
+
     // Detectar orientation change (posible captura)
     this.addOrientationProtection();
   }
@@ -602,12 +724,12 @@ export class SongbookListComponent implements OnInit, OnDestroy {
           this.volumeDownPresses++;
           this.checkScreenshotCombo();
         }
-        
+
         if (e.code === 'Power' || e.key === 'Power') {
           this.powerButtonPresses++;
           this.checkScreenshotCombo();
         }
-        
+
         // Reset después de 2 segundos
         setTimeout(() => {
           this.volumeDownPresses = 0;
@@ -623,7 +745,7 @@ export class SongbookListComponent implements OnInit, OnDestroy {
       if (this.selectedSong) {
         this.touchCount = e.touches.length;
         this.touchStartTime = Date.now();
-        
+
         // Detectar 3 o más dedos (iOS screenshot gesture)
         if (this.touchCount >= 3) {
           this.handleSuspiciousActivity('Gesto de captura detectado');
@@ -634,7 +756,7 @@ export class SongbookListComponent implements OnInit, OnDestroy {
     document.addEventListener('touchend', (e) => {
       if (this.selectedSong) {
         const touchDuration = Date.now() - this.touchStartTime;
-        
+
         // Detectar tap rápido con múltiples dedos
         if (this.touchCount >= 2 && touchDuration < 500) {
           this.screenshotAttempts++;
@@ -696,10 +818,10 @@ export class SongbookListComponent implements OnInit, OnDestroy {
     if (this.isWatchingVideo || this.isEditing) {
       return;
     }
-    
+
     // Cerrar el modal inmediatamente
     this.closeSongDetail();
-    
+
     // Mostrar alerta
     Swal.fire({
       title: '🚨 Actividad Detectada',
@@ -713,7 +835,7 @@ export class SongbookListComponent implements OnInit, OnDestroy {
 
     // Incrementar contador de intentos
     this.screenshotAttempts++;
-    
+
     // Si hay muchos intentos, bloquear temporalmente
     if (this.screenshotAttempts > 5) {
       this.temporaryBlock();
@@ -750,7 +872,7 @@ export class SongbookListComponent implements OnInit, OnDestroy {
       event.stopPropagation();
       event.stopImmediatePropagation();
     }
-    
+
     // Activar inmediatamente el estado de visualización de video
     this.isWatchingVideo = true;
   }
@@ -771,7 +893,7 @@ export class SongbookListComponent implements OnInit, OnDestroy {
   toggleVideoFloat(event: Event) {
     event.stopPropagation();
     this.isVideoFloating = !this.isVideoFloating;
-    
+
     if (this.isVideoFloating) {
       // Activar modo flotante
       this.onVideoInteractionStart(event);
@@ -787,11 +909,11 @@ export class SongbookListComponent implements OnInit, OnDestroy {
     if (this.isWatchingVideo && this.selectedSong?.youtubeLink) {
       const videoSection = document.querySelector('.video-section') as HTMLElement;
       const modalBody = document.querySelector('.modal-body') as HTMLElement;
-      
+
       if (videoSection && modalBody) {
         const videoRect = videoSection.getBoundingClientRect();
         const modalRect = modalBody.getBoundingClientRect();
-        
+
         // Si el video está fuera de la vista y el usuario está viendo video
         if (videoRect.bottom < 0 || videoRect.top > window.innerHeight) {
           if (!this.isVideoFloating) {
@@ -855,5 +977,194 @@ export class SongbookListComponent implements OnInit, OnDestroy {
     } else {
       this.selectedCategory = category;
     }
+  }
+
+  // ==========================================
+  // MÉTODOS PARA CONTROL DE APRENDIZAJE
+  // ==========================================
+
+  loadActiveUsers() {
+    this.authService.firestore.collection('users').valueChanges({ idField: 'uid' }).subscribe((allUsers: any[]) => {
+      this.activeUsers = allUsers.filter(user =>
+        !user.deleted &&
+        user.name &&
+        user.name !== 'Estudiantina Tonantzin Guadalupe' &&
+        user.name !== 'estudiantina tonantzin' &&
+        user.email !== 'estudiantina@tonantzin.com'
+      ).sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+    });
+  }
+
+  isUserLearned(song: any, userId: string): boolean {
+    if (!song || !song.learnedUserIds || !Array.isArray(song.learnedUserIds)) {
+      return false;
+    }
+    return song.learnedUserIds.includes(userId);
+  }
+
+  getLearnedCount(song: any): number {
+    if (!song || !song.learnedUserIds || !Array.isArray(song.learnedUserIds)) {
+      return 0;
+    }
+    if (this.activeUsers.length === 0) return song.learnedUserIds.length;
+    const activeUids = new Set(this.activeUsers.map(u => u.uid));
+    return song.learnedUserIds.filter((id: string) => activeUids.has(id)).length;
+  }
+
+  getPendingCount(song: any): number {
+    const total = this.activeUsers.length;
+    const learned = this.getLearnedCount(song);
+    return Math.max(0, total - learned);
+  }
+
+  getLearnedPercentage(song: any): number {
+    if (!this.activeUsers || this.activeUsers.length === 0) return 0;
+    const count = this.getLearnedCount(song);
+    return Math.round((count / this.activeUsers.length) * 100);
+  }
+
+  // ==========================================
+  // APRENDIZAJE PERSONAL DEL INTEGRANTE (MI PROGRESO)
+  // ==========================================
+
+  /** Canciones que sí cuentan para la meta de aprendizaje (excluye las marcadas por el admin) */
+  get countableSongs(): any[] {
+    if (!this.songs) return [];
+    return this.songs.filter(song => !song.excludeFromLearning);
+  }
+
+  isSongLearnedByMe(song: any): boolean {
+    if (!song || !this.currentUserId || !song.learnedUserIds || !Array.isArray(song.learnedUserIds)) {
+      return false;
+    }
+    return song.learnedUserIds.includes(this.currentUserId);
+  }
+
+  get myLearnedSongsCount(): number {
+    if (!this.currentUserId) return 0;
+    return this.countableSongs.filter(song => this.isSongLearnedByMe(song)).length;
+  }
+
+  get myPendingSongsCount(): number {
+    return Math.max(0, this.countableSongs.length - this.myLearnedSongsCount);
+  }
+
+  get myLearnedPercentage(): number {
+    if (!this.countableSongs || this.countableSongs.length === 0) return 0;
+    return Math.round((this.myLearnedSongsCount / this.countableSongs.length) * 100);
+  }
+
+  getVisibleMembers(song: any): any[] {
+    if (!song || !this.activeUsers) return [];
+    let list = this.activeUsers;
+    if (this.learningFilter === 'learned') {
+      list = list.filter(u => this.isUserLearned(song, u.uid));
+    } else if (this.learningFilter === 'pending') {
+      list = list.filter(u => !this.isUserLearned(song, u.uid));
+    }
+
+    if (this.learningSearchTerm && this.learningSearchTerm.trim()) {
+      const term = this.learningSearchTerm.toLowerCase().trim();
+      list = list.filter(u =>
+        (u.name && u.name.toLowerCase().includes(term)) ||
+        (u.instrument && u.instrument.toLowerCase().includes(term)) ||
+        (u.email && u.email.toLowerCase().includes(term))
+      );
+    }
+    return list;
+  }
+
+  getUserInitials(name: string): string {
+    if (!name) return '?';
+    const parts = name.trim().split(/\s+/);
+    if (parts.length >= 2) {
+      return (parts[0][0] + parts[1][0]).toUpperCase();
+    }
+    return parts[0].substring(0, 2).toUpperCase();
+  }
+
+  async toggleUserLearned(song: any, userId: string, event?: Event) {
+    if (event) {
+      event.stopPropagation();
+    }
+    if (!song || !song.id) return;
+
+    const currentList: string[] = Array.isArray(song.learnedUserIds) ? [...song.learnedUserIds] : [];
+    const idx = currentList.indexOf(userId);
+
+    if (idx >= 0) {
+      currentList.splice(idx, 1);
+    } else {
+      currentList.push(userId);
+    }
+
+    // Actualización local inmediata para respuesta instantánea
+    song.learnedUserIds = currentList;
+    const songIndex = this.songs.findIndex(s => s.id === song.id);
+    if (songIndex !== -1) {
+      this.songs[songIndex].learnedUserIds = currentList;
+    }
+
+    try {
+      await this.songbookService.updateSong(song.id, { learnedUserIds: currentList });
+    } catch (err) {
+      console.error('Error al actualizar estado de aprendizaje:', err);
+      // Revertir en caso de error
+      if (idx >= 0) {
+        currentList.push(userId);
+      } else {
+        const revertIdx = currentList.indexOf(userId);
+        if (revertIdx >= 0) currentList.splice(revertIdx, 1);
+      }
+      song.learnedUserIds = currentList;
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'No se pudo guardar el cambio. Intenta nuevamente.',
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 3000
+      });
+    }
+  }
+
+  async markAllLearned(song: any) {
+    if (!song || !song.id || this.activeUsers.length === 0) return;
+    const allUids = this.activeUsers.map(u => u.uid);
+    song.learnedUserIds = allUids;
+    const songIndex = this.songs.findIndex(s => s.id === song.id);
+    if (songIndex !== -1) {
+      this.songs[songIndex].learnedUserIds = allUids;
+    }
+    await this.songbookService.updateSong(song.id, { learnedUserIds: allUids });
+    Swal.fire({
+      icon: 'success',
+      title: '¡Todos marcados!',
+      text: 'Se han marcado todos los integrantes activos como que ya se saben la canción.',
+      toast: true,
+      position: 'top-end',
+      showConfirmButton: false,
+      timer: 2500
+    });
+  }
+
+  async unmarkAllLearned(song: any) {
+    if (!song || !song.id) return;
+    song.learnedUserIds = [];
+    const songIndex = this.songs.findIndex(s => s.id === song.id);
+    if (songIndex !== -1) {
+      this.songs[songIndex].learnedUserIds = [];
+    }
+    await this.songbookService.updateSong(song.id, { learnedUserIds: [] });
+    Swal.fire({
+      icon: 'info',
+      title: 'Marcas restablecidas',
+      text: 'Se desmarcaron todos los integrantes para esta canción.',
+      toast: true,
+      position: 'top-end',
+      showConfirmButton: false,
+      timer: 2500
+    });
   }
 }

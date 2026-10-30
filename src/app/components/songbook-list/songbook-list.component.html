@@ -4,7 +4,8 @@
   <div *ngIf="!loading && songs.length === 0">No hay canciones registradas.</div>
   <div *ngIf="!loading && songs.length > 0">
     <div class="transport-container">
-      <header class="transport-header">
+      <!-- Header del Cancionero (solo cuando se ve el listado general) -->
+      <header class="transport-header" *ngIf="!selectedSong">
         <div class="header-content">
           <div class="logo-section">
             <h2>🎵 Cancionero</h2>
@@ -18,8 +19,10 @@
       </header>
 
       <main class="transport-main">
-        <!-- Pestañas de Vista: Índice General vs Categorías -->
-        <div class="songbook-tabs-container">
+        <!-- VISTA DE LISTADO GENERAL -->
+        <div class="songbook-list-view" *ngIf="!selectedSong">
+          <!-- Pestañas de Vista: Índice General vs Categorías -->
+          <div class="songbook-tabs-container">
           <div class="songbook-tabs">
             <button 
               class="songbook-tab-btn" 
@@ -35,6 +38,35 @@
               📑 Índice General
               <span class="tab-count-badge">{{ songs.length }}</span>
             </button>
+          </div>
+        </div>
+
+        <!-- Banner de Progreso de Aprendizaje del Integrante -->
+        <div class="my-learning-banner" *ngIf="currentUserId && songs.length > 0">
+          <div class="learning-banner-content">
+            <div class="learning-banner-icon">
+              <span>🎓</span>
+            </div>
+            <div class="learning-banner-info">
+              <div class="learning-banner-title-row">
+                <span class="learning-banner-title">Mi progreso de aprendizaje</span>
+                <span class="learning-banner-percent" [class.complete]="myLearnedPercentage === 100">
+                  {{ myLearnedPercentage }}%
+                </span>
+              </div>
+              <div class="learning-banner-bar">
+                <div 
+                  class="learning-banner-bar-fill" 
+                  [style.width.%]="myLearnedPercentage"
+                  [class.complete]="myLearnedPercentage === 100">
+                </div>
+              </div>
+              <div class="learning-banner-stats">
+                <span><b>{{ myLearnedSongsCount }}</b> aprendidas de {{ countableSongs.length }} canciones evaluables</span>
+                <span class="pending-count" *ngIf="myPendingSongsCount > 0">({{ myPendingSongsCount }} pendientes)</span>
+                <span class="all-learned-badge" *ngIf="myPendingSongsCount === 0">🎉 ¡Repertorio completo!</span>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -158,6 +190,8 @@
                   <div class="index-song-title-row">
                     <span class="index-song-title">{{ song.title }}</span>
                     <span class="status-badge" [class.status-ready]="song.status === 'Lista'" *ngIf="shouldShowStatus(song.status)">{{ song.status }}</span>
+                    <span class="my-learned-indicator" *ngIf="!song.excludeFromLearning && isSongLearnedByMe(song)" title="Ya te sabes esta letra">✓ Aprendida</span>
+                    <span class="my-learned-indicator excluded-tag" *ngIf="song.excludeFromLearning" title="Esta canción no cuenta para el porcentaje">🚫 No evaluable</span>
                   </div>
                   <div class="index-song-meta">
                     <span class="index-meta-item">📁 {{ song.category || 'Sin categoría' }}</span>
@@ -184,16 +218,26 @@
               </h3>
               <div class="search-results-list">
                 <div class="song-item" *ngFor="let song of filteredSongs" (click)="openSongDetail(song)">
-                  <div class="song-order-tag" *ngIf="song.orderNumber">#{{ song.orderNumber }}</div>
+                  <div class="song-order-tag" [class.no-number]="!song.orderNumber">
+                    {{ song.orderNumber ? '#' + song.orderNumber : 'S/N' }}
+                  </div>
                   <div class="song-info">
                     <span class="song-title">{{ song.title }}</span>
-                    <div class="song-details">
-                      <span class="song-category">📁 {{ song.category }}</span>
-                      <span class="song-composer" *ngIf="song.composers">✍️ {{ song.composers }}</span>
-                    </div>
                   </div>
-                  <div class="song-status" *ngIf="shouldShowStatus(song.status)">
-                    <span class="status-badge" [class.status-ready]="song.status === 'Lista'">{{ song.status }}</span>
+                  <div class="song-right-badges">
+                    <span 
+                      *ngIf="!song.excludeFromLearning"
+                      class="learned-icon-badge" 
+                      [class.learned]="isSongLearnedByMe(song)" 
+                      [title]="isSongLearnedByMe(song) ? 'Aprendida' : 'Pendiente por aprender'">
+                      {{ isSongLearnedByMe(song) ? '✅' : '⏳' }}
+                    </span>
+                    <span 
+                      *ngIf="song.excludeFromLearning" 
+                      class="learned-icon-badge excluded" 
+                      title="No cuenta para el porcentaje de aprendizaje">
+                      —
+                    </span>
                   </div>
                 </div>
               </div>
@@ -209,13 +253,26 @@
                 </div>
                 <div class="folder-content" *ngIf="selectedCategory === category">
                   <div class="song-item" *ngFor="let song of songsByCategory[category]" (click)="openSongDetail(song)">
-                    <div class="song-order-tag" *ngIf="song.orderNumber">#{{ song.orderNumber }}</div>
+                    <div class="song-order-tag" [class.no-number]="!song.orderNumber">
+                      {{ song.orderNumber ? '#' + song.orderNumber : 'S/N' }}
+                    </div>
                     <div class="song-info">
                       <span class="song-title">{{ song.title }}</span>
-                      <span class="song-composer" *ngIf="song.composers">{{ song.composers }}</span>
                     </div>
-                    <div class="song-status" *ngIf="shouldShowStatus(song.status)">
-                      <span class="status-badge" [class.status-ready]="song.status === 'Lista'">{{ song.status }}</span>
+                    <div class="song-right-badges">
+                      <span 
+                        *ngIf="!song.excludeFromLearning"
+                        class="learned-icon-badge" 
+                        [class.learned]="isSongLearnedByMe(song)" 
+                        [title]="isSongLearnedByMe(song) ? 'Aprendida' : 'Pendiente por aprender'">
+                        {{ isSongLearnedByMe(song) ? '✅' : '⏳' }}
+                      </span>
+                      <span 
+                        *ngIf="song.excludeFromLearning" 
+                        class="learned-icon-badge excluded" 
+                        title="No cuenta para el porcentaje de aprendizaje">
+                        —
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -226,176 +283,373 @@
           <div *ngIf="!loading && songs.length === 0">
             <p>Agrega tu primera canción al cancionero</p>
           </div>
+        </div> <!-- Fin de .songs-container -->
+      </div> <!-- Fin de .songbook-list-view -->
 
-          <!-- Modal para mostrar detalle de la canción -->
-          <div class="song-modal" 
-               [class.screenshot-protection]="!isEditing" 
-               *ngIf="selectedSong" 
-               (click)="closeSongDetail()">
-            <div class="modal-content" 
-                 [class.protected-content]="!isEditing" 
-                 (click)="$event.stopPropagation()">
-              
-              <!-- Botones flotantes de zoom -->
-              <div class="zoom-controls">
-                <button class="zoom-btn zoom-out" (click)="zoomOut()" [disabled]="fontSize <= minFontSize" title="Reducir tamaño">
+      <!-- ===============================================================
+           VISTA COMPLETA DE PÁGINA PARA LA CANCIÓN (Ocupa todo el ancho)
+           =============================================================== -->
+      <div class="song-detail-page-view" 
+           *ngIf="selectedSong" 
+           [class.screenshot-protection]="!isEditing">
+        
+        <!-- Header superior de navegación y acciones de la canción -->
+        <header class="song-page-header">
+          <div class="song-page-header-container">
+            <div class="song-page-nav-left">
+              <button type="button" class="song-page-back-btn" (click)="closeSongDetail()" title="Volver al cancionero">
+                <span class="back-arrow">←</span>
+                <span class="back-label">Volver al cancionero</span>
+              </button>
+            </div>
+            
+            <div class="song-page-title-box">
+              <span class="song-page-order-badge" *ngIf="selectedSong.orderNumber && !isEditing">
+                #{{ selectedSong.orderNumber }}
+              </span>
+              <h1 class="song-page-heading" *ngIf="!isEditing" [title]="selectedSong.title">
+                {{ selectedSong.title }}
+              </h1>
+              <input 
+                *ngIf="(isAdmin || canEditSongs) && isEditing"
+                [(ngModel)]="editedTitle"
+                class="song-page-title-input"
+                placeholder="Título de la canción"
+                type="text">
+            </div>
+
+            <div class="song-page-actions">
+              <!-- Controles de tamaño de letra (Zoom) integrados limpiamente -->
+              <div class="song-zoom-toolbar" *ngIf="!isEditing && modalActiveTab === 'lyrics'">
+                <button class="song-zoom-btn" (click)="zoomOut()" [disabled]="fontSize <= minFontSize" title="Reducir tamaño (A-)">
                   A-
                 </button>
-                <button class="zoom-btn zoom-reset" (click)="resetZoom()" title="Tamaño normal">
+                <button class="song-zoom-btn reset" (click)="resetZoom()" title="Tamaño normal (A)">
                   A
                 </button>
-                <button class="zoom-btn zoom-in" (click)="zoomIn()" [disabled]="fontSize >= maxFontSize" title="Aumentar tamaño">
+                <button class="song-zoom-btn" (click)="zoomIn()" [disabled]="fontSize >= maxFontSize" title="Aumentar tamaño (A+)">
                   A+
                 </button>
               </div>
-              
-              <div class="modal-header">
-                <div class="modal-title-container">
-                  <span class="modal-order-badge" *ngIf="selectedSong.orderNumber && !isEditing">#{{ selectedSong.orderNumber }}</span>
-                  <h2 *ngIf="!isEditing">{{ selectedSong.title }}</h2>
-                </div>
-                <input 
-                  *ngIf="(isAdmin || canEditSongs) && isEditing"
-                  [(ngModel)]="editedTitle"
-                  class="edit-input title-input"
-                  placeholder="Título de la canción"
-                  type="text">
-                <div class="header-actions">
-                  <button *ngIf="canEditSongs && !isEditing" class="edit-btn" (click)="startEditing()">
-                    ✏️ Editar
-                  </button>
-                  <button class="close-btn" (click)="closeSongDetail()">×</button>
+
+              <!-- Botón de editar -->
+              <button *ngIf="canEditSongs && !isEditing" class="song-page-edit-btn" (click)="startEditing()">
+                ✏️ Editar
+              </button>
+            </div>
+          </div>
+        </header>
+
+        <!-- Contenido principal de la canción (100% ancho) -->
+        <div class="song-page-body" [class.protected-content]="!isEditing">
+          
+          <!-- Fila de metadatos e insignias -->
+          <div class="song-info-compact song-page-badges-row" *ngIf="!isEditing">
+            <span class="info-badge number-badge" *ngIf="selectedSong.orderNumber">N° {{ selectedSong.orderNumber }}</span>
+            <span class="info-badge category-badge">{{ selectedSong.category }}</span>
+            
+            <!-- Estado de aprendizaje para el usuario actual -->
+            <span class="info-badge" *ngIf="!selectedSong.excludeFromLearning" [class.badge-learned]="isSongLearnedByMe(selectedSong)" [class.badge-pending]="!isSongLearnedByMe(selectedSong)">
+              {{ isSongLearnedByMe(selectedSong) ? '✅ Ya te sabes esta letra' : '⏳ Pendiente por aprender' }}
+            </span>
+
+            <!-- Excluida del porcentaje -->
+            <span class="info-badge badge-excluded" *ngIf="selectedSong.excludeFromLearning" title="Esta canción no cuenta para el porcentaje de aprendizaje">
+              🚫 No requerida para aprendizaje
+            </span>
+
+            <span class="info-badge" *ngIf="shouldShowStatus(selectedSong.status)">{{ selectedSong.status }}</span>
+            <span class="info-badge composer-badge" *ngIf="selectedSong.composers">{{ selectedSong.composers }}</span>
+
+            <!-- Botón rápido para el administrador -->
+            <button 
+              *ngIf="(isAdmin || canEditSongs) && !isEditing" 
+              type="button" 
+              class="exclude-toggle-btn" 
+              [class.is-excluded]="selectedSong.excludeFromLearning"
+              (click)="toggleExcludeFromLearning(selectedSong)">
+              {{ selectedSong.excludeFromLearning ? '🔄 Reactivar en porcentaje' : '🚫 Excluir de porcentaje' }}
+            </button>
+          </div>
+
+          <!-- Pestañas para Administrador / Editor: Letra vs Control de Aprendizaje -->
+          <div class="modal-tabs-bar song-page-tabs-bar" *ngIf="(isAdmin || canEditSongs) && !isEditing">
+            <button 
+              type="button" 
+              class="modal-tab-btn" 
+              [class.active]="modalActiveTab === 'lyrics'"
+              (click)="modalActiveTab = 'lyrics'">
+              🎵 Letra y Música
+            </button>
+            <button 
+              type="button" 
+              class="modal-tab-btn learning" 
+              [class.active]="modalActiveTab === 'learning'"
+              (click)="modalActiveTab = 'learning'">
+              🎓 Control de Aprendizaje
+              <span class="modal-tab-badge" [class.complete]="getLearnedPercentage(selectedSong) === 100">
+                {{ getLearnedCount(selectedSong) }}/{{ activeUsers.length }} ({{ getLearnedPercentage(selectedSong) }}%)
+              </span>
+            </button>
+          </div>
+
+          <!-- TAB 1: Panel de Control de Aprendizaje por Integrante (Administrador / Editor) -->
+          <div class="learning-control-panel full-width-panel" *ngIf="(isAdmin || canEditSongs) && !isEditing && modalActiveTab === 'learning'">
+            <div class="learning-panel-header">
+              <div class="learning-header-title">
+                <span class="learning-icon">🎓</span>
+                <div class="learning-titles-wrap">
+                  <h4>Control de Aprendizaje</h4>
+                  <span class="learning-subtitle">¿Quién ya se la aprendió y quiénes faltan?</span>
                 </div>
               </div>
-              <div class="modal-body">
-                <div class="song-info-compact" *ngIf="!isEditing">
-                  <span class="info-badge number-badge" *ngIf="selectedSong.orderNumber">N° {{ selectedSong.orderNumber }}</span>
-                  <span class="info-badge">{{ selectedSong.category }}</span>
-                  <span class="info-badge" *ngIf="shouldShowStatus(selectedSong.status)">{{ selectedSong.status }}</span>
-                  <span class="info-badge" *ngIf="selectedSong.composers">{{ selectedSong.composers }}</span>
+              <div class="learning-header-actions">
+                <button 
+                  type="button" 
+                  class="learning-quick-btn mark-all" 
+                  (click)="markAllLearned(selectedSong)"
+                  title="Marcar a todos los integrantes como aprendida">
+                  ✓ Marcar todos
+                </button>
+                <button 
+                  type="button" 
+                  class="learning-quick-btn unmark-all" 
+                  (click)="unmarkAllLearned(selectedSong)"
+                  title="Desmarcar a todos">
+                  ↺ Limpiar
+                </button>
+              </div>
+            </div>
+
+            <!-- Barra de progreso general -->
+            <div class="learning-progress-wrap">
+              <div class="learning-stats-row">
+                <div class="stat-group">
+                  <span class="stat-badge learned">
+                    <span class="stat-dot">●</span> 
+                    <b>{{ getLearnedCount(selectedSong) }}</b> ya se la aprendieron
+                  </span>
+                  <span class="stat-badge pending">
+                    <span class="stat-dot">●</span> 
+                    <b>{{ getPendingCount(selectedSong) }}</b> faltan por aprender
+                  </span>
                 </div>
-                
-                <!-- Formulario de edición de información básica -->
-                <div class="song-info-edit" *ngIf="(isAdmin || canEditSongs) && isEditing">
-                  <div class="edit-row">
-                    <label>🔢 Número de orden (Índice):</label>
-                    <input 
-                      [(ngModel)]="editedOrderNumber"
-                      class="edit-input"
-                      placeholder="Ej: 1, 2, 10..."
-                      type="number"
-                      min="1">
-                  </div>
-                  <div class="edit-row">
-                    <label>Categoría:</label>
-                    <input 
-                      [(ngModel)]="editedCategory"
-                      class="edit-input"
-                      placeholder="Categoría"
-                      type="text">
-                  </div>
-                  <div class="edit-row">
-                    <label>Estado:</label>
-                    <select [(ngModel)]="editedStatus" class="edit-select">
-                      <option value="">Seleccionar estado</option>
-                      <option value="Aprendiendo">Aprendiendo</option>
-                      <option value="En proceso">En proceso</option>
-                      <option value="Completada">Completada</option>
-                      <option value="Repertorio">Repertorio</option>
-                    </select>
-                  </div>
-                  <div class="edit-row">
-                    <label>Compositores:</label>
-                    <input 
-                      [(ngModel)]="editedComposers"
-                      class="edit-input"
-                      placeholder="Compositores"
-                      type="text">
-                  </div>
-                  <div class="edit-row">
-                    <label>🎧 Enlace de Spotify / Audio:</label>
-                    <input 
-                      [(ngModel)]="editedYoutubeLink"
-                      class="edit-input"
-                      placeholder="https://open.spotify.com/... o enlace de audio"
-                      type="url">
-                  </div>
-                </div>
-                
-                <!-- Sección de Instrumentación -->
-                <div class="instrumentation-section" 
-                     [class.protected-content]="!isEditing" 
-                     *ngIf="selectedSong.instrumentation || ((isAdmin || canEditSongs) && isEditing)">
-                  <h3>Instrumentación</h3>
-                  <pre class="instrumentation-content" 
-                       [class.no-select]="!isEditing" 
-                       [style.font-size.px]="fontSize"
-                       *ngIf="!isEditing">{{ selectedSong.instrumentation }}</pre>
-                  <textarea 
-                    *ngIf="(isAdmin || canEditSongs) && isEditing"
-                    [(ngModel)]="editedInstrumentation"
-                    class="edit-textarea"
-                    placeholder="Describe la instrumentación...&#10;Ejemplo:&#10;Guitarra: Capo 3er traste&#10;Bajo: Afinación estándar&#10;Percusión: Cajón peruano"
-                    rows="5">
-                  </textarea>
-                </div>
-                
-                <!-- Sección de Letra -->
-                <div class="lyrics-section" 
-                     [class.protected-content]="!isEditing">
-                  <h3>Letra</h3>
-                  
-                  <pre class="lyrics-content" 
-                       [class.no-select]="!isEditing" 
-                       [class.protected-text]="!isEditing" 
-                       [style.font-size.px]="fontSize"
-                       *ngIf="!isEditing">{{ selectedSong.structure || 'No hay letra disponible para esta canción.' }}</pre>
-                  
-                  <textarea 
-                    *ngIf="(isAdmin || canEditSongs) && isEditing"
-                    [(ngModel)]="editedStructure"
-                    class="edit-textarea lyrics-textarea"
-                    placeholder="Escribe la letra de la canción con acordes...&#10;Ejemplo:&#10;    C        F       G&#10;Había una vez una historia..."
-                    rows="15">
-                  </textarea>
-                </div>
-                
-                <!-- Botones de edición -->
-                <div class="edit-actions" *ngIf="(isAdmin || canEditSongs) && isEditing">
-                  <button class="save-btn" (click)="saveChanges()" [disabled]="isSaving">
-                    <span *ngIf="!isSaving">💾 Guardar</span>
-                    <span *ngIf="isSaving">⏳ Guardando...</span>
-                  </button>
-                  <button class="cancel-btn" (click)="cancelEditing()">
-                    ❌ Cancelar
-                  </button>
-                </div>
-                
-                <!-- Sección de Enlace de Spotify / Audio -->
-                <div class="spotify-link-section" *ngIf="selectedSong.youtubeLink">
-                  <h3>🎵 Escuchar Canción</h3>
-                  <div class="spotify-card">
-                    <div class="spotify-info">
-                      <span class="spotify-icon">🟢</span>
-                      <div class="spotify-text-wrap">
-                        <span class="spotify-title">Spotify / Audio</span>
-                        <span class="spotify-url" [title]="selectedSong.youtubeLink">{{ selectedSong.youtubeLink }}</span>
-                      </div>
-                    </div>
-                    <a 
-                      [href]="selectedSong.youtubeLink" 
-                      target="_blank" 
-                      rel="noopener noreferrer" 
-                      class="spotify-open-btn"
-                      (click)="$event.stopPropagation()">
-                      🎧 Abrir en Spotify ↗
-                    </a>
-                  </div>
+                <span class="learning-percent-badge" [class.complete]="getLearnedPercentage(selectedSong) === 100">
+                  {{ getLearnedPercentage(selectedSong) }}% del grupo
+                </span>
+              </div>
+              <div class="learning-progress-bar">
+                <div 
+                  class="learning-progress-fill" 
+                  [style.width.%]="getLearnedPercentage(selectedSong)"
+                  [class.complete]="getLearnedPercentage(selectedSong) === 100">
                 </div>
               </div>
             </div>
+
+            <!-- Filtros y Búsqueda -->
+            <div class="learning-toolbar">
+              <div class="learning-filter-tabs">
+                <button 
+                  type="button"
+                  class="learning-filter-btn" 
+                  [class.active]="learningFilter === 'all'" 
+                  (click)="learningFilter = 'all'">
+                  Todos ({{ activeUsers.length }})
+                </button>
+                <button 
+                  type="button"
+                  class="learning-filter-btn learned" 
+                  [class.active]="learningFilter === 'learned'" 
+                  (click)="learningFilter = 'learned'">
+                  ✅ Ya se la aprendieron ({{ getLearnedCount(selectedSong) }})
+                </button>
+                <button 
+                  type="button"
+                  class="learning-filter-btn pending" 
+                  [class.active]="learningFilter === 'pending'" 
+                  (click)="learningFilter = 'pending'">
+                  ⏳ Faltan por aprender ({{ getPendingCount(selectedSong) }})
+                </button>
+              </div>
+              <div class="learning-search-box">
+                <input 
+                  type="text" 
+                  placeholder="Buscar integrante por nombre o instrumento..." 
+                  [(ngModel)]="learningSearchTerm"
+                  class="learning-search-input">
+              </div>
+            </div>
+
+            <!-- Lista de Integrantes -->
+            <div class="learning-members-grid">
+              <div 
+                class="learning-member-card" 
+                *ngFor="let user of getVisibleMembers(selectedSong)"
+                [class.is-learned]="isUserLearned(selectedSong, user.uid)"
+                (click)="toggleUserLearned(selectedSong, user.uid, $event)">
+                <div class="member-avatar">
+                  {{ getUserInitials(user.name) }}
+                </div>
+                <div class="member-details">
+                  <span class="member-name">{{ user.name }}</span>
+                  <span class="member-instrument" *ngIf="user.instrument || user.instrumento">
+                    🎸 {{ user.instrument || user.instrumento }}
+                  </span>
+                </div>
+                <button 
+                  type="button" 
+                  class="learning-toggle-btn" 
+                  [class.btn-learned]="isUserLearned(selectedSong, user.uid)"
+                  [class.btn-pending]="!isUserLearned(selectedSong, user.uid)">
+                  <span *ngIf="isUserLearned(selectedSong, user.uid)">✓ Aprendida</span>
+                  <span *ngIf="!isUserLearned(selectedSong, user.uid)">⏳ Por aprender</span>
+                </button>
+              </div>
+
+              <div class="learning-empty-list" *ngIf="getVisibleMembers(selectedSong).length === 0">
+                <p *ngIf="learningSearchTerm">No se encontraron integrantes que coincidan con "{{ learningSearchTerm }}".</p>
+                <p *ngIf="!learningSearchTerm && learningFilter === 'learned'">Aún no has marcado a ningún integrante que ya se la sepa.</p>
+                <p *ngIf="!learningSearchTerm && learningFilter === 'pending'">¡Excelente! Todos los integrantes activos ya se la aprendieron 🎉</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- TAB 2: Letra, Música y Edición -->
+          <div class="song-page-lyrics-tab" *ngIf="modalActiveTab === 'lyrics' || isEditing">
+            
+            <!-- Formulario de edición de información básica -->
+            <div class="song-info-edit full-width-card" *ngIf="(isAdmin || canEditSongs) && isEditing">
+              <div class="edit-row">
+                <label>🔢 Número de orden (Índice):</label>
+                <input 
+                  [(ngModel)]="editedOrderNumber"
+                  class="edit-input"
+                  placeholder="Ej: 1, 2, 10..."
+                  type="number"
+                  min="1">
+              </div>
+              <div class="edit-row">
+                <label>Categoría:</label>
+                <input 
+                  [(ngModel)]="editedCategory"
+                  class="edit-input"
+                  placeholder="Categoría"
+                  type="text">
+              </div>
+              <div class="edit-row">
+                <label>Estado:</label>
+                <select [(ngModel)]="editedStatus" class="edit-select">
+                  <option value="">Seleccionar estado</option>
+                  <option value="Aprendiendo">Aprendiendo</option>
+                  <option value="En proceso">En proceso</option>
+                  <option value="Completada">Completada</option>
+                  <option value="Repertorio">Repertorio</option>
+                </select>
+              </div>
+              <div class="edit-row">
+                <label>Compositores:</label>
+                <input 
+                  [(ngModel)]="editedComposers"
+                  class="edit-input"
+                  placeholder="Compositores"
+                  type="text">
+              </div>
+              <div class="edit-row">
+                <label>🎧 Enlace de Spotify / Audio:</label>
+                <input 
+                  [(ngModel)]="editedYoutubeLink"
+                  class="edit-input"
+                  placeholder="https://open.spotify.com/... o enlace de audio"
+                  type="url">
+              </div>
+              <div class="edit-row checkbox-row">
+                <label class="checkbox-label">
+                  <input 
+                    type="checkbox" 
+                    [(ngModel)]="editedExcludeFromLearning"
+                    class="edit-checkbox">
+                  <span>🚫 <b>Excluir de letras a aprender</b> (no contará para los porcentajes del grupo ni integrantes)</span>
+                </label>
+              </div>
+            </div>
+            
+            <!-- Sección de Enlace de Spotify / Audio -->
+            <div class="spotify-link-section full-width-card" *ngIf="selectedSong.youtubeLink">
+              <h3>🎵 Escuchar Canción</h3>
+              <div class="spotify-card">
+                <div class="spotify-info">
+                  <span class="spotify-icon">🟢</span>
+                  <div class="spotify-text-wrap">
+                    <span class="spotify-title">Spotify / Audio</span>
+                    <span class="spotify-url" [title]="selectedSong.youtubeLink">{{ selectedSong.youtubeLink }}</span>
+                  </div>
+                </div>
+                <a 
+                  [href]="selectedSong.youtubeLink" 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  class="spotify-open-btn"
+                  (click)="$event.stopPropagation()">
+                  🎧 Abrir en Spotify ↗
+                </a>
+              </div>
+            </div>
+
+            <!-- Sección de Instrumentación -->
+            <div class="instrumentation-section full-width-card" 
+                 [class.protected-content]="!isEditing" 
+                 *ngIf="selectedSong.instrumentation || ((isAdmin || canEditSongs) && isEditing)">
+              <h3>🎸 Instrumentación</h3>
+              <pre class="instrumentation-content" 
+                   [class.no-select]="!isEditing" 
+                   [style.font-size.px]="fontSize"
+                   *ngIf="!isEditing">{{ selectedSong.instrumentation }}</pre>
+              <textarea 
+                *ngIf="(isAdmin || canEditSongs) && isEditing"
+                [(ngModel)]="editedInstrumentation"
+                class="edit-textarea"
+                placeholder="Describe la instrumentación...&#10;Ejemplo:&#10;Guitarra: Capo 3er traste&#10;Bajo: Afinación estándar&#10;Percusión: Cajón peruano"
+                rows="5">
+              </textarea>
+            </div>
+            
+            <!-- Sección de Letra (100% de Ancho) -->
+            <div class="lyrics-section full-width-card" 
+                 [class.protected-content]="!isEditing">
+              <div class="lyrics-header-row">
+                <h3>📜 Letra y Acordes</h3>
+              </div>
+              
+              <pre class="lyrics-content full-width-lyrics" 
+                   [class.no-select]="!isEditing" 
+                   [class.protected-text]="!isEditing" 
+                   [style.font-size.px]="fontSize"
+                   *ngIf="!isEditing">{{ selectedSong.structure || 'No hay letra disponible para esta canción.' }}</pre>
+              
+              <textarea 
+                *ngIf="(isAdmin || canEditSongs) && isEditing"
+                [(ngModel)]="editedStructure"
+                class="edit-textarea lyrics-textarea"
+                placeholder="Escribe la letra de la canción con acordes...&#10;Ejemplo:&#10;    C        F       G&#10;Había una vez una historia..."
+                rows="18">
+              </textarea>
+            </div>
+            
+            <!-- Botones de edición -->
+            <div class="edit-actions" *ngIf="(isAdmin || canEditSongs) && isEditing">
+              <button class="save-btn" (click)="saveChanges()" [disabled]="isSaving">
+                <span *ngIf="!isSaving">💾 Guardar cambios</span>
+                <span *ngIf="isSaving">⏳ Guardando...</span>
+              </button>
+              <button class="cancel-btn" (click)="cancelEditing()">
+                ❌ Cancelar
+              </button>
+            </div>
+
           </div>
         </div>
+      </div>
       </main>
     </div>
   </div>

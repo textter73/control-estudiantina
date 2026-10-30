@@ -857,6 +857,116 @@
       </div>
     </div>
 
+    <!-- =============================================================== -->
+    <!-- INDICADORES DE LETRAS APRENDIDAS (CANCIONERO) -->
+    <!-- =============================================================== -->
+    <div class="song-learning-dashboard-section" *ngIf="songLearningStats.totalCountable > 0">
+      <div class="song-learning-card">
+        <div class="song-learning-header">
+          <div class="song-learning-title-wrap">
+            <span class="song-learning-main-icon">🎵</span>
+            <div>
+              <h3>Repertorio: Letras Aprendidas</h3>
+              <p>Avance del grupo y seguimiento por integrante</p>
+            </div>
+          </div>
+          <button class="songbook-quick-link" routerLink="/songbook-list">
+            📖 Ir al Cancionero →
+          </button>
+        </div>
+
+        <!-- Métricas Rápidas en Grid -->
+        <div class="song-learning-metrics-grid">
+          <!-- Radial Grupal -->
+          <div class="learning-metric-card radial-card" (click)="openSongLearningModal()">
+            <div class="radial-wrap">
+              <svg width="120" height="120" viewBox="0 0 120 120">
+                <circle cx="60" cy="60" r="48" fill="none" stroke="#e2e8f0" stroke-width="10"></circle>
+                <circle 
+                  cx="60" cy="60" r="48" 
+                  fill="none" 
+                  stroke="#189d98" 
+                  stroke-width="10"
+                  [attr.stroke-dasharray]="301.59"
+                  [attr.stroke-dashoffset]="301.59 - (songLearningStats.groupAveragePercentage * 301.59) / 100"
+                  transform="rotate(-90 60 60)"
+                  stroke-linecap="round">
+                </circle>
+              </svg>
+              <div class="radial-center">
+                <span class="radial-percent">{{ songLearningStats.groupAveragePercentage }}%</span>
+                <span class="radial-label">Grupo</span>
+              </div>
+            </div>
+            <div class="metric-caption">
+              <span class="metric-val">{{ songLearningStats.totalCountable }} canciones</span>
+              <span class="metric-sub">en repertorio activo</span>
+            </div>
+          </div>
+
+          <!-- Mi Progreso Personal -->
+          <div class="learning-metric-card personal-card" (click)="openSongLearningModal()">
+            <div class="metric-top-row">
+              <span class="metric-badge-icon">🎓</span>
+              <span class="metric-pill" [class.complete]="songLearningStats.myPercentage === 100">
+                {{ songLearningStats.myPercentage }}%
+              </span>
+            </div>
+            <div class="metric-main-info">
+              <span class="metric-label">Mi Progreso</span>
+              <div class="metric-number-row">
+                <span class="metric-large-num">{{ songLearningStats.myLearnedCount }}</span>
+                <span class="metric-total-sub">/ {{ songLearningStats.totalCountable }} canciones</span>
+              </div>
+              <div class="metric-mini-bar">
+                <div class="mini-bar-fill" [style.width.%]="songLearningStats.myPercentage"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Al día (100%) -->
+          <div class="learning-metric-card stat-pill-card complete-stat" (click)="openSongLearningModal()">
+            <div class="metric-top-row">
+              <span class="metric-badge-icon">🏆</span>
+              <span class="metric-status-tag complete">100% aprendido</span>
+            </div>
+            <div class="metric-main-info">
+              <span class="metric-large-num">{{ songLearningStats.membersWithCompleteLyrics }}</span>
+              <span class="metric-sub-text">integrantes con todas las letras</span>
+            </div>
+          </div>
+
+          <!-- Por atender (<50%) -->
+          <div class="learning-metric-card stat-pill-card warning-stat" (click)="openSongLearningModal()">
+            <div class="metric-top-row">
+              <span class="metric-badge-icon">⏳</span>
+              <span class="metric-status-tag warning">Por atender</span>
+            </div>
+            <div class="metric-main-info">
+              <span class="metric-large-num">{{ songLearningStats.membersNeedingPractice }}</span>
+              <span class="metric-sub-text">integrantes con menos del 50%</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Botón Clic Destacado para ver el Listado y Ranking -->
+        <div class="song-ranking-cta-wrap">
+          <button class="song-ranking-cta-btn" (click)="openSongLearningModal()">
+            <div class="cta-left-content">
+              <span class="cta-trophy-icon">📊</span>
+              <div class="cta-text-box">
+                <h4>Top de Integrantes</h4>
+              </div>
+            </div>
+            <div class="cta-right-action">
+              <span class="cta-members-count">{{ membersSongLearningList.length }} integrantes</span>
+              <span class="cta-arrow">→</span>
+            </div>
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- Indicador de Insumos -->
     <div class="inventory-summary">
       <div class="summary-card">
@@ -1396,6 +1506,198 @@
       
       <div class="modal-footer">
         <button class="close-btn-footer" (click)="closeRankingModal()">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Ranking de Letras Aprendidas -->
+  <div class="song-ranking-modal" *ngIf="showSongLearningModal" (click)="closeSongLearningModal()">
+    <div class="modal-content song-ranking-modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header song-ranking-header">
+        <div class="ranking-header-title">
+          <span class="ranking-header-icon">🏆</span>
+          <div>
+            <h3>Top de Integrantes</h3>
+          </div>
+        </div>
+        <button class="close-btn" (click)="closeSongLearningModal()">✕</button>
+      </div>
+
+      <div class="modal-body song-ranking-body">
+        
+        <!-- Toolbar con selector de orden y búsqueda -->
+        <div class="ranking-toolbar">
+          <div class="ranking-sort-tabs">
+            <button 
+              type="button" 
+              class="sort-tab-btn" 
+              [class.active]="songRankingSortDirection === 'asc'"
+              (click)="setSongRankingSort('asc')">
+              ▲ Menor a mayor avance (Por atender)
+            </button>
+            <button 
+              type="button" 
+              class="sort-tab-btn" 
+              [class.active]="songRankingSortDirection === 'desc'"
+              (click)="setSongRankingSort('desc')">
+              ▼ Mayor a menor avance (Top líderes)
+            </button>
+          </div>
+
+          <div class="ranking-search-wrap">
+            <input 
+              type="text" 
+              placeholder="Buscar por nombre o instrumento..." 
+              [(ngModel)]="songRankingSearchTerm"
+              (input)="sortAndFilterSongLearningList()"
+              class="ranking-search-input">
+            <span class="ranking-search-icon">🔍</span>
+          </div>
+        </div>
+
+        <!-- Lista de integrantes en formato Ranking -->
+        <div class="ranking-members-list">
+          <div 
+            class="ranking-member-row" 
+            *ngFor="let member of filteredMembersSongLearningList; let i = index"
+            [class.is-me]="member.isCurrentUser"
+            (click)="viewMemberSongsDetail(member)">
+            
+            <!-- Posición / Puesto -->
+            <div class="ranking-rank-badge" [class.leader]="songRankingSortDirection === 'desc' && i < 3" [class.attention]="songRankingSortDirection === 'asc' && member.percentage < 40">
+              #{{ i + 1 }}
+            </div>
+
+            <!-- Avatar -->
+            <div class="ranking-member-avatar" *ngIf="member.profileImage">
+              <img [src]="member.profileImage" [alt]="member.name" class="avatar-img">
+            </div>
+            <div class="ranking-member-avatar initials" *ngIf="!member.profileImage">
+              {{ getMemberInitials(member.name) }}
+            </div>
+
+            <!-- Información del integrante -->
+            <div class="ranking-member-info">
+              <div class="name-row">
+                <span class="member-name">{{ member.name }}</span>
+                <span class="you-badge" *ngIf="member.isCurrentUser">Tú</span>
+              </div>
+              <div class="meta-row">
+                <span class="member-inst">🎸 {{ member.instrument }}</span>
+                <span class="member-songs-count">
+                  <b>{{ member.learnedCount }}</b> de {{ member.totalCount }} canciones
+                </span>
+              </div>
+            </div>
+
+            <!-- Porcentaje y Barra -->
+            <div class="ranking-member-progress">
+              <div class="progress-percent-badge" [ngClass]="getLearningBadgeClass(member.percentage)">
+                {{ member.percentage }}%
+              </div>
+              <div class="ranking-bar-track">
+                <div 
+                  class="ranking-bar-fill" 
+                  [ngClass]="getLearningBadgeClass(member.percentage)"
+                  [style.width.%]="member.percentage">
+                </div>
+              </div>
+            </div>
+
+            <!-- Botón Ver Canciones -->
+            <button 
+              type="button" 
+              class="btn-inspect-songs" 
+              (click)="viewMemberSongsDetail(member, $event)"
+              title="Ver desglose de canciones">
+              👁️ Ver
+            </button>
+          </div>
+
+          <!-- Estado vacío si la búsqueda no arroja resultados -->
+          <div class="ranking-empty-state" *ngIf="filteredMembersSongLearningList.length === 0">
+            <span class="empty-icon">🔍</span>
+            <p *ngIf="songRankingSearchTerm">No se encontraron integrantes que coincidan con "{{ songRankingSearchTerm }}"</p>
+            <p *ngIf="!songRankingSearchTerm">No hay canciones evaluables registradas.</p>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="modal-footer song-ranking-footer">
+        <button class="btn-goto-songbook" routerLink="/songbook-list" (click)="closeSongLearningModal()">
+          📖 Ir al Cancionero
+        </button>
+        <button class="close-btn-footer" (click)="closeSongLearningModal()">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Detalle de Canciones de un Integrante Seleccionado -->
+  <div class="member-songs-modal" *ngIf="selectedMemberLearningDetail" (click)="closeMemberSongsDetail()">
+    <div class="modal-content member-songs-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="member-detail-title-wrap">
+          <div class="detail-avatar" *ngIf="selectedMemberLearningDetail.profileImage">
+            <img [src]="selectedMemberLearningDetail.profileImage" [alt]="selectedMemberLearningDetail.name">
+          </div>
+          <div class="detail-avatar initials" *ngIf="!selectedMemberLearningDetail.profileImage">
+            {{ getMemberInitials(selectedMemberLearningDetail.name) }}
+          </div>
+          <div>
+            <h3>{{ selectedMemberLearningDetail.name }}</h3>
+            <p class="modal-subtitle">
+              🎸 {{ selectedMemberLearningDetail.instrument }} • {{ selectedMemberLearningDetail.learnedCount }} de {{ selectedMemberLearningDetail.totalCount }} canciones ({{ selectedMemberLearningDetail.percentage }}%)
+            </p>
+          </div>
+        </div>
+        <button class="close-btn" (click)="closeMemberSongsDetail()">✕</button>
+      </div>
+
+      <div class="modal-body member-songs-body">
+        <!-- Pestañas de Filtro: Todas vs Aprendidas vs Pendientes -->
+        <div class="member-songs-tabs">
+          <button 
+            type="button" 
+            class="tab-pill" 
+            [class.active]="selectedMemberFilter === 'all'"
+            (click)="selectedMemberFilter = 'all'">
+            Todas ({{ selectedMemberLearningDetail.totalCount }})
+          </button>
+          <button 
+            type="button" 
+            class="tab-pill learned" 
+            [class.active]="selectedMemberFilter === 'learned'"
+            (click)="selectedMemberFilter = 'learned'">
+            ✅ Ya se sabe ({{ selectedMemberLearningDetail.learnedCount }})
+          </button>
+          <button 
+            type="button" 
+            class="tab-pill pending" 
+            [class.active]="selectedMemberFilter === 'pending'"
+            (click)="selectedMemberFilter = 'pending'">
+            ⏳ Le faltan ({{ selectedMemberLearningDetail.pendingCount }})
+          </button>
+        </div>
+
+        <!-- Lista de canciones del integrante -->
+        <div class="member-songs-grid">
+          <div 
+            class="member-song-item" 
+            *ngFor="let song of getMemberVisibleSongs(selectedMemberLearningDetail)"
+            [class.is-learned]="isSongLearnedBySelectedMember(song)"
+            [class.is-pending]="!isSongLearnedBySelectedMember(song)">
+            <span class="song-num-tag" *ngIf="song.orderNumber">#{{ song.orderNumber }}</span>
+            <span class="song-name-text">{{ song.title }}</span>
+            <span class="song-status-badge" [class.learned]="isSongLearnedBySelectedMember(song)">
+              {{ isSongLearnedBySelectedMember(song) ? '✅ Aprendida' : '⏳ Pendiente' }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="close-btn-footer" (click)="closeMemberSongsDetail()">Volver al Top</button>
       </div>
     </div>
   </div>

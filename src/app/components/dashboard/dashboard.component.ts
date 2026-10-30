@@ -43,6 +43,26 @@ export class DashboardComponent implements OnInit {
   showMovementsModal = false;
   showRankingModal = false;
   showProfileModal = false;
+
+  // Indicadores y Ranking de Letras Aprendidas
+  songs: any[] = [];
+  countableSongs: any[] = [];
+  activeMembersForSongs: any[] = [];
+  songLearningStats = {
+    totalCountable: 0,
+    groupAveragePercentage: 0,
+    myLearnedCount: 0,
+    myPercentage: 0,
+    membersWithCompleteLyrics: 0,
+    membersNeedingPractice: 0
+  };
+  membersSongLearningList: any[] = [];
+  filteredMembersSongLearningList: any[] = [];
+  showSongLearningModal: boolean = false;
+  songRankingSortDirection: 'asc' | 'desc' = 'asc'; // Por defecto: de menor a mayor avance
+  songRankingSearchTerm: string = '';
+  selectedMemberLearningDetail: any = null;
+  selectedMemberFilter: 'all' | 'learned' | 'pending' = 'all';
   cardMovements: any[] = [];
   filteredMovements: any[] = [];
   movementFilter: string = 'all';
@@ -229,6 +249,7 @@ export class DashboardComponent implements OnInit {
         this.loadInsumosData();
         this.loadAllMembersAttendance();
         this.loadUsersWithConsecutiveAbsences();
+        this.loadSongLearningData();
         // NOTIFICACIONES DESACTIVADAS
         // await this.checkNotificationStatus(); // Verificar estado de notificaciones
       } else {
@@ -1551,6 +1572,188 @@ export class DashboardComponent implements OnInit {
 
   closeRankingModal() {
     this.showRankingModal = false;
+  }
+
+  // ==========================================
+  // INDICADORES Y RANKING DE LETRAS APRENDIDAS
+  // ==========================================
+
+  loadSongLearningData() {
+    this.firestore.collection('songs').valueChanges({ idField: 'id' }).subscribe((songs: any[]) => {
+      this.songs = songs || [];
+      this.calculateSongLearningMetrics();
+    });
+
+    this.firestore.collection('users').valueChanges({ idField: 'uid' }).subscribe((allUsers: any[]) => {
+      this.activeMembersForSongs = (allUsers || []).filter(user =>
+        !user.deleted &&
+        user.name &&
+        user.name !== 'Estudiantina Tonantzin Guadalupe' &&
+        user.name !== 'estudiantina tonantzin' &&
+        user.email !== 'estudiantina@tonantzin.com'
+      );
+      this.calculateSongLearningMetrics();
+    });
+  }
+
+  calculateSongLearningMetrics() {
+    if (!this.songs || !this.activeMembersForSongs || this.activeMembersForSongs.length === 0) {
+      return;
+    }
+
+    this.countableSongs = this.songs.filter(s => !s.excludeFromLearning);
+    const totalCountable = this.countableSongs.length;
+
+    if (totalCountable === 0) {
+      this.membersSongLearningList = [];
+      this.filteredMembersSongLearningList = [];
+      return;
+    }
+
+    let totalPercentagesSum = 0;
+    let completeCount = 0;
+    let needingPracticeCount = 0;
+
+    const currentUid = this.user?.uid;
+    let myLearned = 0;
+
+    this.membersSongLearningList = this.activeMembersForSongs.map(member => {
+      const learnedSongs = this.countableSongs.filter(s =>
+        Array.isArray(s.learnedUserIds) && s.learnedUserIds.includes(member.uid)
+      );
+      const pendingSongs = this.countableSongs.filter(s =>
+        !Array.isArray(s.learnedUserIds) || !s.learnedUserIds.includes(member.uid)
+      );
+
+      const learnedCount = learnedSongs.length;
+      const percentage = Math.round((learnedCount / totalCountable) * 100);
+
+      totalPercentagesSum += percentage;
+      if (percentage === 100) completeCount++;
+      if (percentage < 50) needingPracticeCount++;
+
+      if (member.uid === currentUid) {
+        myLearned = learnedCount;
+      }
+
+      return {
+        uid: member.uid,
+        name: member.name || 'Sin nombre',
+        nickname: member.nickname || '',
+        instrument: member.instrument || member.instrumento || 'General',
+        profileImage: member.profileImage || '',
+        learnedCount,
+        pendingCount: totalCountable - learnedCount,
+        totalCount: totalCountable,
+        percentage,
+        learnedSongs,
+        pendingSongs,
+        isCurrentUser: member.uid === currentUid
+      };
+    });
+
+    const avg = Math.round(totalPercentagesSum / this.activeMembersForSongs.length);
+    const myPct = totalCountable > 0 ? Math.round((myLearned / totalCountable) * 100) : 0;
+
+    this.songLearningStats = {
+      totalCountable,
+      groupAveragePercentage: avg,
+      myLearnedCount: myLearned,
+      myPercentage: myPct,
+      membersWithCompleteLyrics: completeCount,
+      membersNeedingPractice: needingPracticeCount
+    };
+
+    this.sortAndFilterSongLearningList();
+  }
+
+  sortAndFilterSongLearningList() {
+    let list = [...this.membersSongLearningList];
+
+    if (this.songRankingSearchTerm && this.songRankingSearchTerm.trim()) {
+      const term = this.songRankingSearchTerm.toLowerCase().trim();
+      list = list.filter(m =>
+        (m.name && m.name.toLowerCase().includes(term)) ||
+        (m.nickname && m.nickname.toLowerCase().includes(term)) ||
+        (m.instrument && m.instrument.toLowerCase().includes(term))
+      );
+    }
+
+    list.sort((a, b) => {
+      if (this.songRankingSortDirection === 'asc') {
+        if (a.percentage !== b.percentage) {
+          return a.percentage - b.percentage;
+        }
+        return a.learnedCount - b.learnedCount;
+      } else {
+        if (a.percentage !== b.percentage) {
+          return b.percentage - a.percentage;
+        }
+        return b.learnedCount - a.learnedCount;
+      }
+    });
+
+    this.filteredMembersSongLearningList = list;
+  }
+
+  setSongRankingSort(direction: 'asc' | 'desc') {
+    this.songRankingSortDirection = direction;
+    this.sortAndFilterSongLearningList();
+  }
+
+  openSongLearningModal() {
+    this.showSongLearningModal = true;
+    this.sortAndFilterSongLearningList();
+  }
+
+  closeSongLearningModal() {
+    this.showSongLearningModal = false;
+    this.selectedMemberLearningDetail = null;
+  }
+
+  viewMemberSongsDetail(member: any, event?: Event) {
+    if (event) event.stopPropagation();
+    this.selectedMemberLearningDetail = member;
+    this.selectedMemberFilter = 'all';
+  }
+
+  closeMemberSongsDetail() {
+    this.selectedMemberLearningDetail = null;
+  }
+
+  getMemberVisibleSongs(member: any): any[] {
+    if (!member) return [];
+    if (this.selectedMemberFilter === 'learned') {
+      return member.learnedSongs || [];
+    } else if (this.selectedMemberFilter === 'pending') {
+      return member.pendingSongs || [];
+    }
+    return [...(member.learnedSongs || []), ...(member.pendingSongs || [])].sort((a, b) => {
+      const numA = Number(a.orderNumber) || 999999;
+      const numB = Number(b.orderNumber) || 999999;
+      return numA - numB;
+    });
+  }
+
+  isSongLearnedBySelectedMember(song: any): boolean {
+    if (!this.selectedMemberLearningDetail || !song) return false;
+    return this.selectedMemberLearningDetail.learnedSongs?.some((s: any) => s.id === song.id);
+  }
+
+  getLearningBadgeClass(percentage: number): string {
+    if (percentage === 100) return 'complete';
+    if (percentage >= 70) return 'high';
+    if (percentage >= 40) return 'medium';
+    return 'low';
+  }
+
+  getMemberInitials(name: string): string {
+    if (!name) return '?';
+    const parts = name.trim().split(' ');
+    if (parts.length >= 2) {
+      return (parts[0][0] + parts[1][0]).toUpperCase();
+    }
+    return name.slice(0, 2).toUpperCase();
   }
 
   // Métodos para el modal de perfil

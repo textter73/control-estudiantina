@@ -33,6 +33,13 @@ export class DashboardComponent implements OnInit {
   participationAttendances: number = 0;
   activeEvents: any[] = [];
   eventsByMonth: { monthKey: string, monthName: string, events: any[] }[] = [];
+
+  // Calendario tipo agenda (Próximos Eventos)
+  readonly calendarWeekDays = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
+  calendarMonth: Date = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+  calendarDays: { date: Date, key: string, day: number, inMonth: boolean, isToday: boolean, events: any[] }[] = [];
+  selectedCalendarKey: string | null = null;
+  private calendarInitialized = false;
   transportRequests: any[] = [];
   ticketSales: any[] = [];
   userAccount: any = null;
@@ -450,7 +457,134 @@ export class DashboardComponent implements OnInit {
       });
 
       this.groupEventsByMonth(this.activeEvents);
+
+      if (!this.calendarInitialized) {
+        const next = this.activeEvents.find(e => this.parseEventDate(e.date).getTime() >= today.getTime());
+        const ref = next ? this.parseEventDate(next.date) : today;
+        this.calendarMonth = new Date(ref.getFullYear(), ref.getMonth(), 1);
+        this.calendarInitialized = true;
+      }
+      this.buildCalendar();
     });
+  }
+
+  // ===================== Calendario tipo agenda =====================
+  private toDateKey(d: Date): string {
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  }
+
+  buildCalendar() {
+    const year = this.calendarMonth.getFullYear();
+    const month = this.calendarMonth.getMonth();
+    const todayKey = this.toDateKey(new Date());
+
+    const eventsByDay = new Map<string, any[]>();
+    this.activeEvents.forEach(e => {
+      const key = this.toDateKey(this.parseEventDate(e.date));
+      if (!eventsByDay.has(key)) eventsByDay.set(key, []);
+      eventsByDay.get(key)!.push(e);
+    });
+
+    // Semana inicia en lunes
+    const first = new Date(year, month, 1);
+    const offset = (first.getDay() + 6) % 7;
+    const start = new Date(year, month, 1 - offset);
+    const lastDay = new Date(year, month + 1, 0).getDate();
+    const totalCells = Math.ceil((offset + lastDay) / 7) * 7;
+
+    this.calendarDays = [];
+    for (let i = 0; i < totalCells; i++) {
+      const d = new Date(start.getFullYear(), start.getMonth(), start.getDate() + i);
+      const key = this.toDateKey(d);
+      this.calendarDays.push({
+        date: d,
+        key,
+        day: d.getDate(),
+        inMonth: d.getMonth() === month,
+        isToday: key === todayKey,
+        events: eventsByDay.get(key) || []
+      });
+    }
+
+    if (this.selectedCalendarKey && !this.selectedCalendarKey.startsWith(`${year}-${String(month + 1).padStart(2, '0')}`)) {
+      this.selectedCalendarKey = null;
+    }
+  }
+
+  get calendarMonthLabel(): string {
+    const names = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+    return `${names[this.calendarMonth.getMonth()]} ${this.calendarMonth.getFullYear()}`;
+  }
+
+  changeCalendarMonth(delta: number) {
+    this.calendarMonth = new Date(this.calendarMonth.getFullYear(), this.calendarMonth.getMonth() + delta, 1);
+    this.selectedCalendarKey = null;
+    this.buildCalendar();
+  }
+
+  goToCalendarToday() {
+    const t = new Date();
+    this.calendarMonth = new Date(t.getFullYear(), t.getMonth(), 1);
+    this.selectedCalendarKey = this.toDateKey(t);
+    this.buildCalendar();
+  }
+
+  selectCalendarDay(cell: { key: string, inMonth: boolean, date: Date }) {
+    if (!cell.inMonth) {
+      this.calendarMonth = new Date(cell.date.getFullYear(), cell.date.getMonth(), 1);
+      this.buildCalendar();
+    }
+    this.selectedCalendarKey = this.selectedCalendarKey === cell.key ? null : cell.key;
+  }
+
+  /** Eventos que se muestran en la agenda: día seleccionado o todo el mes visible */
+  get agendaEvents(): any[] {
+    if (this.selectedCalendarKey) {
+      return this.calendarDays.find(c => c.key === this.selectedCalendarKey)?.events || [];
+    }
+    return this.calendarDays.filter(c => c.inMonth).reduce((acc, c) => acc.concat(c.events), [] as any[]);
+  }
+
+  get agendaTitle(): string {
+    if (!this.selectedCalendarKey) return `Eventos de ${this.calendarMonthLabel}`;
+    const d = this.parseEventDate(this.selectedCalendarKey);
+    const dayNames = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+    return `${dayNames[d.getDay()]} ${d.getDate()}`;
+  }
+
+  getEventShortMonth(event: any): string {
+    const m = ['ENE', 'FEB', 'MAR', 'ABR', 'MAY', 'JUN', 'JUL', 'AGO', 'SEP', 'OCT', 'NOV', 'DIC'];
+    return m[this.parseEventDate(event.date).getMonth()];
+  }
+
+  trackByCalendarKey(_: number, cell: { key: string }) {
+    return cell.key;
+  }
+
+  /** Estado del día según mis confirmaciones. Prioridad: pendiente > tal vez > asistiré > no asistiré */
+  getDayStatus(cell: { events: any[] }): 'pending' | 'maybe' | 'yes' | 'no' | null {
+    if (!cell.events.length) return null;
+    const classes = cell.events.map(e => this.getConfirmationClass(e.userConfirmation));
+    if (classes.includes('confirmation-pending')) return 'pending';
+    if (classes.includes('confirmation-maybe')) return 'maybe';
+    if (classes.includes('confirmation-yes')) return 'yes';
+    return 'no';
+  }
+
+  getDayStatusIcon(cell: { events: any[] }): string {
+    switch (this.getDayStatus(cell)) {
+      case 'pending': return '!';
+      case 'maybe': return '?';
+      case 'yes': return '✓';
+      case 'no': return '✕';
+      default: return '';
+    }
+  }
+
+  get pendingConfirmationsThisMonth(): number {
+    return this.calendarDays
+      .filter(c => c.inMonth)
+      .reduce((n, c) => n + c.events.filter(e => !e.userConfirmation).length, 0);
   }
 
   getConfirmationText(confirmation: any): string {

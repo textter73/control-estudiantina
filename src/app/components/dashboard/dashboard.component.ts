@@ -11,7 +11,6 @@ import { InstrumentMaintenance } from '../../models/maintenance.model';
 import { Insumo } from '../../models/insumo.model';
 import Swal from 'sweetalert2';
 import jsPDF from 'jspdf';
-import 'jspdf-autotable';
 import { ESTUDIANTINA_RANKS, RankConfig } from '../organigrama/organigrama.component';
 
 // Declaración de módulo para qrcode
@@ -2031,6 +2030,7 @@ export class DashboardComponent implements OnInit {
 
       const doc = new jsPDF('l', 'mm', 'a4');
       const pageWidth = doc.internal.pageSize.getWidth();
+      const pageHeight = doc.internal.pageSize.getHeight();
       const nowStr = new Date().toLocaleDateString('es-MX', {
         year: 'numeric',
         month: 'long',
@@ -2056,106 +2056,129 @@ export class DashboardComponent implements OnInit {
       doc.setTextColor(30, 41, 59);
       doc.setFontSize(9);
       doc.setFont('helvetica', 'bold');
-      doc.text(`Fecha de emisión: ${nowStr}`, 14, 31);
-      doc.text(`Integrantes Activos Evaluados: ${totalMembers}`, 98, 31);
-      doc.text(`Sesiones en Periodo: ${filteredAttendances.length} (Ensayos: ${rehearsalSessions} | Eventos: ${eventSessions} | Misas: ${massSessions})`, 162, 31);
+      doc.text(`Fecha de emision: ${nowStr}`, 10, 31);
+      doc.text(`Integrantes Evaluados: ${totalMembers}`, 95, 31);
+      doc.text(`Sesiones en Periodo: ${filteredAttendances.length} (Ensayos: ${rehearsalSessions} | Eventos: ${eventSessions} | Misas: ${massSessions})`, 158, 31);
 
       doc.setFont('helvetica', 'normal');
       doc.text(
-        `Promedio Grupal Participación: ${avgPart}%   |   Promedio Asistencia Efectiva: ${avgEff}%   |   Excelencia (>=90%): ${excellentCount}   |   En Riesgo (<60% o 3+ faltas): ${atRiskCount}`,
-        14,
+        `Promedio Grupal Participacion: ${avgPart}%   |   Promedio Asistencia Efectiva: ${avgEff}%   |   Excelencia (>=90%): ${excellentCount}   |   En Riesgo (<60% o 3+ faltas): ${atRiskCount}`,
+        10,
         37
       );
 
-      const tableBody = reportRows.map((u, idx) => [
-        idx + 1,
-        u.name,
-        u.instrument,
-        u.totalEvents,
-        `${u.participacion}%`,
-        `${u.asistenciaEfectiva}%`,
-        `${u.ensayosAsistidos}/${u.ensayosTotal} (${u.ensayosPct}%)`,
-        `${u.eventosAsistidos}/${u.eventosTotal} (${u.eventosPct}%)`,
-        `${u.misasAsistidas}/${u.misasTotal} (${u.misasPct}%)`,
-        u.presente,
-        u.escuela,
-        u.enfermedad,
-        u.falta,
-        u.consecutiveAbsences >= 3 ? `${u.consecutiveAbsences} !` : u.consecutiveAbsences
-      ]);
+      // Definición de columnas para tabla manual nativa (sin depender de plugins externos)
+      const cols = [
+        { label: '#', x: 10, w: 8, align: 'center' as const },
+        { label: 'Integrante', x: 18, w: 52, align: 'left' as const },
+        { label: 'Instrumento', x: 70, w: 26, align: 'left' as const },
+        { label: 'Total', x: 96, w: 13, align: 'center' as const },
+        { label: '% Part.', x: 109, w: 16, align: 'center' as const },
+        { label: '% Efect.', x: 125, w: 16, align: 'center' as const },
+        { label: 'Ensayos', x: 141, w: 28, align: 'center' as const },
+        { label: 'Eventos', x: 169, w: 28, align: 'center' as const },
+        { label: 'Misas Dom.', x: 197, w: 28, align: 'center' as const },
+        { label: 'Pres.', x: 225, w: 12, align: 'center' as const },
+        { label: 'Esc.', x: 237, w: 12, align: 'center' as const },
+        { label: 'Salud', x: 249, w: 12, align: 'center' as const },
+        { label: 'Faltas', x: 261, w: 13, align: 'center' as const },
+        { label: 'Racha', x: 274, w: 13, align: 'center' as const }
+      ];
+      const tableX = 10;
+      const tableW = 277;
+      const rowH = 7;
 
-      (doc as any).autoTable({
-        startY: 42,
-        head: [[
-          '#',
-          'Integrante',
-          'Instrumento',
-          'Total',
-          '% Part.',
-          '% Efect.',
-          'Ensayos',
-          'Eventos',
-          'Misas Dom.',
-          'Pres.',
-          'Esc.',
-          'Salud',
-          'Faltas',
-          'Racha'
-        ]],
-        body: tableBody,
-        theme: 'grid',
-        headStyles: {
-          fillColor: [24, 157, 152],
-          textColor: 255,
-          fontStyle: 'bold',
-          halign: 'center',
-          fontSize: 8
-        },
-        styles: {
-          fontSize: 7.8,
-          cellPadding: 2,
-          halign: 'center',
-          valign: 'middle'
-        },
-        columnStyles: {
-          0: { cellWidth: 8 },
-          1: { halign: 'left', cellWidth: 48, fontStyle: 'bold' },
-          2: { halign: 'left', cellWidth: 25 },
-          3: { cellWidth: 12 },
-          4: { cellWidth: 16, fontStyle: 'bold' },
-          5: { cellWidth: 16 },
-          6: { cellWidth: 28 },
-          7: { cellWidth: 28 },
-          8: { cellWidth: 28 },
-          9: { cellWidth: 13 },
-          10: { cellWidth: 13 },
-          11: { cellWidth: 13 },
-          12: { cellWidth: 14, fontStyle: 'bold' },
-          13: { cellWidth: 14 }
-        },
-        didParseCell: (data: any) => {
-          if (data.section === 'body') {
-            const member = reportRows[data.row.index];
-            if (!member) return;
-            if (data.column.index === 4) {
-              if (member.participacion >= 90) {
-                data.cell.styles.fillColor = [220, 252, 231];
-                data.cell.styles.textColor = [22, 101, 52];
-              } else if (member.participacion < 60) {
-                data.cell.styles.fillColor = [254, 226, 226];
-                data.cell.styles.textColor = [153, 27, 27];
-              }
-            }
-            if (data.column.index === 12 && member.falta > 0) {
-              data.cell.styles.textColor = [220, 38, 38];
-            }
-            if (data.column.index === 13 && member.consecutiveAbsences >= 3) {
-              data.cell.styles.fillColor = [254, 226, 226];
-              data.cell.styles.textColor = [153, 27, 27];
-              data.cell.styles.fontStyle = 'bold';
-            }
-          }
+      const drawHeader = (startY: number): number => {
+        doc.setFillColor(24, 157, 152);
+        doc.rect(tableX, startY, tableW, 8, 'F');
+        doc.setTextColor(255, 255, 255);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(7.8);
+        cols.forEach(col => {
+          const textX = col.align === 'center' ? col.x + col.w / 2 : col.x + 2;
+          doc.text(col.label, textX, startY + 5.3, { align: col.align });
+        });
+        return startY + 8;
+      };
+
+      let yPos = drawHeader(42);
+
+      reportRows.forEach((u, idx) => {
+        if (yPos > pageHeight - 16) {
+          doc.addPage();
+          yPos = drawHeader(15);
         }
+
+        // Fondo alternado de fila
+        if (idx % 2 === 0) {
+          doc.setFillColor(248, 250, 252);
+        } else {
+          doc.setFillColor(255, 255, 255);
+        }
+        doc.rect(tableX, yPos, tableW, rowH, 'F');
+
+        // Destacar celda de % Participación según nivel
+        if (u.participacion >= 90) {
+          doc.setFillColor(220, 252, 231);
+          doc.rect(cols[4].x, yPos, cols[4].w, rowH, 'F');
+        } else if (u.participacion < 60) {
+          doc.setFillColor(254, 226, 226);
+          doc.rect(cols[4].x, yPos, cols[4].w, rowH, 'F');
+        }
+
+        // Destacar celda de Racha si tiene 3+ faltas consecutivas
+        if (u.consecutiveAbsences >= 3) {
+          doc.setFillColor(254, 226, 226);
+          doc.rect(cols[13].x, yPos, cols[13].w, rowH, 'F');
+        }
+
+        // Bordes sutiles de celda
+        doc.setDrawColor(226, 232, 240);
+        doc.setLineWidth(0.2);
+        doc.rect(tableX, yPos, tableW, rowH, 'S');
+
+        const values = [
+          String(idx + 1),
+          (u.name || '').substring(0, 28),
+          (u.instrument || '-').substring(0, 14),
+          String(u.totalEvents),
+          `${u.participacion}%`,
+          `${u.asistenciaEfectiva}%`,
+          `${u.ensayosAsistidos}/${u.ensayosTotal} (${u.ensayosPct}%)`,
+          `${u.eventosAsistidos}/${u.eventosTotal} (${u.eventosPct}%)`,
+          `${u.misasAsistidas}/${u.misasTotal} (${u.misasPct}%)`,
+          String(u.presente),
+          String(u.escuela),
+          String(u.enfermedad),
+          String(u.falta),
+          u.consecutiveAbsences >= 3 ? `${u.consecutiveAbsences} !` : String(u.consecutiveAbsences)
+        ];
+
+        cols.forEach((col, cIdx) => {
+          if (cIdx === 1 || cIdx === 4 || cIdx === 12 || cIdx === 13) {
+            doc.setFont('helvetica', 'bold');
+          } else {
+            doc.setFont('helvetica', 'normal');
+          }
+
+          if (cIdx === 4 && u.participacion >= 90) {
+            doc.setTextColor(22, 101, 52);
+          } else if (cIdx === 4 && u.participacion < 60) {
+            doc.setTextColor(153, 27, 27);
+          } else if (cIdx === 12 && u.falta > 0) {
+            doc.setTextColor(220, 38, 38);
+          } else if (cIdx === 13 && u.consecutiveAbsences >= 3) {
+            doc.setTextColor(153, 27, 27);
+          } else {
+            doc.setTextColor(30, 41, 59);
+          }
+
+          doc.setFontSize(7.6);
+          const textX = col.align === 'center' ? col.x + col.w / 2 : col.x + 2;
+          doc.text(values[cIdx], textX, yPos + 4.8, { align: col.align });
+        });
+
+        yPos += rowH;
       });
 
       const dateSuffix = new Date().toISOString().split('T')[0];

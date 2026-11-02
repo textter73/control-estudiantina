@@ -1269,29 +1269,27 @@
             </ng-container>
 
             <ng-template #dashEmptyHeadTpl>
-              <div class="dash-tree-empty-note" *ngIf="!area.subordinates || area.subordinates.length === 0">
-                <span>Por asignar titular en {{ area.title }}</span>
-                <div class="dash-tree-stem" [style.background]="area.accentColor"></div>
-                <div class="dash-tree-leaves-row single-leaf">
-                  <div class="dash-tree-leaf">
-                    <div class="dash-leaf-card dash-vacant-card" [style.borderTopColor]="area.accentColor">
-                      <span class="dash-mesa-role-tag vacant">
-                        ✨ VACANTE
-                      </span>
-                      <div class="dash-leaf-photo-wrap dash-vacant-avatar" [style.borderColor]="area.accentColor">
-                        <span>{{ area.icon }}</span>
-                      </div>
-                      <span class="dash-leaf-name" [title]="area.headRoleTitle || area.title">
-                        {{ area.headRoleTitle || area.title }}
-                      </span>
-                      <span class="dash-leaf-inst">Puesto disponible</span>
-                      <button type="button" class="dash-apply-wa-btn"
-                        (click)="applyForVacantRole(area.headRoleTitle || area.title, area.title, $event)">
-                        💬 Postularme
-                      </button>
+              <div class="dash-tree-stem" [style.background]="area.accentColor"></div>
+              <div class="dash-tree-leaves-row single-leaf">
+                <div class="dash-tree-leaf">
+                  <div class="dash-leaf-card dash-vacant-card" [style.borderTopColor]="area.accentColor">
+                    <span class="dash-mesa-role-tag vacant">
+                      ✨ VACANTE
+                    </span>
+                    <div class="dash-leaf-photo-wrap dash-vacant-avatar" [style.borderColor]="area.accentColor">
+                      <span>{{ area.icon }}</span>
                     </div>
+                    <span class="dash-leaf-name" [title]="area.headRoleTitle || area.title">
+                      {{ area.headRoleTitle || area.title }}
+                    </span>
+                    <span class="dash-leaf-inst">Puesto disponible</span>
+                    <button type="button" class="dash-apply-wa-btn"
+                      (click)="applyForVacantRole(area.headRoleTitle || area.title, area.title, $event)">
+                      💬 Postularme
+                    </button>
                   </div>
                 </div>
+              </div>
             </ng-template>
 
             <!-- Ramas de Subordinados que cuelgan debajo del Jefe / Titular -->

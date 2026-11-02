@@ -24,7 +24,7 @@ const QRCode = require('qrcode');
 export class DashboardComponent implements OnInit {
   user: any = null;
   userProfile: any = null;
-  userLevel: {level: number, taxPercentage: number} | null = null;
+  userLevel: { level: number, taxPercentage: number } | null = null;
   lastUserEvaluation: any = null;
   attendancePercentage: number = 0;
   totalAttendances: number = 0;
@@ -73,18 +73,18 @@ export class DashboardComponent implements OnInit {
   cardMovements: any[] = [];
   filteredMovements: any[] = [];
   movementFilter: string = 'all';
-  
+
   // Modal de estado de cuenta
   showStatementModal = false;
   statementData: any = null;
   statementMovements: any[] = [];
-  
+
   // Modal de recibo de nómina
   showReceiptModal = false;
   receiptEmployee: any = null;
   receiptPayroll: any = null;
   receiptPdfUrl: string = '';
-  
+
   // Variables para editar perfil
   profileForm = {
     name: '',
@@ -94,7 +94,7 @@ export class DashboardComponent implements OnInit {
     birthMonth: '',
     instrument: ''
   };
-  
+
   months = [
     { value: '01', name: 'Enero' },
     { value: '02', name: 'Febrero' },
@@ -109,30 +109,30 @@ export class DashboardComponent implements OnInit {
     { value: '11', name: 'Noviembre' },
     { value: '12', name: 'Diciembre' }
   ];
-  
+
   users: any[] = [];
   usersMap: { [key: string]: string } = {};
-  
+
   // Usuarios con faltas consecutivas
   usersWithConsecutiveAbsences: any[] = [];
-  
+
   // Documentos pendientes
   pendingDocuments: any[] = [];
   pendingDocumentsCount: number = 0;
-  
+
   // Insumos con stock
   insumosConStock: Insumo[] = [];
   totalInsumosConStock: number = 0;
   insumosStockBajo: Insumo[] = [];
   insumosAgrupadosPorCategoria: { categoria: string, insumos: Insumo[], count: number, expanded: boolean }[] = [];
-  
+
   // Mantenimiento de instrumento
   latestMaintenance: InstrumentMaintenance | null = null;
   maintenanceLoaded = false;
 
   // Notificaciones
   notificationsEnabled: boolean = false;
-  
+
   attendanceStats = {
     presente: 0,
     escuela: 0,
@@ -190,8 +190,8 @@ export class DashboardComponent implements OnInit {
   }
 
   get canManageInventory(): boolean {
-    return this.userProfile?.profiles?.includes('administrador') || 
-           this.userProfile?.profiles?.includes('insumos') || false;
+    return this.userProfile?.profiles?.includes('administrador') ||
+      this.userProfile?.profiles?.includes('insumos') || false;
   }
 
   get canRequestSupplies(): boolean {
@@ -199,28 +199,28 @@ export class DashboardComponent implements OnInit {
   }
 
   get canManageAttendance(): boolean {
-    return this.userProfile?.profiles?.includes('administrador') || 
-           this.userProfile?.profiles?.includes('asistencia') || false;
+    return this.userProfile?.profiles?.includes('administrador') ||
+      this.userProfile?.profiles?.includes('asistencia') || false;
   }
 
   get canManageEvents(): boolean {
-    return this.userProfile?.profiles?.includes('administrador') || 
-           this.userProfile?.profiles?.includes('agenda') || false;
+    return this.userProfile?.profiles?.includes('administrador') ||
+      this.userProfile?.profiles?.includes('agenda') || false;
   }
 
   get canManageTransport(): boolean {
-    return this.userProfile?.profiles?.includes('administrador') || 
-           this.userProfile?.profiles?.includes('transporte') || false;
+    return this.userProfile?.profiles?.includes('administrador') ||
+      this.userProfile?.profiles?.includes('transporte') || false;
   }
 
   get canManageTickets(): boolean {
-    return this.userProfile?.profiles?.includes('administrador') || 
-           this.userProfile?.profiles?.includes('finanzas') || false;
+    return this.userProfile?.profiles?.includes('administrador') ||
+      this.userProfile?.profiles?.includes('finanzas') || false;
   }
 
   get canManagePayments(): boolean {
-    return this.userProfile?.profiles?.includes('administrador') || 
-           this.userProfile?.profiles?.includes('finanzas') || false;
+    return this.userProfile?.profiles?.includes('administrador') ||
+      this.userProfile?.profiles?.includes('finanzas') || false;
   }
 
   constructor(
@@ -232,7 +232,7 @@ export class DashboardComponent implements OnInit {
     private evaluationService: UserEvaluationService,
     private notificationService: NotificationService,
     private maintenanceService: MaintenanceService
-  ) {}
+  ) { }
 
   ngOnInit() {
     this.afAuth.authState.subscribe(async (user) => {
@@ -243,7 +243,7 @@ export class DashboardComponent implements OnInit {
         this.loadUserLevel(user.uid); // Cargar nivel del usuario
         this.loadLatestMaintenance(user.uid); // Cargar último mantenimiento
         // Cargar última evaluación - ahora con el nombre del perfil disponible
-        this.loadLastEvaluation(user.uid, this.userProfile?.name); 
+        this.loadLastEvaluation(user.uid, this.userProfile?.name);
         this.loadAttendanceData();
         this.loadActiveEvents();
         this.loadTransportRequests();
@@ -267,19 +267,19 @@ export class DashboardComponent implements OnInit {
 
   async loadAttendanceData() {
     if (!this.user) return;
-    
+
     this.firestore.collection('attendance').valueChanges().subscribe((attendances: any[]) => {
       let totalCount = 0;
       let presentCount = 0;
-      
+
       let participationCount = 0;
       const stats = { presente: 0, escuela: 0, enfermedad: 0, falta: 0 };
-      
+
       // Contadores por tipo de actividad
       let eventTotal = 0, eventAttended = 0;
       let rehearsalTotal = 0, rehearsalAttended = 0;
       let massTotal = 0, massAttended = 0;
-      
+
       attendances.forEach(attendance => {
         const userRecord = attendance.records?.find((record: any) => record.userId === this.user.uid);
         if (userRecord) {
@@ -290,15 +290,15 @@ export class DashboardComponent implements OnInit {
           if (['presente', 'escuela', 'enfermedad'].includes(userRecord.status)) {
             participationCount++;
           }
-          
+
           // Contar estadísticas por estado
           if (stats.hasOwnProperty(userRecord.status)) {
             stats[userRecord.status as keyof typeof stats]++;
           }
-          
+
           // Contar por tipo de actividad
           const wasPresent = ['presente', 'escuela', 'enfermedad'].includes(userRecord.status);
-          
+
           switch (attendance.type) {
             case 'evento':
               eventTotal++;
@@ -315,38 +315,38 @@ export class DashboardComponent implements OnInit {
           }
         }
       });
-      
+
       this.attendanceStats = stats;
-      
+
       // Calcular estadísticas por tipo
       this.eventAttendanceStats = {
         percentage: eventTotal > 0 ? Math.round((eventAttended / eventTotal) * 100) : 0,
         attended: eventAttended,
         total: eventTotal
       };
-      
+
       this.rehearsalAttendanceStats = {
         percentage: rehearsalTotal > 0 ? Math.round((rehearsalAttended / rehearsalTotal) * 100) : 0,
         attended: rehearsalAttended,
         total: rehearsalTotal
       };
-      
+
       this.massAttendanceStats = {
         percentage: massTotal > 0 ? Math.round((massAttended / massTotal) * 100) : 0,
         attended: massAttended,
         total: massTotal
       };
-      
+
       // Calcular estadísticas globales
       const globalTotal = eventTotal + rehearsalTotal + massTotal;
       const globalAttended = eventAttended + rehearsalAttended + massAttended;
-      
+
       this.globalAttendanceStats = {
         percentage: globalTotal > 0 ? Math.round((globalAttended / globalTotal) * 100) : 0,
         attended: globalAttended,
         total: globalTotal
       };
-      
+
       // Mantener compatibilidad con el código existente para misaStats
       this.misaStats = {
         asistidas: massAttended,
@@ -354,7 +354,7 @@ export class DashboardComponent implements OnInit {
         total: massTotal,
         percentage: massTotal > 0 ? Math.round((massAttended / massTotal) * 100) : 0
       };
-      
+
       this.totalAttendances = totalCount;
       this.presentAttendances = presentCount;
       this.participationAttendances = participationCount;
@@ -442,12 +442,12 @@ export class DashboardComponent implements OnInit {
     this.firestore.collection('events').valueChanges({ idField: 'id' }).subscribe((events: any[]) => {
       const today = new Date();
       today.setHours(0, 0, 0, 0); // Resetear la hora para comparar solo fechas
-      
+
       const activeEvents = events
         .filter(event => event.status === 'abierto')
         // .filter(event => new Date(event.date) >= today) // Solo eventos futuros o de hoy
         .sort((a, b) => this.parseEventDate(a.date).getTime() - this.parseEventDate(b.date).getTime()); // Más próximo primero
-      
+
       this.activeEvents = activeEvents.map(event => {
         const userConfirmation = event.confirmations?.find((c: any) => c.userId === this.user.uid);
         return {
@@ -630,17 +630,17 @@ export class DashboardComponent implements OnInit {
 
   viewEventDetails(eventId: string) {
     const isClosed = this.hasTransportConfig(eventId) || this.hasAnyTicketsDistributed(eventId);
-    this.router.navigate(['/event-details', eventId], { 
-      queryParams: { 
+    this.router.navigate(['/event-details', eventId], {
+      queryParams: {
         returnUrl: '/dashboard',
         disableConfirm: isClosed ? 'true' : 'false'
-      } 
+      }
     });
   }
 
   getTotalPeopleForEvent(event: any): number {
     if (!event.confirmations) return 0;
-    
+
     return event.confirmations
       .filter((c: any) => c && c.response === 'asistire')
       .reduce((total: number, c: any) => {
@@ -696,11 +696,11 @@ export class DashboardComponent implements OnInit {
 
   getUnitCostFromConfig(): number {
     if (!this.selectedTransportConfig?.vehicles) return 0;
-    
+
     // Calcular costo promedio ponderado por vehículo
     let totalCost = 0;
     let totalSeats = 0;
-    
+
     this.selectedTransportConfig.vehicles.forEach((vehicle: any) => {
       if (vehicle.occupiedSeats > 0) {
         const vehicleCost = vehicle.vehicleCost || 0;
@@ -710,7 +710,7 @@ export class DashboardComponent implements OnInit {
         }
       }
     });
-    
+
     // Si no hay costos individuales, usar el costo total
     if (totalCost === 0) {
       totalCost = this.selectedTransportConfig.totalCost || 0;
@@ -718,7 +718,7 @@ export class DashboardComponent implements OnInit {
         return total + vehicle.occupiedSeats;
       }, 0);
     }
-    
+
     return totalSeats > 0 ? Math.round((totalCost / totalSeats) * 100) / 100 : 0;
   }
 
@@ -730,16 +730,16 @@ export class DashboardComponent implements OnInit {
 
   getMySeats(): any[] {
     if (!this.selectedTransportConfig?.vehicles) return [];
-    
+
     const userName = this.userProfile?.name || this.user?.email;
     const mySeats: any[] = [];
-    
+
     this.selectedTransportConfig.vehicles.forEach((vehicle: any, vehicleIndex: number) => {
       vehicle.seats.forEach((seat: any, seatIndex: number) => {
         if (seat.occupied && seat.passenger) {
           const isMyName = seat.passenger.name === userName || seat.passengerName === userName;
           const isMyCompanion = seat.passenger.name?.includes(`Acompañante de ${userName}`);
-          
+
           if (isMyName || isMyCompanion) {
             mySeats.push({
               vehicleIndex,
@@ -751,22 +751,22 @@ export class DashboardComponent implements OnInit {
         }
       });
     });
-    
+
     return mySeats;
   }
 
   getMyTotalCost(): number {
     if (!this.selectedTransportConfig?.vehicles) return 0;
-    
+
     let totalCost = 0;
     const userName = this.userProfile?.name || this.user?.email;
-    
+
     this.selectedTransportConfig.vehicles.forEach((vehicle: any) => {
       vehicle.seats.forEach((seat: any) => {
         if (seat.occupied && seat.passenger) {
           const isMyName = seat.passenger.name === userName || seat.passengerName === userName;
           const isMyCompanion = seat.passenger.name?.includes(`Acompañante de ${userName}`);
-          
+
           if (isMyName || isMyCompanion) {
             // Usar costo individual del vehículo si está disponible
             if (vehicle.vehicleCost && vehicle.occupiedSeats > 0) {
@@ -779,7 +779,7 @@ export class DashboardComponent implements OnInit {
         }
       });
     });
-    
+
     return Math.round(totalCost * 100) / 100;
   }
 
@@ -787,15 +787,15 @@ export class DashboardComponent implements OnInit {
 
   loadTicketSales() {
     if (!this.user) return;
-    
+
     const userName = this.userProfile?.name || this.user?.email;
     this.firestore.collection('ticket-sales').valueChanges({ idField: 'id' }).subscribe((allTickets: any[]) => {
       // Guardar un registro de qué eventos ya tienen boletos generados en general
       this.globalEventsWithTickets = new Set(allTickets.map(t => t.eventId));
-      
+
       // Filtrar tickets propios y de acompañantes
-      this.ticketSales = allTickets.filter(ticket => 
-        ticket.passengerName === userName || 
+      this.ticketSales = allTickets.filter(ticket =>
+        ticket.passengerName === userName ||
         ticket.passengerName?.includes(`Acompañante de ${userName}`)
       );
     });
@@ -814,11 +814,11 @@ export class DashboardComponent implements OnInit {
     if (myTickets.length === 0) {
       return { status: 'sin-boletos', total: 0, paid: 0 };
     }
-    
+
     const paidTickets = myTickets.filter(ticket => ticket.paymentStatus === 'pagado');
     const total = myTickets.reduce((sum, ticket) => sum + (ticket.price || 0), 0);
     const paid = paidTickets.reduce((sum, ticket) => sum + (ticket.price || 0), 0);
-    
+
     if (paidTickets.length === myTickets.length) {
       return { status: 'pagado', total, paid };
     } else if (paidTickets.length > 0) {
@@ -850,8 +850,8 @@ export class DashboardComponent implements OnInit {
 
   loadUserAccount() {
     if (!this.user) return;
-    
-    this.firestore.collection('financial-accounts', ref => 
+
+    this.firestore.collection('financial-accounts', ref =>
       ref.where('userId', '==', this.user.uid)
     ).valueChanges({ idField: 'id' }).subscribe((accounts: any[]) => {
       this.userAccount = accounts.length > 0 ? accounts[0] : null;
@@ -886,23 +886,23 @@ export class DashboardComponent implements OnInit {
     const nextDate = date.toDate ? date.toDate() : new Date(date);
     const today = new Date();
     // Set time to 00:00:00 to only compare dates
-    today.setHours(0,0,0,0);
-    nextDate.setHours(0,0,0,0);
+    today.setHours(0, 0, 0, 0);
+    nextDate.setHours(0, 0, 0, 0);
     return nextDate < today;
   }
 
   viewCardMovements() {
     if (!this.userAccount) return;
-    
+
     this.loadCardMovements();
     this.showMovementsModal = true;
   }
 
   loadCardMovements() {
     if (!this.userAccount) return;
-    
+
     // Consulta sin orderBy para evitar el error del índice
-    this.firestore.collection('financial-transactions', ref => 
+    this.firestore.collection('financial-transactions', ref =>
       ref.where('accountId', '==', this.userAccount.id)
     ).valueChanges({ idField: 'id' }).subscribe((movements: any[]) => {
       // Ordenamos en el cliente para evitar el error del índice
@@ -919,7 +919,7 @@ export class DashboardComponent implements OnInit {
     if (this.movementFilter === 'all') {
       this.filteredMovements = this.cardMovements;
     } else {
-      this.filteredMovements = this.cardMovements.filter(movement => 
+      this.filteredMovements = this.cardMovements.filter(movement =>
         movement.type === this.movementFilter
       );
     }
@@ -989,7 +989,7 @@ export class DashboardComponent implements OnInit {
         status: this.userAccount.status === 'active' ? 'Activa' : 'Inactiva'
       };
       this.statementMovements = sortedMovements;
-      
+
       // Debug: Verificar movimientos de nómina
       console.log('📊 Total de movimientos:', sortedMovements.length);
       const payrollMovements = sortedMovements.filter((m: any) => this.isPayrollTransaction(m));
@@ -997,7 +997,7 @@ export class DashboardComponent implements OnInit {
       if (payrollMovements.length > 0) {
         console.log('📝 Conceptos de nómina:', payrollMovements.map((m: any) => m.concept));
       }
-      
+
       this.showStatementModal = true;
     } catch (error) {
       console.error('Error loading account statement:', error);
@@ -1015,22 +1015,22 @@ export class DashboardComponent implements OnInit {
       // Detectar si es iOS/Safari
       const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
       const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-      
+
       if (isIOS || isSafari) {
         // Método compatible con iOS
         const blob = doc.output('blob');
         const url = URL.createObjectURL(blob);
-        
+
         // Crear enlace temporal
         const link = document.createElement('a');
         link.href = url;
         link.download = filename;
         link.style.display = 'none';
-        
+
         // Agregar al DOM, hacer click y remover
         document.body.appendChild(link);
         link.click();
-        
+
         // Limpiar después de un delay
         setTimeout(() => {
           document.body.removeChild(link);
@@ -1070,7 +1070,7 @@ export class DashboardComponent implements OnInit {
       URL.revokeObjectURL(this.receiptPdfUrl);
       this.receiptPdfUrl = '';
     }
-    
+
     this.showReceiptModal = false;
     this.receiptEmployee = null;
     this.receiptPayroll = null;
@@ -1100,7 +1100,7 @@ export class DashboardComponent implements OnInit {
       doc.setFont('helvetica', 'bold');
       doc.text('ESTUDIANTINA TONANTZIN GUADALUPE', pageWidth / 2, yPos, { align: 'center' });
       yPos += 8;
-      
+
       doc.setFontSize(14);
       doc.text('ESTADO DE CUENTA', pageWidth / 2, yPos, { align: 'center' });
       yPos += 10;
@@ -1162,18 +1162,18 @@ export class DashboardComponent implements OnInit {
         const drawTableHeader = (startY: number) => {
           doc.setFillColor(24, 157, 152); // Color turquesa
           doc.rect(tableX, startY, tableWidth, 8, 'F');
-          
+
           doc.setTextColor(255, 255, 255);
           doc.setFontSize(8);
           doc.setFont('helvetica', 'bold');
-          
+
           doc.text('#', col1 + 2, startY + 5.5);
           doc.text('Fecha', col2 + 2, startY + 5.5);
           doc.text('Tipo', col3 + 2, startY + 5.5);
           doc.text('Concepto', col4 + 2, startY + 5.5);
           doc.text('Monto', col5 + 2, startY + 5.5);
           doc.text('Saldo Después', col6 + 2, startY + 5.5);
-          
+
           doc.setTextColor(0, 0, 0);
           return startY + 8;
         };
@@ -1219,11 +1219,11 @@ export class DashboardComponent implements OnInit {
           doc.text(date, col2 + 2, yPos + 3.5);
           doc.text(time, col2 + 2, yPos + 6, { maxWidth: 35 });
           doc.text(type, col3 + 2, yPos + 5);
-          
+
           // Concepto con límite de ancho
           const conceptLines = doc.splitTextToSize(concept, 50);
           doc.text(conceptLines[0], col4 + 2, yPos + 5);
-          
+
           doc.text(amount, col5 + 2, yPos + 5);
           doc.text(balance, col6 + 2, yPos + 5);
 
@@ -1234,14 +1234,14 @@ export class DashboardComponent implements OnInit {
 
           yPos += rowHeight;
         });
-        
+
         yPos += 5;
       }
 
       // Pie de página
       const finalY = yPos || 20;
       const footerY = pageHeight - 15;
-      
+
       // Si hay espacio suficiente en la página actual, usar esa página, si no, agregar nueva
       if (finalY > pageHeight - 30) {
         doc.addPage();
@@ -1285,9 +1285,9 @@ export class DashboardComponent implements OnInit {
 
   loadPendingPayments() {
     if (!this.user) return;
-    
+
     // Consulta simple - solo filtrar por userId primero
-    this.firestore.collection('payment-notifications', ref => 
+    this.firestore.collection('payment-notifications', ref =>
       ref.where('userId', '==', this.user.uid)
     ).valueChanges({ idField: 'id' }).subscribe((allPayments: any[]) => {
       // Filtrar por status 'pending' en el cliente y ordenar por fecha
@@ -1389,9 +1389,9 @@ export class DashboardComponent implements OnInit {
 
   loadMyPartialPayments() {
     if (!this.user) return;
-    
+
     // Cargar mis pagos parciales realizados
-    this.firestore.collection('partial-payments', ref => 
+    this.firestore.collection('partial-payments', ref =>
       ref.where('userId', '==', this.user.uid)
     ).valueChanges({ idField: 'id' }).subscribe((payments: any[]) => {
       // Ordenar por fecha de creación (más recientes primero)
@@ -1407,15 +1407,15 @@ export class DashboardComponent implements OnInit {
     if (!this.user) return;
 
     // Cargar documentos pendientes donde el usuario esté en la lista de requeridos
-    this.firestore.collection('documentos-fisicos', ref => 
+    this.firestore.collection('documentos-fisicos', ref =>
       ref.where('esVersionActual', '==', true)
-         .where('personasRequeridas', 'array-contains', this.user.uid)
+        .where('personasRequeridas', 'array-contains', this.user.uid)
     ).valueChanges({ idField: 'id' }).subscribe((docs: any[]) => {
       // Filtrar solo los documentos donde el usuario NO ha entregado su firma
-      this.pendingDocuments = docs.filter(doc => 
+      this.pendingDocuments = docs.filter(doc =>
         !doc.personasEntregadas || !doc.personasEntregadas.includes(this.user.uid)
       );
-      
+
       this.pendingDocumentsCount = this.pendingDocuments.length;
     });
   }
@@ -1440,9 +1440,9 @@ export class DashboardComponent implements OnInit {
     // Solo mostrar conceptos de cuotas que aún están pendientes
     const pendingConcepts = this.pendingPayments.map(p => p.concept);
     const uniquePendingConcepts = [...new Set(pendingConcepts)];
-    
+
     // Filtrar solo los conceptos que tienen cuotas pendientes
-    return uniquePendingConcepts.filter(concept => 
+    return uniquePendingConcepts.filter(concept =>
       this.hasPartialPaymentsForConcept(concept)
     );
   }
@@ -1477,25 +1477,25 @@ export class DashboardComponent implements OnInit {
   loadInsumosData() {
     this.insumoService.getInsumos().subscribe((insumos: Insumo[]) => {
       // Filtrar solo insumos activos con stock disponible
-      this.insumosConStock = insumos.filter(insumo => 
+      this.insumosConStock = insumos.filter(insumo =>
         insumo.activo && insumo.cantidadDisponible > 0
       );
-      
+
       this.totalInsumosConStock = this.insumosConStock.length;
-      
+
       // Filtrar insumos con stock bajo (menos de la cantidad mínima)
-      this.insumosStockBajo = this.insumosConStock.filter(insumo => 
+      this.insumosStockBajo = this.insumosConStock.filter(insumo =>
         insumo.cantidadDisponible <= insumo.cantidadMinima
       );
-      
+
       // Agrupar insumos por categoría
       this.agruparInsumosPorCategoria();
     });
   }
-  
+
   agruparInsumosPorCategoria() {
     const grupos: { [key: string]: Insumo[] } = {};
-    
+
     this.insumosConStock.forEach(insumo => {
       const categoria = insumo.categoria || 'Sin Categoría';
       if (!grupos[categoria]) {
@@ -1503,7 +1503,7 @@ export class DashboardComponent implements OnInit {
       }
       grupos[categoria].push(insumo);
     });
-    
+
     this.insumosAgrupadosPorCategoria = Object.keys(grupos).map(categoria => ({
       categoria: categoria,
       insumos: grupos[categoria],
@@ -1511,7 +1511,7 @@ export class DashboardComponent implements OnInit {
       expanded: false
     }));
   }
-  
+
   toggleCategoria(categoria: any) {
     categoria.expanded = !categoria.expanded;
   }
@@ -1535,36 +1535,36 @@ export class DashboardComponent implements OnInit {
       this.firestore.collection('users').get().toPromise(),
       this.firestore.collection('attendance').get().toPromise()
     ]).then(([usersSnapshot, attendanceSnapshot]) => {
-      const allUsers = usersSnapshot?.docs.map(doc => ({ 
-        uid: doc.id, 
-        ...(doc.data() as any) 
+      const allUsers = usersSnapshot?.docs.map(doc => ({
+        uid: doc.id,
+        ...(doc.data() as any)
       })) || [];
-      
+
       // Filtrar solo usuarios activos (no eliminados) y excluir "Estudiantina Tonantzin"
-      const users = allUsers.filter(user => 
-        !user.deleted && 
+      const users = allUsers.filter(user =>
+        !user.deleted &&
         user.name !== 'Estudiantina Tonantzin Guadalupe' &&
         user.name !== 'estudiantina tonantzin' &&
         user.email !== 'estudiantina@tonantzin.com'
       );
-      
+
       // Filtrar asistencias de los últimos 6 meses
       const allAttendances = attendanceSnapshot?.docs.map(doc => doc.data()) || [];
       const attendances = allAttendances.filter((attendance: any) => {
         const attendanceDate = attendance.date?.toDate ? attendance.date.toDate() : new Date(attendance.date);
         return attendanceDate >= sixMonthsAgo;
       });
-      
+
       const memberStats = users.map(user => {
         let eventTotal = 0, eventAttended = 0;
         let rehearsalTotal = 0, rehearsalAttended = 0;
         let massTotal = 0, massAttended = 0;
-        
+
         attendances.forEach((attendance: any) => {
           const userRecord = attendance.records?.find((record: any) => record.userId === user.uid);
           if (userRecord) {
             const wasPresent = ['presente', 'escuela', 'enfermedad'].includes(userRecord.status);
-            
+
             switch (attendance.type) {
               case 'evento':
                 eventTotal++;
@@ -1581,10 +1581,10 @@ export class DashboardComponent implements OnInit {
             }
           }
         });
-        
+
         const totalActivities = eventTotal + rehearsalTotal + massTotal;
         const totalAttended = eventAttended + rehearsalAttended + massAttended;
-        
+
         return {
           uid: user.uid,
           name: user.name || 'Usuario sin nombre',
@@ -1598,7 +1598,7 @@ export class DashboardComponent implements OnInit {
           totalStats: { attended: totalAttended, total: totalActivities }
         };
       });
-      
+
       // Ordenar de mayor a menor porcentaje total
       this.membersAttendanceList = memberStats
         .filter(member => member.totalStats.total > 0) // Solo mostrar usuarios con actividades
@@ -1613,25 +1613,25 @@ export class DashboardComponent implements OnInit {
       this.firestore.collection('users').get().toPromise(),
       this.firestore.collection('attendance').get().toPromise()
     ]).then(([usersSnapshot, attendanceSnapshot]) => {
-      const allUsers = usersSnapshot?.docs.map(doc => ({ 
-        uid: doc.id, 
-        ...(doc.data() as any) 
+      const allUsers = usersSnapshot?.docs.map(doc => ({
+        uid: doc.id,
+        ...(doc.data() as any)
       })) || [];
-      
+
       // Filtrar solo usuarios activos
-      const users = allUsers.filter(user => 
-        !user.deleted && 
+      const users = allUsers.filter(user =>
+        !user.deleted &&
         user.name !== 'Estudiantina Tonantzin Guadalupe'
       );
-      
+
       // Obtener todas las asistencias y ordenarlas por fecha descendente (más reciente primero)
       const allAttendances = attendanceSnapshot?.docs.map(doc => ({
         id: doc.id,
         ...(doc.data() as any)
       })) || [];
-      
+
       console.log('Total asistencias encontradas:', allAttendances.length);
-      
+
       const attendances = allAttendances
         .filter((att: any) => {
           // Solo filtrar asistencias completadas si el campo status existe
@@ -1643,23 +1643,23 @@ export class DashboardComponent implements OnInit {
           const dateB = b.date?.toDate ? b.date.toDate() : new Date(b.date);
           return dateB.getTime() - dateA.getTime(); // Más reciente primero
         });
-      
+
       console.log('Asistencias después de filtrar:', attendances.length);
-      
+
       // Para cada usuario, contar faltas consecutivas desde la asistencia más reciente
       const usersWithAbsences: any[] = [];
-      
+
       users.forEach(user => {
         let consecutiveAbsences = 0;
         let lastActivities: any[] = [];
-        
+
         // Revisar las asistencias en orden (más reciente primero)
         for (const attendance of attendances) {
           const userRecord = attendance.records?.find((record: any) => record.userId === user.uid);
-          
+
           if (userRecord) {
             const isFalta = userRecord.status === 'falta';
-            
+
             if (isFalta) {
               consecutiveAbsences++;
               lastActivities.push({
@@ -1675,7 +1675,7 @@ export class DashboardComponent implements OnInit {
           // Si no hay registro del usuario en esta asistencia, no se cuenta como falta
           // y se rompe la secuencia consecutiva
         }
-        
+
         // Si tiene 3 o más faltas consecutivas, agregarlo a la lista
         if (consecutiveAbsences >= 3) {
           usersWithAbsences.push({
@@ -1686,12 +1686,12 @@ export class DashboardComponent implements OnInit {
           });
         }
       });
-      
+
       // Ordenar por número de faltas consecutivas (de mayor a menor)
-      this.usersWithConsecutiveAbsences = usersWithAbsences.sort((a, b) => 
+      this.usersWithConsecutiveAbsences = usersWithAbsences.sort((a, b) =>
         b.consecutiveAbsences - a.consecutiveAbsences
       );
-      
+
       console.log('Usuarios con faltas consecutivas (3+):', this.usersWithConsecutiveAbsences);
       console.log('Total usuarios con faltas:', this.usersWithConsecutiveAbsences.length);
     }).catch(error => {
@@ -1881,6 +1881,12 @@ export class DashboardComponent implements OnInit {
     return 'low';
   }
 
+  getAttendancePillClass(percentage: number): string {
+    if (percentage >= 80) return 'complete';
+    if (percentage >= 50) return 'medium';
+    return 'low';
+  }
+
   getMemberInitials(name: string): string {
     if (!name) return '?';
     const parts = name.trim().split(' ');
@@ -1902,7 +1908,7 @@ export class DashboardComponent implements OnInit {
       instrument: this.userProfile?.instrument || ''
     };
     this.showProfileModal = true;
-    
+
     // Generar QR después de que se abra el modal
     setTimeout(() => {
       this.generateQrCode();
@@ -2009,7 +2015,7 @@ export class DashboardComponent implements OnInit {
       reader.onload = (e: any) => {
         // El resultado ya es base64 (data:image/jpeg;base64,...)
         this.profileForm.profileImage = e.target.result;
-        
+
         // Opcional: mostrar confirmación
         Swal.fire({
           icon: 'success',
@@ -2019,7 +2025,7 @@ export class DashboardComponent implements OnInit {
           showConfirmButton: false
         });
       };
-      
+
       reader.onerror = () => {
         Swal.fire({
           icon: 'error',
@@ -2027,7 +2033,7 @@ export class DashboardComponent implements OnInit {
           text: 'No se pudo cargar la imagen'
         });
       };
-      
+
       // Leer el archivo como data URL (base64)
       reader.readAsDataURL(file);
     }
@@ -2058,7 +2064,7 @@ export class DashboardComponent implements OnInit {
 
   // Obtener clase CSS para el badge del nivel
   getLevelBadgeClass(nivel: number): string {
-    switch(nivel) {
+    switch (nivel) {
       case 1: return 'level-1';
       case 2: return 'level-2';
       case 3: return 'level-3';
@@ -2071,7 +2077,7 @@ export class DashboardComponent implements OnInit {
 
   // Obtener la etiqueta de texto para un valor de evaluación
   getEvaluationLevelText(value: number): string {
-    switch(value) {
+    switch (value) {
       case 1: return 'Básico';
       case 2: return 'Aceptable';
       case 3: return 'Bueno';
@@ -2102,17 +2108,17 @@ export class DashboardComponent implements OnInit {
   // Convertir Firestore Timestamp a Date
   getEvaluationDate(): Date | null {
     if (!this.lastUserEvaluation || !this.lastUserEvaluation.evaluatedAt) return null;
-    
+
     // Si es un Timestamp de Firestore
     if (this.lastUserEvaluation.evaluatedAt.toDate) {
       return this.lastUserEvaluation.evaluatedAt.toDate();
     }
-    
+
     // Si ya es un Date
     if (this.lastUserEvaluation.evaluatedAt instanceof Date) {
       return this.lastUserEvaluation.evaluatedAt;
     }
-    
+
     return null;
   }
 
@@ -2120,13 +2126,13 @@ export class DashboardComponent implements OnInit {
   isPayrollTransaction(movement: any): boolean {
     if (movement.type !== 'deposit') return false;
     if (!movement.concept) return false;
-    
+
     // Buscar palabras clave relacionadas con nómina (con y sin acento)
     const concept = movement.concept.toLowerCase();
-    return concept.includes('nómina') || 
-           concept.includes('nomina') || 
-           concept.includes('pago nómina') ||
-           concept.includes('pago nomina');
+    return concept.includes('nómina') ||
+      concept.includes('nomina') ||
+      concept.includes('pago nómina') ||
+      concept.includes('pago nomina');
   }
 
   // Ver recibo de nómina individual
@@ -2142,7 +2148,7 @@ export class DashboardComponent implements OnInit {
       // Intento 2: Si no hay payrollId, buscar por concepto y fecha aproximada
       if (!payrollDoc || !payrollDoc.exists) {
         console.log('🔍 Buscando nómina por concepto...');
-        
+
         // Extraer nombre del contrato del concepto
         const conceptMatch = movement.concept.match(/(?:Pago nómina|Pago nomina):\s*(.+)/i);
         if (!conceptMatch) {
@@ -2160,7 +2166,7 @@ export class DashboardComponent implements OnInit {
         // Buscar nómina completada con ese nombre de contrato
         const payrollsSnapshot = await this.firestore.collection('payrolls', ref =>
           ref.where('status', '==', 'completada')
-             .where('contractName', '==', contractName)
+            .where('contractName', '==', contractName)
         ).get().toPromise();
 
         if (!payrollsSnapshot || payrollsSnapshot.empty) {
@@ -2195,10 +2201,10 @@ export class DashboardComponent implements OnInit {
       }
 
       const payrollData = payrollDoc.data() as any;
-      
+
       // Buscar al empleado en la nómina
       const employee = payrollData.employees.find((e: any) => e.id === this.user.uid);
-      
+
       if (!employee) {
         Swal.fire({
           icon: 'error',
@@ -2210,15 +2216,15 @@ export class DashboardComponent implements OnInit {
 
       // Generar PDF y crear URL para previsualización
       const pdfBlob = this.generatePayrollReceiptPDFBlob(employee, payrollData);
-      
+
       // Limpiar URL anterior si existe
       if (this.receiptPdfUrl) {
         URL.revokeObjectURL(this.receiptPdfUrl);
       }
-      
+
       // Crear nueva URL del blob
       this.receiptPdfUrl = URL.createObjectURL(pdfBlob);
-      
+
       // Abrir modal de previsualización
       this.receiptEmployee = employee;
       this.receiptPayroll = payrollData;
@@ -2284,7 +2290,7 @@ export class DashboardComponent implements OnInit {
 
     doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
-    
+
     doc.text('Monto bruto:', 15, yPos);
     doc.text(`$${employee.gross}`, 150, yPos);
     yPos += 8;
@@ -2334,12 +2340,12 @@ export class DashboardComponent implements OnInit {
   // Formatear montos de manera compacta (sin decimales si son .00)
   formatAmount(amount: number): string {
     if (!amount && amount !== 0) return '0';
-    
+
     // Si el número es entero o tiene solo .00, no mostrar decimales
     if (amount % 1 === 0) {
       return amount.toLocaleString('es-MX');
     }
-    
+
     // Si tiene decimales, mostrar 2 decimales
     return amount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
   }
@@ -2351,7 +2357,7 @@ export class DashboardComponent implements OnInit {
   // Métodos para código QR
   async generateQrCode() {
     if (!this.user) return;
-    
+
     try {
       const canvas = document.getElementById('qr-canvas') as HTMLCanvasElement;
       if (!canvas) return;
@@ -2415,11 +2421,11 @@ export class DashboardComponent implements OnInit {
   async checkNotificationStatus() {
     // Verificar permiso del navegador Y estado en Firestore
     const browserPermission = this.notificationService.isNotificationEnabled();
-    
+
     if (this.user && this.userProfile) {
       // Si el navegador tiene permiso Y el usuario lo activó en Firestore
       this.notificationsEnabled = browserPermission && (this.userProfile.notificationsEnabled || false);
-      
+
       // Si el navegador tiene permiso pero Firestore no está sincronizado, actualizar Firestore
       if (browserPermission && !this.userProfile.notificationsEnabled) {
         try {

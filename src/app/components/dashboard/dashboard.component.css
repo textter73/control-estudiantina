@@ -7,7 +7,7 @@
   background: linear-gradient(135deg, #189d98 0%, #0f6b68 100%);
   color: white;
   padding: 1rem 0;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 .header-content {
@@ -30,10 +30,11 @@
   height: 50px;
   border-radius: 50%;
   object-fit: cover;
-  border: 2px solid rgba(255,255,255,0.3);
+  border: 2px solid rgba(255, 255, 255, 0.3);
 }
 
-.logo-section h1, .logo-section h4 {
+.logo-section h1,
+.logo-section h4 {
   margin: 0;
   font-size: 1.5rem;
   color: white;
@@ -96,7 +97,8 @@
 .user-instrument {
   font-size: 0.9rem;
   margin-top: 2px;
-  color: #ffeb3b; /* A yellow color to pop against the green header */
+  color: #ffeb3b;
+  /* A yellow color to pop against the green header */
   font-weight: 500;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
@@ -117,12 +119,12 @@
   color: white;
   text-align: center;
   width: fit-content;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 .tax-info {
   font-size: 0.8rem;
-  color: rgba(255,255,255,0.9);
+  color: rgba(255, 255, 255, 0.9);
   font-weight: 500;
 }
 
@@ -132,17 +134,34 @@
 
 .no-level-text {
   font-size: 0.8rem;
-  color: rgba(255,255,255,0.7);
+  color: rgba(255, 255, 255, 0.7);
   font-style: italic;
 }
 
 /* Colores para los diferentes niveles */
-.level-1 { background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%); }
-.level-2 { background: linear-gradient(135deg, #8BC34A 0%, #7CB342 100%); }
-.level-3 { background: linear-gradient(135deg, #FFC107 0%, #FF8F00 100%); }
-.level-4 { background: linear-gradient(135deg, #FF9800 0%, #F57400 100%); }
-.level-5 { background: linear-gradient(135deg, #FF5722 0%, #E64A19 100%); }
-.level-6 { background: linear-gradient(135deg, #F44336 0%, #C62828 100%); }
+.level-1 {
+  background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+}
+
+.level-2 {
+  background: linear-gradient(135deg, #8BC34A 0%, #7CB342 100%);
+}
+
+.level-3 {
+  background: linear-gradient(135deg, #FFC107 0%, #FF8F00 100%);
+}
+
+.level-4 {
+  background: linear-gradient(135deg, #FF9800 0%, #F57400 100%);
+}
+
+.level-5 {
+  background: linear-gradient(135deg, #FF5722 0%, #E64A19 100%);
+}
+
+.level-6 {
+  background: linear-gradient(135deg, #F44336 0%, #C62828 100%);
+}
 
 .user-buttons {
   display: flex;
@@ -204,7 +223,7 @@
   background: white;
   border-radius: 15px;
   padding: 2rem;
-  box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
   margin-bottom: 2rem;
   text-align: center;
 }
@@ -243,7 +262,7 @@
   background: white;
   border-radius: 15px;
   padding: 2rem;
-  box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
   margin-bottom: 2rem;
   text-align: center;
 }
@@ -261,7 +280,9 @@
   justify-content: center;
 }
 
-.attendance-btn, .summary-btn, .event-btn {
+.attendance-btn,
+.summary-btn,
+.event-btn {
   background: linear-gradient(135deg, #189d98 0%, #0f6b68 100%);
   color: white;
   border: none;
@@ -278,7 +299,9 @@
   min-width: 180px;
 }
 
-.attendance-btn:hover, .summary-btn:hover, .event-btn:hover {
+.attendance-btn:hover,
+.summary-btn:hover,
+.event-btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 10px 20px rgba(24, 157, 152, 0.3);
 }
@@ -287,7 +310,7 @@
   background: white;
   border-radius: 15px;
   padding: 2rem;
-  box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
   margin-bottom: 2rem;
   text-align: center;
 }
@@ -302,7 +325,7 @@
   background: white;
   border-radius: 12px;
   padding: 1.2rem;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   margin-bottom: 1.5rem;
 }
 
@@ -362,7 +385,7 @@
 
 .month-icon {
   font-size: 1.35rem;
-  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.15));
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.15));
 }
 
 .month-title {
@@ -401,12 +424,12 @@
   border: 1px solid #e2e8f0;
   border-left: 5px solid #189d98;
   transition: all 0.3s ease;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
 }
 
 .event-item:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(0,0,0,0.09);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.09);
   border-color: #cbd5e1;
 }
 
@@ -474,7 +497,8 @@
   gap: 0.4rem;
 }
 
-.type-badge, .attire-badge {
+.type-badge,
+.attire-badge {
   padding: 0.2rem 0.5rem;
   border-radius: 10px;
   font-size: 0.7rem;
@@ -526,7 +550,9 @@
   margin-top: 0.5rem;
 }
 
-.event-date, .event-location, .event-times {
+.event-date,
+.event-location,
+.event-times {
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -539,7 +565,7 @@
   padding: 0.4rem 0.8rem;
   border-radius: 8px;
   border-left: 3px solid #189d98;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
 }
 
 .event-location {
@@ -600,7 +626,7 @@
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
 }
 
 .confirmation-badge.confirmation-pending {
@@ -696,13 +722,14 @@
     gap: 1rem;
     text-align: center;
   }
-  
+
   .logo-section {
     flex-direction: column;
     gap: 0.5rem;
   }
-  
-  .logo-section h1, .logo-section h4 {
+
+  .logo-section h1,
+  .logo-section h4 {
     font-size: 1.2rem;
     text-align: center;
   }
@@ -712,12 +739,12 @@
     width: 100%;
     gap: 1rem;
   }
-  
+
   .user-text {
     align-items: center;
     text-align: center;
   }
-  
+
   .user-buttons {
     width: 100%;
     justify-content: center;
@@ -727,106 +754,111 @@
   .events-agenda {
     padding: 0.8rem;
   }
-  
+
   .events-agenda h3 {
     margin-bottom: 0.7rem;
     font-size: 1.1rem;
   }
-  
+
   .events-list {
     gap: 0.6rem;
   }
-  
+
   .event-item {
     flex-direction: column;
     align-items: stretch;
     gap: 0.7rem;
     padding: 0.8rem;
   }
-  
+
   .event-header {
     flex-direction: column;
     align-items: flex-start;
     gap: 0.4rem;
     margin-bottom: 0.6rem;
   }
-  
+
   .event-title {
     font-size: 1.15rem;
   }
-  
+
   .event-badges {
     display: flex;
     gap: 0.3rem;
     flex-wrap: wrap;
   }
-  
-  .type-badge, .attire-badge {
+
+  .type-badge,
+  .attire-badge {
     font-size: 0.65rem;
     padding: 0.15rem 0.4rem;
   }
-  
+
   /* Detalles en pila para tablet */
   .event-details {
     display: flex;
     flex-direction: column;
     gap: 0.4rem;
   }
-  
-  .event-date, .event-location, .event-times {
+
+  .event-date,
+  .event-location,
+  .event-times {
     font-size: 0.8rem;
     gap: 0.4rem;
     padding: 0.35rem 0.6rem;
   }
-  
+
   .event-confirmation {
     align-items: stretch;
     gap: 0.5rem;
   }
-  
+
   .confirmation-status {
     display: flex;
     justify-content: space-between;
     align-items: center;
     flex-direction: row;
   }
-  
+
   .confirmation-label {
     font-size: 0.7rem;
   }
-  
+
   .confirmation-badge {
     font-size: 0.7rem;
     padding: 0.2rem 0.6rem;
   }
-  
+
   .view-event-btn {
     padding: 0.35rem 0.7rem;
     font-size: 0.75rem;
   }
-  
-  .companions-text, .total-people-text {
+
+  .companions-text,
+  .total-people-text {
     font-size: 0.7rem;
     padding: 0.15rem 0.35rem;
   }
-  
+
   .transport-btn {
     padding: 0.35rem 0.7rem;
     font-size: 0.7rem;
   }
-  
+
   .payment-status-info {
     padding: 0.35rem;
   }
-  
-  .payment-label, .payment-text {
+
+  .payment-label,
+  .payment-text {
     font-size: 0.7rem;
   }
-  
+
   .payment-amounts {
     font-size: 0.65rem;
   }
-  
+
   .cost-text {
     font-size: 0.7rem;
   }
@@ -839,70 +871,75 @@
     margin-right: 0.5rem;
     margin-bottom: 1rem;
   }
-  
+
   .events-agenda h3 {
     margin-bottom: 0.6rem;
     font-size: 1rem;
   }
-  
+
   .events-list {
     gap: 0.5rem;
   }
-  
+
   .event-item {
     padding: 0.6rem;
     gap: 0.5rem;
     border-radius: 8px;
   }
-  
+
   .event-header {
     gap: 0.35rem;
     margin-bottom: 0.5rem;
   }
-  
+
   .event-title {
     font-size: 1.1rem;
     margin-bottom: 0.35rem;
   }
-  
+
   .event-badges {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 0.25rem;
   }
-  
-  .type-badge, .attire-badge {
+
+  .type-badge,
+  .attire-badge {
     font-size: 0.6rem;
     padding: 0.15rem 0.35rem;
     text-align: center;
   }
-  
+
   /* Detalles del evento en pila */
   .event-details {
     display: flex;
     flex-direction: column;
     gap: 0.4rem;
   }
-  
-  .event-date, .event-location, .event-times {
+
+  .event-date,
+  .event-location,
+  .event-times {
     font-size: 0.8rem;
     padding: 0.35rem 0.6rem;
     display: flex;
     align-items: center;
   }
-  
-  .date-icon, .location-icon, .time-icon {
+
+  .date-icon,
+  .location-icon,
+  .time-icon {
     flex-shrink: 0;
     font-size: 0.9rem;
   }
-  
+
   /* Confirmación y estadísticas en grid */
   .event-confirmation {
     gap: 0.4rem;
     display: grid;
     grid-template-columns: 1fr 1fr;
   }
-  
+
   .confirmation-status {
     grid-column: 1 / -1;
     display: flex;
@@ -913,22 +950,22 @@
     padding: 0.3rem 0.4rem;
     border-radius: 6px;
   }
-  
+
   .confirmation-label {
     font-size: 0.65rem;
   }
-  
+
   .confirmation-badge {
     font-size: 0.65rem;
     padding: 0.15rem 0.5rem;
   }
-  
+
   /* Info de acompañantes y total en dos columnas */
   .companions-info {
     grid-column: 1 / 2;
     margin-top: 0;
   }
-  
+
   .total-people-info {
     grid-column: 2 / 3;
     margin-top: 0;
@@ -936,14 +973,15 @@
     display: flex;
     justify-content: flex-end;
   }
-  
-  .companions-text, .total-people-text {
+
+  .companions-text,
+  .total-people-text {
     font-size: 0.62rem;
     padding: 0.2rem 0.3rem;
     display: inline-block;
     white-space: nowrap;
   }
-  
+
   /* Transporte ocupa todo el ancho */
   .transport-info {
     grid-column: 1 / -1;
@@ -952,47 +990,48 @@
     display: grid;
     grid-template-columns: 1fr 1fr;
   }
-  
+
   .transport-btn {
     grid-column: 1 / -1;
     padding: 0.35rem 0.6rem;
     font-size: 0.65rem;
   }
-  
+
   .payment-status-info {
     grid-column: 1 / -1;
     margin: 0;
     padding: 0.35rem;
   }
-  
-  .payment-label, .payment-text {
+
+  .payment-label,
+  .payment-text {
     font-size: 0.62rem;
   }
-  
+
   .payment-text {
     padding: 0.15rem 0.35rem;
   }
-  
+
   .payment-amounts {
     font-size: 0.58rem;
   }
-  
+
   .cost-info {
     grid-column: 1 / -1;
   }
-  
+
   .cost-text {
     font-size: 0.62rem;
     padding: 0.2rem 0.3rem;
   }
-  
+
   /* Botón Ver Detalles */
   .view-event-btn {
     grid-column: 1 / -1;
     padding: 0.35rem 0.7rem;
     font-size: 0.7rem;
   }
-  
+
   .no-events {
     padding: 1rem;
     font-size: 0.85rem;
@@ -1005,273 +1044,281 @@
     margin-left: 0.5rem;
     margin-right: 0.5rem;
   }
-  
+
   .events-agenda h3 {
     font-size: 0.95rem;
   }
-  
+
   .event-item {
     padding: 0.5rem;
   }
-  
+
   .event-title {
     font-size: 0.9rem;
   }
-  
+
   .event-badges {
     grid-template-columns: 1fr 1fr;
   }
-  
-  .type-badge, .attire-badge {
+
+  .type-badge,
+  .attire-badge {
     font-size: 0.55rem;
     padding: 0.15rem 0.3rem;
   }
-  
-  .event-date, .event-location, .event-times {
+
+  .event-date,
+  .event-location,
+  .event-times {
     font-size: 0.65rem;
   }
-  
-  .date-icon, .location-icon, .time-icon {
+
+  .date-icon,
+  .location-icon,
+  .time-icon {
     font-size: 0.85rem;
   }
-  
-  .companions-text, .total-people-text {
+
+  .companions-text,
+  .total-people-text {
     font-size: 0.58rem;
     padding: 0.15rem 0.25rem;
   }
-  
+
   .view-event-btn {
     font-size: 0.65rem;
     padding: 0.3rem 0.5rem;
   }
-  
+
   .attendance-indicators {
     padding: 0.8rem;
     margin-left: 0.5rem;
     margin-right: 0.5rem;
   }
-  
+
   .attendance-indicators h3 {
     font-size: 1rem;
     margin-bottom: 0.8rem;
   }
-  
+
   .global-attendance {
     margin-bottom: 1rem;
   }
-  
+
   .global-card {
     padding: 0.8rem;
   }
-  
+
   .global-icon {
     font-size: 1.8rem;
   }
-  
+
   .global-header {
     margin-bottom: 0.8rem;
   }
-  
+
   .global-header h4 {
     font-size: 1rem;
     margin-bottom: 0.2rem;
   }
-  
+
   .global-header p {
     font-size: 0.75rem;
   }
-  
+
   .global-indicator {
     margin-bottom: 0.8rem;
   }
-  
+
   .global-indicator svg {
     width: 100px;
     height: 100px;
   }
-  
+
   .global-percentage {
     font-size: 1.5rem;
   }
-  
+
   .global-label {
     font-size: 0.7rem;
   }
-  
+
   .global-breakdown {
     gap: 0.4rem;
     margin-bottom: 0.8rem;
   }
-  
+
   .breakdown-item {
     padding: 0.35rem 0.5rem;
   }
-  
+
   .breakdown-icon {
     font-size: 0.85rem;
     margin-right: 0.25rem;
   }
-  
+
   .breakdown-count {
     font-size: 0.7rem;
   }
-  
+
   .global-total {
     padding: 0.6rem;
   }
-  
+
   .total-label {
     font-size: 0.65rem;
   }
-  
+
   .total-count {
     font-size: 0.95rem;
   }
-  
+
   .indicators-container {
     gap: 0.8rem;
   }
-  
+
   .indicator-card {
     padding: 0.8rem;
   }
-  
+
   .indicator-icon {
     font-size: 1.2rem;
   }
-  
+
   .indicator-header {
     margin-bottom: 0.8rem;
   }
-  
+
   .indicator-header h4 {
     font-size: 0.9rem;
   }
-  
+
   .circular-indicator {
     margin-bottom: 0.6rem;
   }
-  
+
   .circular-indicator svg {
     width: 75px;
     height: 75px;
   }
-  
+
   .indicator-center .percentage {
     font-size: 1rem;
   }
-  
+
   .indicator-stats .attended,
   .indicator-stats .total {
     font-size: 0.95rem;
   }
-  
+
   .indicator-label {
     font-size: 0.75rem;
   }
-  
+
   .payment-notifications {
     padding: 0.8rem;
     margin-left: 0.5rem;
     margin-right: 0.5rem;
     margin-bottom: 1.2rem;
   }
-  
+
   .payment-notifications h3 {
     font-size: 1rem;
     margin-bottom: 0.7rem;
   }
-  
+
   .payments-list {
     gap: 0.6rem;
   }
-  
+
   .payment-notification {
     padding: 0.7rem;
   }
-  
+
   .mark-completed-btn {
     width: 100%;
     justify-content: center;
     padding: 0.5rem 1rem;
     font-size: 0.85rem;
   }
-  
+
   .payment-header h4 {
     font-size: 0.95rem;
   }
-  
+
   .payment-header .amount {
     font-size: 1rem;
   }
-  
+
   .detail-row {
     font-size: 0.8rem;
   }
-  
+
   .my-payments-section {
     padding: 0.8rem;
     margin-left: 0.5rem;
     margin-right: 0.5rem;
     margin-bottom: 1.2rem;
   }
-  
+
   .my-payments-section h3 {
     font-size: 1rem;
     margin-bottom: 0.8rem;
   }
-  
+
   .payments-summary {
     gap: 0.8rem;
   }
-  
+
   .concept-header {
     padding: 0.6rem 0.8rem;
   }
-  
+
   .concept-header h4 {
     font-size: 0.9rem;
   }
-  
+
   .progress-info {
     font-size: 0.75rem;
   }
-  
+
   .remaining-amount {
     padding: 0.12rem 0.4rem;
     font-size: 0.65rem;
   }
-  
+
   .quota-progress-bar {
     margin: 0 0.8rem 0.7rem;
   }
-  
+
   .payment-record {
     padding: 0.5rem 0.8rem;
   }
-  
+
   .payment-amount {
     font-size: 0.9rem;
   }
-  
+
   .payment-date {
     font-size: 0.65rem;
   }
-  
+
   .payment-description {
     font-size: 0.75rem;
   }
-  
+
   .more-payments {
     padding: 0.35rem 0.8rem;
   }
-  
+
   .more-payments span {
     font-size: 0.75rem;
   }
 }
 
-.attendance-icon, .summary-icon, .event-icon {
+.attendance-icon,
+.summary-icon,
+.event-icon {
   font-size: 1.2rem;
 }
 
@@ -1279,7 +1326,7 @@
   background: white;
   border-radius: 15px;
   padding: 2rem;
-  box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
   margin-bottom: 2rem;
   text-align: center;
   cursor: pointer;
@@ -1288,7 +1335,7 @@
 
 .attendance-chart:hover {
   transform: translateY(-2px);
-  box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
 }
 
 .attendance-chart h3 {
@@ -1407,7 +1454,7 @@
   background: white;
   border-radius: 15px;
   padding: 2rem;
-  box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
   margin-bottom: 2rem;
   text-align: center;
   cursor: pointer;
@@ -1416,7 +1463,7 @@
 
 .misa-chart:hover {
   transform: translateY(-2px);
-  box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
 }
 
 .misa-chart h3 {
@@ -1537,7 +1584,7 @@
   background: #f8f9fa;
   border-radius: 12px;
   border: 2px solid #cbd5e1;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
   transition: all 0.3s ease;
 }
 
@@ -1546,7 +1593,7 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 0.8rem;
-  border-bottom: 2px dashed rgba(0,0,0,0.1);
+  border-bottom: 2px dashed rgba(0, 0, 0, 0.1);
   padding-bottom: 0.8rem;
 }
 
@@ -1563,10 +1610,10 @@
   font-weight: 800;
   padding: 0.35rem 0.7rem;
   border-radius: 8px;
-  background: rgba(255,255,255,0.8);
+  background: rgba(255, 255, 255, 0.8);
   color: inherit;
   letter-spacing: 0.5px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .payment-status-info.payment-paid {
@@ -1617,7 +1664,8 @@
   padding-top: 0.2rem;
 }
 
-.payment-amount, .payment-paid-text {
+.payment-amount,
+.payment-paid-text {
   font-weight: 800;
   font-size: 1.1rem;
 }
@@ -1968,36 +2016,36 @@
     gap: 1rem;
     text-align: center;
   }
-  
+
   .logo-section {
     justify-content: center;
   }
-  
+
   .logo {
     width: 40px;
     height: 40px;
   }
-  
+
   .logo-section h1 {
     font-size: 1.5rem;
   }
-  
+
   .user-info {
     flex-direction: column;
     gap: 0.5rem;
   }
-  
+
   /* Información de nivel responsive para tablet */
   .user-level-info {
     align-items: center;
     gap: 0.3rem;
   }
-  
+
   .level-badge {
     font-size: 0.8rem;
     padding: 0.25rem 0.6rem;
   }
-  
+
   .tax-info {
     font-size: 0.75rem;
   }
@@ -2007,44 +2055,45 @@
   .dashboard-main {
     padding: 0.5rem;
   }
-  
-  .admin-menu, .attendance-menu {
+
+  .admin-menu,
+  .attendance-menu {
     margin-bottom: 1rem;
     padding: 1rem;
   }
-  
+
   .attendance-chart {
     padding: 1rem;
   }
-  
+
   .charts-container {
     flex-direction: column;
     align-items: center;
     gap: 1rem;
   }
-  
+
   .donut-chart svg {
     width: 120px;
     height: 120px;
   }
-  
+
   .percentage {
     font-size: 1.5rem;
   }
-  
+
   .misa-chart {
     padding: 1rem;
   }
-  
+
   .misa-donut svg {
     width: 150px;
     height: 150px;
   }
-  
+
   .misa-donut .percentage {
     font-size: 1.5rem;
   }
-  
+
   .misa-stats {
     flex-direction: column;
     gap: 0.5rem;
@@ -2056,7 +2105,7 @@
   background: white;
   border-radius: 15px;
   padding: 2rem;
-  box-shadow: 0 12px 40px rgba(0,0,0,0.15);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
   margin-bottom: 2rem;
   transform: translateY(-5px);
   border: 2px solid rgba(255, 215, 0, 0.2);
@@ -2082,7 +2131,7 @@
   border-radius: 20px;
   position: relative;
   overflow: hidden;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
 }
 
 .user-card .clickable-card {
@@ -2092,7 +2141,7 @@
 
 .user-card .clickable-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 12px 40px rgba(0,0,0,0.8);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.8);
 }
 
 .user-card .card-design::before {
@@ -2134,15 +2183,15 @@
   font-weight: 700;
   letter-spacing: 2px;
   color: #ffd700;
-  text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 }
 
 .user-card .card-subtitle {
   font-size: 0.7rem;
   font-weight: 500;
   letter-spacing: 1px;
-  color: rgba(255,255,255,0.8);
-  text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+  color: rgba(255, 255, 255, 0.8);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 }
 
 .user-card .card-label {
@@ -2155,7 +2204,7 @@
   font-weight: 700;
   letter-spacing: 2px;
   color: #ffd700;
-  text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 }
 
 .user-card .card-status {
@@ -2163,7 +2212,7 @@
   border-radius: 12px;
   font-size: 0.8rem;
   font-weight: 600;
-  background: rgba(255,255,255,0.2);
+  background: rgba(255, 255, 255, 0.2);
   text-transform: uppercase;
 }
 
@@ -2178,8 +2227,8 @@
   z-index: 5;
   text-align: center;
   color: #ffffff;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.9), 0 1px 2px rgba(0,0,0,0.6);
-  text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.9), 0 1px 2px rgba(0, 0, 0, 0.6);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
 }
 
 .user-card .card-info {
@@ -2206,21 +2255,21 @@
   letter-spacing: 1.5px;
   font-weight: 700;
   color: #ffd700;
-  text-shadow: 0 1px 2px rgba(0,0,0,0.7);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7);
 }
 
 .user-card .value {
   font-size: 1rem;
   font-weight: 700;
   color: #ffffff;
-  text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
   letter-spacing: 0.5px;
 }
 
 .user-card .card-balance {
   text-align: center;
   padding-top: 1rem;
-  border-top: 1px solid rgba(255,255,255,0.2);
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
   position: relative;
   z-index: 5;
 }
@@ -2242,26 +2291,26 @@
   .user-card-section {
     padding: 1rem;
   }
-  
+
   .user-card {
     width: 85%;
   }
-  
+
   .user-card .card-design {
     padding: 1.5rem;
   }
-  
+
   .user-card .card-number {
     font-size: 1.2rem;
     letter-spacing: 2px;
     font-weight: 700;
-    text-shadow: 0 2px 4px rgba(0,0,0,0.9), 0 1px 2px rgba(0,0,0,0.6);
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.9), 0 1px 2px rgba(0, 0, 0, 0.6);
   }
-  
+
   .user-card .balance-amount {
     font-size: 1.5rem;
   }
-  
+
   .user-card .card-info {
     flex-direction: column;
     gap: 1rem;
@@ -2555,27 +2604,27 @@
   .movements-modal {
     padding: 0.5rem;
   }
-  
+
   .movements-modal .modal-content {
     max-height: 95vh;
   }
-  
+
   .movements-modal .modal-body {
     padding: 1rem;
   }
-  
+
   .account-summary {
     padding: 1rem;
   }
-  
+
   .movement-item {
     padding: 0.65rem 0.75rem;
   }
-  
+
   .movement-content {
     gap: 0.4rem;
   }
-  
+
   .movement-concept {
     font-size: 0.8rem;
     overflow: hidden;
@@ -2583,15 +2632,15 @@
     white-space: nowrap;
     max-width: 150px;
   }
-  
+
   .movement-date {
     font-size: 0.7rem;
   }
-  
+
   .movement-user {
     font-size: 0.65rem;
   }
-  
+
   .movement-amount {
     font-size: 0.8rem;
     min-width: 90px;
@@ -2599,7 +2648,7 @@
     flex-shrink: 0;
     word-break: keep-all;
   }
-  
+
   .receipt-icon-btn {
     font-size: 0.75rem;
     padding: 0.2rem 0.35rem;
@@ -2681,10 +2730,13 @@
 }
 
 @keyframes pulse-badge {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: scale(1);
     box-shadow: 0 2px 8px rgba(255, 71, 87, 0.3);
   }
+
   50% {
     transform: scale(1.05);
     box-shadow: 0 4px 16px rgba(255, 71, 87, 0.5);
@@ -3114,17 +3166,17 @@
   .payment-notifications {
     padding: 1.2rem;
   }
-  
+
   .payment-header {
     flex-direction: column;
     gap: 0.5rem;
     align-items: flex-start;
   }
-  
+
   .payment-actions {
     justify-content: flex-start;
   }
-  
+
   .payment-note {
     font-size: 0.8rem;
     padding: 0.5rem;
@@ -3223,7 +3275,7 @@
 .summary-card {
   background: white;
   border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   overflow: hidden;
   border: 1px solid #e1e8ed;
 }
@@ -3358,6 +3410,7 @@
     opacity: 0;
     max-height: 0;
   }
+
   to {
     opacity: 1;
     max-height: 1000px;
@@ -3437,9 +3490,17 @@
 }
 
 @keyframes pulse {
-  0% { opacity: 1; }
-  50% { opacity: 0.5; }
-  100% { opacity: 1; }
+  0% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.5;
+  }
+
+  100% {
+    opacity: 1;
+  }
 }
 
 /* Mensaje cuando no hay inventario */
@@ -3476,7 +3537,7 @@
   background: white;
   border-radius: 15px;
   padding: 2rem;
-  box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
   margin-bottom: 2rem;
 }
 
@@ -3503,7 +3564,7 @@
   cursor: pointer;
   transition: all 0.4s ease;
   border: 3px solid transparent;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
   position: relative;
   overflow: hidden;
   width: 100%;
@@ -3523,7 +3584,7 @@
 
 .global-card:hover {
   transform: translateY(-8px) scale(1.02);
-  box-shadow: 0 20px 50px rgba(0,0,0,0.15);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
   border-color: #189d98;
 }
 
@@ -3685,7 +3746,7 @@
 
 .indicator-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
   border-color: var(--indicator-color);
   background: white;
 }
@@ -3772,81 +3833,81 @@
     gap: 0.75rem;
     padding: 1rem;
   }
-  
+
   .item-stock {
     align-self: flex-end;
   }
-  
+
   .inventory-list {
     max-height: 300px;
   }
-  
+
   .attendance-indicators {
     padding: 1.5rem;
   }
-  
+
   .attendance-indicators h3 {
     margin-bottom: 1.5rem;
   }
-  
+
   .global-attendance {
     margin-bottom: 2rem;
   }
-  
+
   .indicators-container {
     grid-template-columns: 1fr;
     gap: 1.2rem;
   }
-  
+
   .indicator-card {
     padding: 1.3rem;
   }
-  
+
   .indicator-header {
     margin-bottom: 1.2rem;
   }
-  
+
   .circular-indicator {
     margin-bottom: 1.2rem;
   }
-  
+
   .circular-indicator svg {
     width: 95px;
     height: 95px;
   }
-  
+
   .indicator-center .percentage {
     font-size: 1.15rem;
   }
-  
+
   .global-card {
     min-width: auto;
     max-width: 100%;
     padding: 1.8rem;
   }
-  
+
   .global-header {
     margin-bottom: 1.5rem;
   }
-  
+
   .global-indicator {
     margin-bottom: 1.5rem;
   }
-  
+
   .global-indicator svg {
     width: 125px;
     height: 125px;
   }
-  
+
   .global-percentage {
     font-size: 1.9rem;
   }
-  
+
   .global-breakdown {
     gap: 0.8rem;
     margin-bottom: 1.2rem;
   }
-  
+
   .global-total {
     padding: 0.9rem;
   }
@@ -3858,231 +3919,231 @@
     margin-left: 0.5rem;
     margin-right: 0.5rem;
   }
-  
+
   .attendance-indicators h3 {
     font-size: 1.1rem;
     margin-bottom: 1rem;
   }
-  
+
   .global-attendance {
     margin-bottom: 1.5rem;
   }
-  
+
   .global-card {
     padding: 1rem;
   }
-  
+
   .global-icon {
     font-size: 2rem;
   }
-  
+
   .global-header {
     margin-bottom: 1rem;
   }
-  
+
   .global-header h4 {
     font-size: 1.1rem;
     margin-bottom: 0.25rem;
   }
-  
+
   .global-header p {
     font-size: 0.8rem;
   }
-  
+
   .global-indicator {
     margin-bottom: 1rem;
   }
-  
+
   .global-indicator svg {
     width: 110px;
     height: 110px;
   }
-  
+
   .global-percentage {
     font-size: 1.6rem;
   }
-  
+
   .global-label {
     font-size: 0.75rem;
   }
-  
+
   .global-breakdown {
     gap: 0.5rem;
     margin-bottom: 1rem;
   }
-  
+
   .breakdown-item {
     padding: 0.4rem 0.6rem;
   }
-  
+
   .breakdown-icon {
     font-size: 0.9rem;
     margin-right: 0.3rem;
   }
-  
+
   .breakdown-count {
     font-size: 0.75rem;
   }
-  
+
   .global-total {
     padding: 0.7rem;
   }
-  
+
   .total-label {
     font-size: 0.7rem;
     margin-bottom: 0.2rem;
   }
-  
+
   .total-count {
     font-size: 1rem;
   }
-  
+
   .indicators-container {
     gap: 1rem;
   }
-  
+
   .indicator-card {
     padding: 1rem;
   }
-  
+
   .indicator-icon {
     font-size: 1.3rem;
   }
-  
+
   .indicator-header {
     gap: 0.3rem;
     margin-bottom: 1rem;
   }
-  
+
   .indicator-header h4 {
     font-size: 0.95rem;
   }
-  
+
   .circular-indicator {
     margin-bottom: 0.8rem;
   }
-  
+
   .circular-indicator svg {
     width: 85px;
     height: 85px;
   }
-  
+
   .indicator-center .percentage {
     font-size: 1.1rem;
   }
-  
+
   .indicator-stats {
     margin-bottom: 0.3rem;
   }
-  
+
   .indicator-stats .attended,
   .indicator-stats .total {
     font-size: 1rem;
   }
-  
+
   .indicator-label {
     font-size: 0.8rem;
   }
-  
+
   .payment-notifications {
     padding: 1rem;
     margin-left: 0.5rem;
     margin-right: 0.5rem;
     margin-bottom: 1.5rem;
   }
-  
+
   .payment-notifications h3 {
     font-size: 1.1rem;
     margin-bottom: 0.8rem;
   }
-  
+
   .payments-list {
     gap: 0.7rem;
   }
-  
+
   .payment-notification {
     padding: 0.8rem;
   }
-  
+
   .payment-header {
     margin-bottom: 0.6rem;
     padding-bottom: 0.6rem;
   }
-  
+
   .payment-header h4 {
     font-size: 1rem;
   }
-  
+
   .payment-header .amount {
     font-size: 1.1rem;
   }
-  
+
   .payment-details {
     margin-bottom: 0.8rem;
   }
-  
+
   .detail-row {
     margin-bottom: 0.3rem;
     font-size: 0.85rem;
   }
-  
+
   .my-payments-section {
     padding: 1rem;
     margin-left: 0.5rem;
     margin-right: 0.5rem;
     margin-bottom: 1.5rem;
   }
-  
+
   .my-payments-section h3 {
     font-size: 1.1rem;
     margin-bottom: 1rem;
   }
-  
+
   .payments-summary {
     gap: 1rem;
   }
-  
+
   .concept-header {
     padding: 0.7rem 0.9rem;
   }
-  
+
   .concept-header h4 {
     font-size: 0.95rem;
   }
-  
+
   .progress-info {
     font-size: 0.8rem;
   }
-  
+
   .remaining-amount {
     padding: 0.15rem 0.5rem;
     font-size: 0.7rem;
   }
-  
+
   .quota-progress-bar {
     margin: 0 0.9rem 0.8rem;
   }
-  
+
   .payment-record {
     padding: 0.6rem 0.9rem;
   }
-  
+
   .payment-amount {
     font-size: 0.95rem;
   }
-  
+
   .payment-date {
     font-size: 0.7rem;
   }
-  
+
   .payment-description {
     font-size: 0.8rem;
   }
-  
+
   .more-payments {
     padding: 0.4rem 0.9rem;
   }
-  
+
   .more-payments span {
     font-size: 0.8rem;
   }
@@ -4112,8 +4173,15 @@
 }
 
 @keyframes gradientShift {
-  0%, 100% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
+
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
 }
 
 .members-attendance-list h3 {
@@ -4331,24 +4399,24 @@
   .members-attendance-list {
     padding: 20px;
   }
-  
+
   .member-row {
     flex-direction: column;
     gap: 12px;
     text-align: center;
   }
-  
+
   .member-indicators {
     justify-content: center;
     gap: 10px;
     flex-wrap: wrap;
   }
-  
+
   .member-rank {
     flex-direction: row;
     min-width: auto;
   }
-  
+
   .rank-number {
     font-size: 1.1rem;
   }
@@ -4358,25 +4426,25 @@
   .member-indicators {
     gap: 8px;
   }
-  
+
   .mini-indicator svg {
     width: 35px;
     height: 35px;
   }
-  
+
   .mini-indicator.total svg {
     width: 38px;
     height: 38px;
   }
-  
+
   .mini-percentage {
     font-size: 0.55rem;
   }
-  
+
   .total-center .mini-percentage {
     font-size: 0.6rem;
   }
-  
+
   .mini-text {
     font-size: 0.6rem;
   }
@@ -4538,26 +4606,26 @@
     width: 95%;
     max-height: 85vh;
   }
-  
+
   .ranking-modal-content .modal-header {
     padding: 20px;
   }
-  
+
   .ranking-period {
     font-size: 0.75rem;
     padding: 6px 10px;
   }
-  
+
   .ranking-modal-body {
     padding: 15px 20px;
   }
-  
+
   .ranking-btn-content {
     flex-direction: column;
     gap: 15px;
     text-align: center;
   }
-  
+
   .ranking-btn-text {
     text-align: center;
   }
@@ -4567,11 +4635,11 @@
   .ranking-btn-icon {
     font-size: 2rem;
   }
-  
+
   .ranking-btn-text h4 {
     font-size: 1.1rem;
   }
-  
+
   .ranking-btn-text p {
     font-size: 0.8rem;
   }
@@ -4639,7 +4707,8 @@
   font-weight: 500;
 }
 
-.form-input, .form-select {
+.form-input,
+.form-select {
   padding: 12px 15px;
   border: 2px solid #e2e8f0;
   border-radius: 10px;
@@ -4648,7 +4717,8 @@
   background: white;
 }
 
-.form-input:focus, .form-select:focus {
+.form-input:focus,
+.form-select:focus {
   outline: none;
   border-color: #667eea;
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
@@ -4670,7 +4740,8 @@
   gap: 15px;
 }
 
-.current-image, .no-image {
+.current-image,
+.no-image {
   width: 120px;
   height: 120px;
   border-radius: 50%;
@@ -4735,7 +4806,8 @@
   gap: 15px;
 }
 
-.day-input, .month-input {
+.day-input,
+.month-input {
   display: flex;
   flex-direction: column;
   gap: 5px;
@@ -4808,7 +4880,8 @@
   gap: 15px;
 }
 
-.cancel-btn, .save-btn {
+.cancel-btn,
+.save-btn {
   padding: 12px 25px;
   border-radius: 10px;
   font-weight: 600;
@@ -4844,31 +4917,32 @@
     width: 95%;
     max-height: 85vh;
   }
-  
+
   .profile-modal-content .modal-header,
   .profile-modal-body,
   .modal-footer {
     padding-left: 20px;
     padding-right: 20px;
   }
-  
+
   .birthday-inputs {
     grid-template-columns: 1fr;
   }
-  
+
   .modal-footer {
     flex-direction: column;
   }
-  
-  .cancel-btn, .save-btn {
+
+  .cancel-btn,
+  .save-btn {
     width: 100%;
   }
-  
+
   .user-info {
     flex-direction: column;
     gap: 8px;
   }
-  
+
   /* Información de nivel responsive para móviles */
   .user-level-info {
     align-items: center;
@@ -4877,18 +4951,18 @@
     flex-wrap: wrap;
     justify-content: center;
   }
-  
+
   .level-badge {
     font-size: 0.75rem;
     padding: 0.2rem 0.5rem;
     border-radius: 10px;
   }
-  
+
   .tax-info {
     font-size: 0.7rem;
     margin-left: 0.5rem;
   }
-  
+
   .no-level-text {
     font-size: 0.7rem;
   }
@@ -5236,7 +5310,7 @@
     max-width: 100%;
     max-height: 95vh;
   }
-  
+
   .statement-body {
     padding: 1rem;
   }
@@ -5247,14 +5321,14 @@
     margin: 0 -1rem;
     padding: 0 1rem;
   }
-  
+
   .movements-table {
     font-size: 0.7rem;
     min-width: 540px;
     display: table;
     table-layout: fixed;
   }
-  
+
   .movements-table th,
   .movements-table td {
     padding: 0.4rem 0.35rem;
@@ -5322,11 +5396,11 @@
     padding: 0.3rem 0.5rem;
     white-space: nowrap;
   }
-  
+
   .statement-footer-actions {
     flex-direction: column;
   }
-  
+
   .download-pdf-btn,
   .cancel-btn {
     width: 100%;
@@ -5732,39 +5806,39 @@
     max-width: 100%;
     max-height: 95vh;
   }
-  
+
   .receipt-body {
     padding: 1rem;
   }
-  
+
   .receipt-body-pdf {
     min-height: 60vh;
   }
-  
+
   .pdf-viewer {
     height: 60vh;
   }
-  
+
   .receipt-header h2 {
     font-size: 1.2rem;
   }
-  
+
   .receipt-header h3 {
     font-size: 1rem;
   }
-  
+
   .breakdown-value {
     font-size: 1rem;
   }
-  
+
   .breakdown-row.total-row .breakdown-value.total {
     font-size: 1.3rem;
   }
-  
+
   .receipt-footer-actions {
     flex-direction: column;
   }
-  
+
   .receipt-footer-actions .cancel-btn,
   .receipt-footer-actions .download-pdf-btn {
     width: 100%;
@@ -6065,94 +6139,94 @@
     padding: 0.8rem;
     gap: 0.6rem;
   }
-  
+
   .evaluation-summary {
     width: 100%;
     justify-content: space-between;
     gap: 0.5rem;
   }
-  
+
   .summary-item {
     padding: 0.4rem 0.6rem;
     font-size: 0.85rem;
   }
-  
+
   .summary-label {
     font-size: 0.65rem;
   }
-  
+
   .summary-value {
     font-size: 0.9rem;
   }
-  
+
   .evaluation-content {
     padding: 0.7rem;
     gap: 0.7rem;
   }
-  
+
   .evaluation-category {
     padding: 0.7rem;
   }
-  
+
   .category-header {
     flex-wrap: wrap;
     margin-bottom: 0.7rem;
     padding-bottom: 0.5rem;
   }
-  
+
   .category-icon {
     font-size: 1.3rem;
   }
-  
+
   .category-header h4 {
     font-size: 0.9rem;
   }
-  
+
   .category-total {
     font-size: 0.85rem;
     padding: 0.25rem 0.6rem;
   }
-  
+
   .category-items {
     grid-template-columns: 1fr;
     gap: 0.4rem;
   }
-  
+
   .evaluation-item {
     padding: 0.5rem 0.6rem;
   }
-  
+
   .item-label {
     font-size: 0.8rem;
   }
-  
+
   .stars span {
     font-size: 0.95rem;
   }
-  
+
   /* Ocultar textos descriptivos en móvil para ahorrar espacio */
   .item-text {
     display: none;
   }
-  
+
   .evaluation-comments {
     padding: 0.7rem;
   }
-  
+
   .evaluation-comments h4 {
     font-size: 0.9rem;
   }
-  
+
   .evaluation-comments p {
     font-size: 0.8rem;
   }
-  
+
   .evaluation-footer {
     flex-direction: column;
     gap: 0.5rem;
     padding: 0.6rem;
   }
-  
+
   .message-card {
     padding: 1.5rem 1.2rem;
   }
@@ -6163,161 +6237,161 @@
     margin-left: 0.5rem;
     margin-right: 0.5rem;
   }
-  
+
   .evaluation-header {
     padding: 0.7rem;
   }
-  
+
   .evaluation-header h3 {
     font-size: 1rem;
   }
-  
+
   .evaluation-date {
     font-size: 0.7rem;
     padding: 0.2rem 0.5rem;
   }
-  
+
   .evaluation-summary {
     gap: 0.4rem;
   }
-  
+
   .summary-item {
     padding: 0.3rem 0.5rem;
     flex: 1;
     min-width: 0;
   }
-  
+
   .summary-label {
     font-size: 0.6rem;
   }
-  
+
   .summary-value {
     font-size: 0.85rem;
   }
-  
+
   .evaluation-content {
     padding: 0.6rem;
     gap: 0.6rem;
   }
-  
+
   .evaluation-category {
     padding: 0.6rem;
   }
-  
+
   .category-header {
     margin-bottom: 0.6rem;
     padding-bottom: 0.4rem;
     gap: 0.5rem;
   }
-  
+
   .category-icon {
     font-size: 1.2rem;
   }
-  
+
   .category-header h4 {
     font-size: 0.85rem;
   }
-  
+
   .category-total {
     font-size: 0.8rem;
     padding: 0.2rem 0.5rem;
   }
-  
+
   .category-items {
     gap: 0.4rem;
   }
-  
+
   .evaluation-item {
     padding: 0.4rem 0.5rem;
   }
-  
+
   .item-label {
     font-size: 0.75rem;
   }
-  
+
   .stars span {
     font-size: 0.85rem;
     gap: 0.05rem;
   }
-  
+
   .evaluation-comments {
     padding: 0.6rem;
   }
-  
+
   .evaluation-comments h4 {
     font-size: 0.8rem;
     margin-bottom: 0.4rem;
   }
-  
+
   .evaluation-comments p {
     font-size: 0.75rem;
   }
-  
+
   .evaluation-footer {
     padding: 0.5rem;
     gap: 0.4rem;
   }
-  
+
   .footer-label {
     font-size: 0.65rem;
   }
-  
+
   .footer-value {
     font-size: 0.8rem;
   }
-  
+
   .message-card {
     padding: 1.2rem 0.8rem;
   }
-  
+
   .message-icon {
     font-size: 2.2rem;
     margin-bottom: 0.6rem;
   }
-  
+
   .message-card h3 {
     font-size: 1.1rem;
     margin-bottom: 0.5rem;
   }
-  
+
   .message-card p {
     font-size: 0.85rem;
   }
-  
+
   /* Absence notifications responsive */
   .absence-item {
     padding: 0.8rem;
   }
-  
+
   .member-name {
     flex-direction: column;
     align-items: flex-start;
   }
-  
+
   .absence-badge {
     font-size: 0.75rem;
     padding: 3px 10px;
   }
-  
+
   .activity-label {
     font-size: 0.8rem;
   }
-  
+
   .activity-tag {
     font-size: 0.75rem;
     padding: 3px 8px;
   }
-  
+
   .notification-icon {
     font-size: 2rem;
     width: 50px;
     height: 50px;
   }
-  
+
   .notification-title h3 {
     font-size: 1.1rem;
   }
-  
+
   .notification-title p {
     font-size: 0.9rem;
   }
@@ -6372,7 +6446,7 @@
   padding: 0.8rem;
   background: white;
   border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .info-item.next-date {
@@ -6399,6 +6473,7 @@
   .maintenance-info-grid {
     grid-template-columns: repeat(3, 1fr);
   }
+
   .info-item {
     flex-direction: column;
     align-items: flex-start;
@@ -6413,7 +6488,7 @@
   background: white;
   padding: 1rem;
   border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
   border-left: 4px solid #189d98;
 }
 
@@ -6465,6 +6540,7 @@
    REDISEÑO MOBILE-FIRST (CONTROL ESTUDIANTINA)
    =================================================== */
 @media (max-width: 768px) {
+
   /* Cabecera compacta y ergonómica */
   .dashboard-header {
     padding: 0.75rem 0;
@@ -6561,7 +6637,8 @@
     margin-top: 0.25rem;
   }
 
-  .profile-btn, .logout-btn {
+  .profile-btn,
+  .logout-btn {
     width: 100%;
     min-height: 40px;
     padding: 0.55rem 0.65rem;
@@ -6636,7 +6713,8 @@
   }
 
   /* Modales en móvil: Pantalla casi completa con scroll */
-  .modal-content, .card-movements-modal-content {
+  .modal-content,
+  .card-movements-modal-content {
     width: 95% !important;
     max-width: 95% !important;
     margin: 1rem auto !important;
@@ -6835,9 +6913,20 @@
   color: #166534;
 }
 
+.metric-pill.medium {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.metric-pill.low {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
 .metric-main-info {
   display: flex;
   flex-direction: column;
+  min-width: 0;
 }
 
 .metric-label {
@@ -6846,6 +6935,9 @@
   text-transform: uppercase;
   color: #64748b;
   letter-spacing: 0.5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .metric-number-row {
@@ -6853,6 +6945,7 @@
   align-items: baseline;
   gap: 0.4rem;
   margin: 0.25rem 0;
+  min-width: 0;
 }
 
 .metric-large-num {
@@ -6860,12 +6953,16 @@
   font-weight: 800;
   color: #1e293b;
   line-height: 1;
+  flex-shrink: 0;
 }
 
 .metric-total-sub {
   font-size: 0.85rem;
   color: #64748b;
   font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .metric-mini-bar {
@@ -6882,6 +6979,31 @@
   background: linear-gradient(90deg, #189d98, #10b981);
   border-radius: 3px;
   transition: width 0.4s ease;
+}
+
+/* Tarjetas de asistencia por actividad */
+.activity-metric-card.events-metric {
+  border-left: 4px solid #f56565;
+}
+
+.activity-metric-card.rehearsals-metric {
+  border-left: 4px solid #3b82f6;
+}
+
+.activity-metric-card.mass-metric {
+  border-left: 4px solid #eab308;
+}
+
+.mini-bar-fill.events-bar {
+  background: linear-gradient(90deg, #ef4444, #f56565);
+}
+
+.mini-bar-fill.rehearsals-bar {
+  background: linear-gradient(90deg, #2563eb, #3b82f6);
+}
+
+.mini-bar-fill.mass-bar {
+  background: linear-gradient(90deg, #d97706, #eab308);
 }
 
 /* Stat pill cards */
@@ -6914,6 +7036,174 @@
 
 .stat-pill-card.warning-stat {
   border-left: 4px solid #f59e0b;
+}
+
+/* Subsección integrada: Integrantes con 3+ Faltas Consecutivas */
+.attendance-absences-subsection {
+  background: #fff5f5;
+  border: 1px solid #feb2b2;
+  border-left: 4px solid #ef4444;
+  border-radius: 12px;
+  padding: 1rem 1.15rem;
+  margin-bottom: 1rem;
+}
+
+.absences-sub-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.85rem;
+}
+
+.absences-sub-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  min-width: 0;
+}
+
+.absences-sub-icon {
+  font-size: 1.25rem;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fee2e2;
+  border: 1px solid #fecaca;
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+
+.absences-sub-text {
+  min-width: 0;
+}
+
+.absences-sub-text h4 {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #991b1b;
+}
+
+.absences-sub-text p {
+  margin: 0.1rem 0 0 0;
+  font-size: 0.78rem;
+  color: #b91c1c;
+}
+
+.absences-summary-link {
+  background: #ffffff;
+  border: 1px solid #fca5a5;
+  color: #b91c1c;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.45rem 0.8rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.absences-summary-link:hover {
+  background: #dc2626;
+  border-color: #dc2626;
+  color: #ffffff;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(220, 38, 38, 0.2);
+}
+
+.absences-chips-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 0.5rem;
+}
+
+.absence-member-chip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  background: #ffffff;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+  min-width: 0;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.absence-member-chip:hover {
+  border-color: #f87171;
+  box-shadow: 0 2px 6px rgba(239, 68, 68, 0.08);
+  transform: translateY(-1px);
+}
+
+.absence-chip-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #1e293b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.absence-chip-badge {
+  background: #fef3c7;
+  color: #b45309;
+  border: 1px solid #fde68a;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.15rem 0.5rem;
+  border-radius: 9999px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.absence-chip-badge.critical {
+  background: #fee2e2;
+  color: #c53030;
+  border-color: #feb2b2;
+  animation: pulse-badge 2s ease-in-out infinite;
+}
+
+.absence-more-chip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.75);
+  border: 1px dashed #fca5a5;
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #b91c1c;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.absence-more-chip:hover {
+  background: #ffffff;
+  border-style: solid;
+  border-color: #ef4444;
+}
+
+@media (max-width: 768px) {
+  .absences-sub-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .absences-summary-link {
+    width: 100%;
+    text-align: center;
+  }
+
+  .absences-chips-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* Botón CTA para ver Ranking */
@@ -7676,6 +7966,7 @@
     grid-template-columns: 1fr;
   }
 }
+
 /* =============================================================== */
 /* CALENDARIO TIPO AGENDA (PROXIMOS EVENTOS)                        */
 /* =============================================================== */
@@ -7826,10 +8117,21 @@
   background: #189d98;
 }
 
-.agenda-dot.callejoneada { background: #f59e0b; }
-.agenda-dot.evento { background: #3b82f6; }
-.agenda-dot.participacion { background: #8b5cf6; }
-.agenda-dot.contrato { background: #10b981; }
+.agenda-dot.callejoneada {
+  background: #f59e0b;
+}
+
+.agenda-dot.evento {
+  background: #3b82f6;
+}
+
+.agenda-dot.participacion {
+  background: #8b5cf6;
+}
+
+.agenda-dot.contrato {
+  background: #10b981;
+}
 
 .agenda-cal-day.selected .agenda-dot {
   background: #ffffff;
@@ -7957,8 +8259,15 @@
     font-size: 0.82rem;
   }
 
-  .agenda-cal-dots { gap: 2px; height: 5px; }
-  .agenda-dot { width: 5px; height: 5px; }
+  .agenda-cal-dots {
+    gap: 2px;
+    height: 5px;
+  }
+
+  .agenda-dot {
+    width: 5px;
+    height: 5px;
+  }
 
   .event-item.agenda-event-item {
     flex-direction: row !important;
@@ -7991,23 +8300,56 @@
   border-width: 2px;
 }
 
-.agenda-cal-day.status-pending { background: #fef3c7; border-color: #f59e0b; }
-.agenda-cal-day.status-yes     { background: #dcfce7; border-color: #16a34a; }
-.agenda-cal-day.status-maybe   { background: #e0e7ff; border-color: #6366f1; }
-.agenda-cal-day.status-no      { background: #fee2e2; border-color: #ef4444; }
+.agenda-cal-day.status-pending {
+  background: #fef3c7;
+  border-color: #f59e0b;
+}
 
-.agenda-cal-day.status-pending .agenda-cal-num { color: #92400e; }
-.agenda-cal-day.status-yes .agenda-cal-num     { color: #166534; }
-.agenda-cal-day.status-maybe .agenda-cal-num   { color: #3730a3; }
-.agenda-cal-day.status-no .agenda-cal-num      { color: #991b1b; }
+.agenda-cal-day.status-yes {
+  background: #dcfce7;
+  border-color: #16a34a;
+}
+
+.agenda-cal-day.status-maybe {
+  background: #e0e7ff;
+  border-color: #6366f1;
+}
+
+.agenda-cal-day.status-no {
+  background: #fee2e2;
+  border-color: #ef4444;
+}
+
+.agenda-cal-day.status-pending .agenda-cal-num {
+  color: #92400e;
+}
+
+.agenda-cal-day.status-yes .agenda-cal-num {
+  color: #166534;
+}
+
+.agenda-cal-day.status-maybe .agenda-cal-num {
+  color: #3730a3;
+}
+
+.agenda-cal-day.status-no .agenda-cal-num {
+  color: #991b1b;
+}
 
 .agenda-cal-day.status-pending {
   animation: agendaPulse 2s ease-in-out infinite;
 }
 
 @keyframes agendaPulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.45); }
-  50%      { box-shadow: 0 0 0 4px rgba(245, 158, 11, 0); }
+
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.45);
+  }
+
+  50% {
+    box-shadow: 0 0 0 4px rgba(245, 158, 11, 0);
+  }
 }
 
 .agenda-cal-status {
@@ -8022,10 +8364,21 @@
   background: #94a3b8;
 }
 
-.status-pending .agenda-cal-status { background: #f59e0b; }
-.status-yes .agenda-cal-status     { background: #16a34a; }
-.status-maybe .agenda-cal-status   { background: #6366f1; }
-.status-no .agenda-cal-status      { background: #ef4444; }
+.status-pending .agenda-cal-status {
+  background: #f59e0b;
+}
+
+.status-yes .agenda-cal-status {
+  background: #16a34a;
+}
+
+.status-maybe .agenda-cal-status {
+  background: #6366f1;
+}
+
+.status-no .agenda-cal-status {
+  background: #ef4444;
+}
 
 .agenda-cal-count {
   position: absolute;
@@ -8047,8 +8400,15 @@
   border-color: #0f6b68;
   animation: none;
 }
-.agenda-cal-day.selected .agenda-cal-num { color: #ffffff; }
-.agenda-cal-day.selected .agenda-cal-status { background: #ffffff; color: #0f6b68; }
+
+.agenda-cal-day.selected .agenda-cal-num {
+  color: #ffffff;
+}
+
+.agenda-cal-day.selected .agenda-cal-status {
+  background: #ffffff;
+  color: #0f6b68;
+}
 
 .agenda-pending-alert {
   margin-top: 0.75rem;
@@ -8082,10 +8442,26 @@
   border-radius: 4px;
   border: 2px solid;
 }
-.legend-dot.status-pending { background: #fef3c7; border-color: #f59e0b; }
-.legend-dot.status-yes     { background: #dcfce7; border-color: #16a34a; }
-.legend-dot.status-maybe   { background: #e0e7ff; border-color: #6366f1; }
-.legend-dot.status-no      { background: #fee2e2; border-color: #ef4444; }
+
+.legend-dot.status-pending {
+  background: #fef3c7;
+  border-color: #f59e0b;
+}
+
+.legend-dot.status-yes {
+  background: #dcfce7;
+  border-color: #16a34a;
+}
+
+.legend-dot.status-maybe {
+  background: #e0e7ff;
+  border-color: #6366f1;
+}
+
+.legend-dot.status-no {
+  background: #fee2e2;
+  border-color: #ef4444;
+}
 
 @media (max-width: 768px) {
   .agenda-cal-status {
@@ -8094,6 +8470,14 @@
     line-height: 14px;
     font-size: 0.58rem;
   }
-  .agenda-cal-count { font-size: 0.55rem; padding: 0 3px; }
-  .agenda-legend { gap: 0.35rem 0.75rem; font-size: 0.7rem; }
+
+  .agenda-cal-count {
+    font-size: 0.55rem;
+    padding: 0 3px;
+  }
+
+  .agenda-legend {
+    gap: 0.35rem 0.75rem;
+    font-size: 0.7rem;
+  }
 }

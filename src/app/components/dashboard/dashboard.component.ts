@@ -2315,6 +2315,14 @@ export class DashboardComponent implements OnInit {
     this.router.navigate(['/organigrama']);
   }
 
+  applyForVacantRole(roleTitle: string, areaTitle: string, event?: Event) {
+    if (event) event.stopPropagation();
+    const applicantName = this.userProfile?.name || this.user?.email || 'un integrante';
+    const message = `Hola, soy *${applicantName}* y me gustaría postularme para la vacante de *${roleTitle}* en *${areaTitle}* dentro de la Mesa Directiva de la Estudiantina Tonantzin Guadalupe.`;
+    const whatsappUrl = `https://wa.me/527224250172?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
+  }
+
   // ==========================================
   // INDICADORES Y RANKING DE LETRAS APRENDIDAS
   // ==========================================

@@ -77,7 +77,9 @@ export const DEFAULT_MESA_DIRECTIVA: MesaDirectivaArea[] = [
     accentColor: '#6d28d9',
     headRoleTitle: 'Director de Redes Sociales',
     headUserId: '',
-    subordinates: []
+    subordinates: [
+      { userId: '', roleTitle: 'Coordinador de Redes Sociales' }
+    ]
   },
   {
     id: 'direccion-eventos',
@@ -88,7 +90,9 @@ export const DEFAULT_MESA_DIRECTIVA: MesaDirectivaArea[] = [
     accentColor: '#be123c',
     headRoleTitle: 'Director de Eventos',
     headUserId: '',
-    subordinates: []
+    subordinates: [
+      { userId: '', roleTitle: 'Auxiliar de Eventos' }
+    ]
   },
   {
     id: 'gestion-insumos',
@@ -99,7 +103,9 @@ export const DEFAULT_MESA_DIRECTIVA: MesaDirectivaArea[] = [
     accentColor: '#047857',
     headRoleTitle: 'Encargado de Insumos',
     headUserId: '',
-    subordinates: []
+    subordinates: [
+      { userId: '', roleTitle: 'Auxiliar de Insumos' }
+    ]
   }
 ];
 
@@ -251,7 +257,7 @@ export class OrganigramaComponent implements OnInit {
     private firestore: AngularFirestore,
     private afAuth: AngularFireAuth,
     private router: Router
-  ) {}
+  ) { }
 
   ngOnInit() {
     this.afAuth.authState.subscribe(async (user) => {
@@ -533,14 +539,24 @@ export class OrganigramaComponent implements OnInit {
   }
 
   addSubordinateToForm() {
-    if (!this.editingMesaArea || !this.newSubordinateUserId) return;
+    if (!this.editingMesaArea) return;
+    if (!this.newSubordinateUserId && !this.newSubordinateRoleTitle.trim()) return;
     const roleLabel = this.newSubordinateRoleTitle.trim() || 'Auxiliar / Coordinador';
+    const cleanUserId = this.newSubordinateUserId === '__VACANTE__' ? '' : this.newSubordinateUserId;
     this.editingMesaArea.subordinates.push({
-      userId: this.newSubordinateUserId,
+      userId: cleanUserId,
       roleTitle: roleLabel
     });
     this.newSubordinateUserId = '';
     this.newSubordinateRoleTitle = '';
+  }
+
+  applyForVacantRole(roleTitle: string, areaTitle: string, event?: Event) {
+    if (event) event.stopPropagation();
+    const applicantName = this.currentUserProfile?.name || this.currentUser?.email || 'un integrante';
+    const message = `Hola, soy *${applicantName}* y me gustaría postularme para la vacante de *${roleTitle}* en *${areaTitle}* dentro de la Mesa Directiva de la Estudiantina Tonantzin Guadalupe.`;
+    const whatsappUrl = `https://wa.me/527224250172?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
   }
 
   removeSubordinateFromForm(index: number) {

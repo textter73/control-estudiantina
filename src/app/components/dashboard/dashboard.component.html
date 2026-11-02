@@ -1260,7 +1260,8 @@
                         {{ getMemberInitials(headMember.name) }}
                       </div>
                     </div>
-                    <span class="dash-leaf-name" [title]="headMember.name">{{ headMember.nickname || headMember.name }}</span>
+                    <span class="dash-leaf-name" [title]="headMember.name">{{ headMember.nickname || headMember.name
+                      }}</span>
                     <span class="dash-leaf-inst">🎸 {{ headMember.instrument || 'Integrante' }}</span>
                   </div>
                 </div>
@@ -1270,7 +1271,27 @@
             <ng-template #dashEmptyHeadTpl>
               <div class="dash-tree-empty-note" *ngIf="!area.subordinates || area.subordinates.length === 0">
                 <span>Por asignar titular en {{ area.title }}</span>
-              </div>
+                <div class="dash-tree-stem" [style.background]="area.accentColor"></div>
+                <div class="dash-tree-leaves-row single-leaf">
+                  <div class="dash-tree-leaf">
+                    <div class="dash-leaf-card dash-vacant-card" [style.borderTopColor]="area.accentColor">
+                      <span class="dash-mesa-role-tag vacant">
+                        ✨ VACANTE
+                      </span>
+                      <div class="dash-leaf-photo-wrap dash-vacant-avatar" [style.borderColor]="area.accentColor">
+                        <span>{{ area.icon }}</span>
+                      </div>
+                      <span class="dash-leaf-name" [title]="area.headRoleTitle || area.title">
+                        {{ area.headRoleTitle || area.title }}
+                      </span>
+                      <span class="dash-leaf-inst">Puesto disponible</span>
+                      <button type="button" class="dash-apply-wa-btn"
+                        (click)="applyForVacantRole(area.headRoleTitle || area.title, area.title, $event)">
+                        💬 Postularme
+                      </button>
+                    </div>
+                  </div>
+                </div>
             </ng-template>
 
             <!-- Ramas de Subordinados que cuelgan debajo del Jefe / Titular -->
@@ -1279,6 +1300,7 @@
               <span class="dash-mesa-sub-caption">↳ Subordinados / Equipo ({{ area.subordinates.length }})</span>
               <div class="dash-tree-leaves-row" [class.single-leaf]="area.subordinates.length === 1">
                 <ng-container *ngFor="let sub of area.subordinates">
+                  <!-- Subordinado con integrante asignado -->
                   <div class="dash-tree-leaf" *ngIf="getDashboardMemberById(sub.userId) as subMember"
                     (click)="openOrganigramaMemberModal(subMember, undefined, $event, sub.roleTitle)"
                     title="Haz clic para ver el perfil completo de {{ subMember.name }}">
@@ -1294,8 +1316,28 @@
                           {{ getMemberInitials(subMember.name) }}
                         </div>
                       </div>
-                      <span class="dash-leaf-name" [title]="subMember.name">{{ subMember.nickname || subMember.name }}</span>
+                      <span class="dash-leaf-name" [title]="subMember.name">{{ subMember.nickname || subMember.name
+                        }}</span>
                       <span class="dash-leaf-inst">🎸 {{ subMember.instrument || 'Integrante' }}</span>
+                    </div>
+                  </div>
+
+                  <!-- Subordinado Vacante (sin integrante asignado) -->
+                  <div class="dash-tree-leaf" *ngIf="!getDashboardMemberById(sub.userId)">
+                    <div class="dash-leaf-line-up"></div>
+                    <div class="dash-leaf-card dash-vacant-card" [style.borderTopColor]="area.accentColor">
+                      <span class="dash-mesa-role-tag vacant">✨ VACANTE</span>
+                      <div class="dash-leaf-photo-wrap dash-vacant-avatar" [style.borderColor]="area.accentColor">
+                        <span>🙋‍♂️</span>
+                      </div>
+                      <span class="dash-leaf-name" [title]="sub.roleTitle || 'Auxiliar'">
+                        {{ sub.roleTitle || 'Auxiliar' }}
+                      </span>
+                      <span class="dash-leaf-inst">Puesto disponible</span>
+                      <button type="button" class="dash-apply-wa-btn"
+                        (click)="applyForVacantRole(sub.roleTitle || 'Auxiliar', area.title, $event)">
+                        💬 Postularme
+                      </button>
                     </div>
                   </div>
                 </ng-container>
@@ -1306,80 +1348,80 @@
           </div>
         </div>
 
-            <!-- TAB 2: ORGANIGRAMA POR RANGOS -->
-            <div class="dash-org-tree" *ngIf="activeOrgDashboardTab === 'organigrama'">
-              <!-- Nodo Raíz del Árbol -->
-              <div class="dash-tree-root" [style.cursor]="isAdmin ? 'pointer' : 'default'"
-                (click)="isAdmin && goToOrganigrama()">
-                <img src="assets/estonantzin.jpeg" alt="Estudiantina Tonantzin Guadalupe" class="dash-tree-root-logo">
-                <div class="dash-tree-root-text">
-                  <span class="dash-tree-root-tag">ESTRUCTURA OFICIAL</span>
-                  <h4>Estudiantina Tonantzin Guadalupe</h4>
-                </div>
-              </div>
-
-              <!-- Niveles del Árbol (1. Jefe de Tuna -> 7. Aspirante) -->
-              <div class="dash-tree-level" *ngFor="let item of getOrganigramaRankSummary(); let isLast = last"
-                [class.dash-supervised-level]="!!item.rank.supervisedBy">
-                <div class="dash-tree-trunk" [class.dash-supervised-trunk]="!!item.rank.supervisedBy"></div>
-
-                <!-- Cabecera del Rango -->
-                <div class="dash-tree-rank-node" [style.borderColor]="item.rank.accentColor"
-                  [style.cursor]="isAdmin ? 'pointer' : 'default'" (click)="isAdmin && goToOrganigrama()">
-                  <span class="dash-tree-rank-order" [style.background]="item.rank.accentColor">
-                    Rango {{ item.rank.order }}
-                  </span>
-                  <span class="dash-tree-rank-icon">{{ item.rank.icon }}</span>
-                  <span class="dash-tree-rank-title">{{ item.rank.title }}</span>
-                  <span class="dash-tree-rank-badge" [style.color]="item.rank.accentColor"
-                    [style.background]="item.rank.bgLight" [style.borderColor]="item.rank.borderColor">
-                    {{ item.members.length }}
-                  </span>
-                </div>
-                <div class="dash-tree-supervision-tag supervises" *ngIf="item.rank.supervisesLabel">
-                  🛡️ {{ item.rank.supervisesLabel }}
-                </div>
-                <div class="dash-tree-supervision-tag supervised-by" *ngIf="item.rank.supervisedBy">
-                  ↳ A cargo de: <b>{{ item.rank.supervisedBy }}</b>
-                </div>
-
-                <!-- Ramas de Integrantes con su Foto Cargada -->
-                <ng-container *ngIf="item.members.length > 0">
-                  <div class="dash-tree-stem" [style.background]="item.rank.accentColor"></div>
-                  <div class="dash-tree-leaves-row" [class.single-leaf]="item.members.length === 1">
-                    <div class="dash-tree-leaf" *ngFor="let m of item.members"
-                      (click)="openOrganigramaMemberModal(m, item.rank, $event)"
-                      title="Haz clic para ver el perfil completo de {{ m.name }}">
-                      <div class="dash-leaf-line-up"></div>
-                      <div class="dash-leaf-card" [class.is-me]="m.uid === user?.uid"
-                        [style.borderTopColor]="item.rank.accentColor">
-                        <div class="dash-leaf-photo-wrap" [style.borderColor]="item.rank.accentColor">
-                          <img *ngIf="m.profileImage" [src]="m.profileImage" [alt]="m.name" class="dash-leaf-photo">
-                          <div *ngIf="!m.profileImage" class="dash-leaf-initials"
-                            [style.background]="item.rank.accentColor">
-                            {{ getMemberInitials(m.name) }}
-                          </div>
-                          <span class="dash-leaf-level-pill" *ngIf="isAdmin && m.resolvedLevel"
-                            [ngClass]="getLevelBadgeClass(m.resolvedLevel)">
-                            N{{ m.resolvedLevel }}
-                          </span>
-                        </div>
-                        <span class="dash-leaf-name" [title]="m.name">{{ m.nickname || m.name }}</span>
-                        <span class="dash-leaf-inst">🎸 {{ m.instrument || 'Integrante' }}</span>
-                      </div>
-                    </div>
-                  </div>
-                </ng-container>
-
-                <div class="dash-tree-empty-note" *ngIf="item.members.length === 0">
-                  <span>Sin integrantes asignados en este rango</span>
-                </div>
-
-                <div class="dash-tree-arrow" *ngIf="!isLast">▼</div>
-              </div>
+        <!-- TAB 2: ORGANIGRAMA POR RANGOS -->
+        <div class="dash-org-tree" *ngIf="activeOrgDashboardTab === 'organigrama'">
+          <!-- Nodo Raíz del Árbol -->
+          <div class="dash-tree-root" [style.cursor]="isAdmin ? 'pointer' : 'default'"
+            (click)="isAdmin && goToOrganigrama()">
+            <img src="assets/estonantzin.jpeg" alt="Estudiantina Tonantzin Guadalupe" class="dash-tree-root-logo">
+            <div class="dash-tree-root-text">
+              <span class="dash-tree-root-tag">ESTRUCTURA OFICIAL</span>
+              <h4>Estudiantina Tonantzin Guadalupe</h4>
             </div>
           </div>
+
+          <!-- Niveles del Árbol (1. Jefe de Tuna -> 7. Aspirante) -->
+          <div class="dash-tree-level" *ngFor="let item of getOrganigramaRankSummary(); let isLast = last"
+            [class.dash-supervised-level]="!!item.rank.supervisedBy">
+            <div class="dash-tree-trunk" [class.dash-supervised-trunk]="!!item.rank.supervisedBy"></div>
+
+            <!-- Cabecera del Rango -->
+            <div class="dash-tree-rank-node" [style.borderColor]="item.rank.accentColor"
+              [style.cursor]="isAdmin ? 'pointer' : 'default'" (click)="isAdmin && goToOrganigrama()">
+              <span class="dash-tree-rank-order" [style.background]="item.rank.accentColor">
+                Rango {{ item.rank.order }}
+              </span>
+              <span class="dash-tree-rank-icon">{{ item.rank.icon }}</span>
+              <span class="dash-tree-rank-title">{{ item.rank.title }}</span>
+              <span class="dash-tree-rank-badge" [style.color]="item.rank.accentColor"
+                [style.background]="item.rank.bgLight" [style.borderColor]="item.rank.borderColor">
+                {{ item.members.length }}
+              </span>
+            </div>
+            <div class="dash-tree-supervision-tag supervises" *ngIf="item.rank.supervisesLabel">
+              🛡️ {{ item.rank.supervisesLabel }}
+            </div>
+            <div class="dash-tree-supervision-tag supervised-by" *ngIf="item.rank.supervisedBy">
+              ↳ A cargo de: <b>{{ item.rank.supervisedBy }}</b>
+            </div>
+
+            <!-- Ramas de Integrantes con su Foto Cargada -->
+            <ng-container *ngIf="item.members.length > 0">
+              <div class="dash-tree-stem" [style.background]="item.rank.accentColor"></div>
+              <div class="dash-tree-leaves-row" [class.single-leaf]="item.members.length === 1">
+                <div class="dash-tree-leaf" *ngFor="let m of item.members"
+                  (click)="openOrganigramaMemberModal(m, item.rank, $event)"
+                  title="Haz clic para ver el perfil completo de {{ m.name }}">
+                  <div class="dash-leaf-line-up"></div>
+                  <div class="dash-leaf-card" [class.is-me]="m.uid === user?.uid"
+                    [style.borderTopColor]="item.rank.accentColor">
+                    <div class="dash-leaf-photo-wrap" [style.borderColor]="item.rank.accentColor">
+                      <img *ngIf="m.profileImage" [src]="m.profileImage" [alt]="m.name" class="dash-leaf-photo">
+                      <div *ngIf="!m.profileImage" class="dash-leaf-initials"
+                        [style.background]="item.rank.accentColor">
+                        {{ getMemberInitials(m.name) }}
+                      </div>
+                      <span class="dash-leaf-level-pill" *ngIf="isAdmin && m.resolvedLevel"
+                        [ngClass]="getLevelBadgeClass(m.resolvedLevel)">
+                        N{{ m.resolvedLevel }}
+                      </span>
+                    </div>
+                    <span class="dash-leaf-name" [title]="m.name">{{ m.nickname || m.name }}</span>
+                    <span class="dash-leaf-inst">🎸 {{ m.instrument || 'Integrante' }}</span>
+                  </div>
+                </div>
+              </div>
+            </ng-container>
+
+            <div class="dash-tree-empty-note" *ngIf="item.members.length === 0">
+              <span>Sin integrantes asignados en este rango</span>
+            </div>
+
+            <div class="dash-tree-arrow" *ngIf="!isLast">▼</div>
+          </div>
         </div>
+      </div>
+    </div>
   </main>
 
   <!-- Modal de Mapa de Asientos -->

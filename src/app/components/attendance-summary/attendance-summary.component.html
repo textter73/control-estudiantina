@@ -1,48 +1,163 @@
 <div class="summary-container">
   <header class="summary-header">
     <div class="header-content">
-      <button class="back-btn" routerLink="/dashboard">
-        ← Volver al Dashboard
-      </button>
-      <h4>Resumen General de Asistencia</h4>
+      <div class="header-left">
+        <button class="back-btn" routerLink="/dashboard">
+          ← Volver al Dashboard
+        </button>
+        <div class="header-titles">
+          <h4>Reporte General y Completo de Asistencia</h4>
+          <p class="header-subtitle">Estadística integral de integrantes activos (excluye cuenta institucional)</p>
+        </div>
+      </div>
+
+      <div class="header-export-actions">
+        <button type="button" class="export-btn pdf-btn" (click)="exportGeneralReportPDF()">
+          📄 Descargar PDF Completo
+        </button>
+        <button type="button" class="export-btn csv-btn" (click)="exportGeneralReportCSV()">
+          📊 Exportar Excel (CSV)
+        </button>
+      </div>
     </div>
   </header>
 
   <main class="summary-main">
-    <div class="search-container">
-      <div class="search-box">
-        <input 
-          type="text" 
-          placeholder="Buscar integrante por nombre..."
-          [(ngModel)]="searchTerm"
-          (input)="onSearchChange()"
-          class="search-input">
-        <span class="search-icon">🔍</span>
+    <!-- Tarjetas de KPIs Ejecutivos -->
+    <div class="report-kpi-grid">
+      <div class="report-kpi-card">
+        <span class="kpi-icon">👥</span>
+        <div class="kpi-info">
+          <span class="kpi-value">{{ groupKpis.totalMembers }}</span>
+          <span class="kpi-label">Integrantes Evaluados</span>
+        </div>
+      </div>
+
+      <div class="report-kpi-card">
+        <span class="kpi-icon">📋</span>
+        <div class="kpi-info">
+          <span class="kpi-value">{{ groupKpis.totalSessions }}</span>
+          <span class="kpi-label">Pases de Lista ({{ periodLabel }})</span>
+          <span class="kpi-sub">🎵 {{ groupKpis.rehearsalSessions }} · 🎉 {{ groupKpis.eventSessions }} · ⛪ {{ groupKpis.massSessions }}</span>
+        </div>
+      </div>
+
+      <div class="report-kpi-card highlight">
+        <span class="kpi-icon">📈</span>
+        <div class="kpi-info">
+          <span class="kpi-value">{{ groupKpis.avgParticipation }}%</span>
+          <span class="kpi-label">Participación Grupal</span>
+          <span class="kpi-sub">Efectiva presencial: {{ groupKpis.avgEffective }}%</span>
+        </div>
+      </div>
+
+      <div class="report-kpi-card">
+        <span class="kpi-icon">🏆</span>
+        <div class="kpi-info">
+          <span class="kpi-value">{{ groupKpis.excellentCount }}</span>
+          <span class="kpi-label">Excelencia (≥ 90%)</span>
+          <span class="kpi-sub risk-text" *ngIf="groupKpis.atRiskCount > 0">⚠️ {{ groupKpis.atRiskCount }} en riesgo / alerta</span>
+        </div>
       </div>
     </div>
 
+    <!-- Barra de Herramientas y Filtros del Reporte -->
+    <div class="report-toolbar-card">
+      <div class="toolbar-top-row">
+        <div class="period-pills" role="tablist" aria-label="Filtro de periodo">
+          <button type="button" class="period-pill" [class.active]="periodFilter === 'all'"
+            (click)="setPeriodFilter('all')">Todo el Historial</button>
+          <button type="button" class="period-pill" [class.active]="periodFilter === '6months'"
+            (click)="setPeriodFilter('6months')">Últimos 6 Meses</button>
+          <button type="button" class="period-pill" [class.active]="periodFilter === '3months'"
+            (click)="setPeriodFilter('3months')">Últimos 3 Meses</button>
+          <button type="button" class="period-pill" [class.active]="periodFilter === 'month'"
+            (click)="setPeriodFilter('month')">Este Mes</button>
+          <button type="button" class="period-pill" [class.active]="periodFilter === 'custom'"
+            (click)="setPeriodFilter('custom')">📅 Rango Personalizado</button>
+        </div>
+
+        <label class="on-leave-toggle">
+          <input type="checkbox" [(ngModel)]="includeOnLeave" (change)="onFilterChange()">
+          <span>Incluir integrantes en permiso temporal</span>
+        </label>
+      </div>
+
+      <!-- Fechas personalizadas -->
+      <div class="custom-dates-row" *ngIf="periodFilter === 'custom'">
+        <div class="date-field">
+          <label>Desde:</label>
+          <input type="date" [(ngModel)]="customStartDate" (change)="onFilterChange()">
+        </div>
+        <div class="date-field">
+          <label>Hasta:</label>
+          <input type="date" [(ngModel)]="customEndDate" (change)="onFilterChange()">
+        </div>
+      </div>
+
+      <div class="toolbar-bottom-row">
+        <div class="search-box">
+          <input 
+            type="text" 
+            placeholder="Buscar por nombre, instrumento o correo..."
+            [(ngModel)]="searchTerm"
+            (input)="onSearchChange()"
+            class="search-input">
+          <span class="search-icon">🔍</span>
+        </div>
+
+        <div class="sort-pills">
+          <span class="sort-label">Ordenar por:</span>
+          <button type="button" class="sort-pill" [class.active]="sortBy === 'participacion'"
+            (click)="setSortBy('participacion')">% Participación</button>
+          <button type="button" class="sort-pill" [class.active]="sortBy === 'efectiva'"
+            (click)="setSortBy('efectiva')">% Efectiva</button>
+          <button type="button" class="sort-pill" [class.active]="sortBy === 'faltas'"
+            (click)="setSortBy('faltas')">Más Faltas</button>
+          <button type="button" class="sort-pill" [class.active]="sortBy === 'name'"
+            (click)="setSortBy('name')">Nombre A-Z</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabla Completa de Asistencia -->
     <div class="summary-table-container">
-      <div class="table-responsive">
+      <div class="table-responsive" *ngIf="filteredSummaryData.length > 0">
         <table class="summary-table">
           <thead>
             <tr>
+              <th>#</th>
               <th>Integrante</th>
-              <th>Total Eventos</th>
-              <th>Participación</th>
-              <th>Asist. Efectiva</th>
-              <th>Misas Dom.</th>
-              <th>Presente</th>
-              <th>Escuela</th>
-              <th>Enfermedad</th>
-              <th>Faltas</th>
+              <th>Total</th>
+              <th>% Participación</th>
+              <th>% Efectiva</th>
+              <th>🎵 Ensayos</th>
+              <th>🎉 Eventos</th>
+              <th>⛪ Misas Dom.</th>
+              <th>✅ Pres.</th>
+              <th>🏫 Esc.</th>
+              <th>🩺 Salud</th>
+              <th>❌ Faltas</th>
+              <th>🔥 Racha</th>
+              <th>Historial</th>
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let user of filteredSummaryData" class="user-row">
+            <tr *ngFor="let user of filteredSummaryData; let idx = index" class="user-row">
+              <td class="text-center rank-col">{{ idx + 1 }}</td>
               <td class="user-info">
-                <div class="user-name">{{ user.name }}</div>
+                <div class="user-info-wrap">
+                  <span class="user-avatar-mini">{{ getInitials(user.name) }}</span>
+                  <div class="user-text-meta">
+                    <div class="user-name">
+                      {{ user.name }}
+                      <span class="leave-mini-tag" *ngIf="user.onLeave">⏸️ Permiso</span>
+                    </div>
+                    <div class="user-instrument-sub">🎸 {{ user.instrument }}</div>
+                  </div>
+                </div>
               </td>
-              <td class="text-center">{{ user.totalEvents }}</td>
+              <td class="text-center font-bold">{{ user.totalEvents }}</td>
               <td class="text-center">
                 <span class="percentage-badge" [class]="getStatusClass(user.participacion)">
                   {{ user.participacion }}%
@@ -55,9 +170,25 @@
               </td>
               <td class="text-center">
                 <div class="misa-info">
+                  <span class="misa-count">{{ user.ensayosAsistidos }}/{{ user.ensayosTotal }}</span>
+                  <span class="misa-percentage" [class]="getStatusClass(user.ensayosPercentage)">
+                    {{ user.ensayosPercentage }}%
+                  </span>
+                </div>
+              </td>
+              <td class="text-center">
+                <div class="misa-info">
+                  <span class="misa-count">{{ user.eventosAsistidos }}/{{ user.eventosTotal }}</span>
+                  <span class="misa-percentage" [class]="getStatusClass(user.eventosPercentage)">
+                    {{ user.eventosPercentage }}%
+                  </span>
+                </div>
+              </td>
+              <td class="text-center">
+                <div class="misa-info">
                   <span class="misa-count">{{ user.misasAsistidas }}/{{ user.misasDominicales }}</span>
                   <span class="misa-percentage" [class]="getStatusClass(user.misasPercentage)">
-                    ({{ user.misasPercentage }}%)
+                    {{ user.misasPercentage }}%
                   </span>
                 </div>
               </td>
@@ -65,9 +196,24 @@
               <td class="text-center status-escuela">{{ user.escuela }}</td>
               <td class="text-center status-enfermedad">{{ user.enfermedad }}</td>
               <td class="text-center status-falta">{{ user.falta }}</td>
+              <td class="text-center">
+                <span class="streak-pill" [class.danger]="user.consecutiveAbsences >= 3">
+                  {{ user.consecutiveAbsences }}
+                </span>
+              </td>
+              <td class="text-center">
+                <button type="button" class="detail-btn" (click)="openMemberDetail(user)">
+                  Ver ({{ user.history.length }})
+                </button>
+              </td>
             </tr>
           </tbody>
         </table>
+      </div>
+
+      <div class="empty-report-state" *ngIf="filteredSummaryData.length === 0">
+        <span>📋</span>
+        <p>No se encontraron integrantes con los filtros seleccionados.</p>
       </div>
     </div>
 
@@ -93,4 +239,34 @@
       </div>
     </div>
   </main>
+
+  <!-- Modal de Historial Individual del Integrante -->
+  <div class="member-detail-backdrop" *ngIf="selectedMemberDetail" (click)="closeMemberDetail()">
+    <div class="member-detail-modal" (click)="$event.stopPropagation()">
+      <div class="member-detail-header">
+        <div>
+          <h3>{{ selectedMemberDetail.name }}</h3>
+          <p>🎸 {{ selectedMemberDetail.instrument }} · Participación: <b>{{ selectedMemberDetail.participacion }}%</b> · Efectiva: <b>{{ selectedMemberDetail.asistenciaEfectiva }}%</b></p>
+        </div>
+        <button type="button" class="close-modal-btn" (click)="closeMemberDetail()">✕</button>
+      </div>
+
+      <div class="member-detail-kpis">
+        <span class="mini-kpi">🎵 Ensayos: <b>{{ selectedMemberDetail.ensayosAsistidos }}/{{ selectedMemberDetail.ensayosTotal }} ({{ selectedMemberDetail.ensayosPercentage }}%)</b></span>
+        <span class="mini-kpi">🎉 Eventos: <b>{{ selectedMemberDetail.eventosAsistidos }}/{{ selectedMemberDetail.eventosTotal }} ({{ selectedMemberDetail.eventosPercentage }}%)</b></span>
+        <span class="mini-kpi">⛪ Misas: <b>{{ selectedMemberDetail.misasAsistidas }}/{{ selectedMemberDetail.misasDominicales }} ({{ selectedMemberDetail.misasPercentage }}%)</b></span>
+      </div>
+
+      <div class="member-history-list">
+        <div class="member-history-row" *ngFor="let item of selectedMemberDetail.history">
+          <span class="history-date">{{ item.date | date:'dd/MM/yyyy' }}</span>
+          <span class="history-activity">{{ getActivityLabel(item.type) }}</span>
+          <span class="history-status" [ngClass]="'st-' + item.status">{{ getStatusBadgeText(item.status) }}</span>
+        </div>
+        <div class="empty-report-state" *ngIf="selectedMemberDetail.history.length === 0">
+          <p>Sin registros de asistencia en este periodo.</p>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>

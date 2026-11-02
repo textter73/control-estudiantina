@@ -11,6 +11,7 @@ import { InstrumentMaintenance } from '../../models/maintenance.model';
 import { Insumo } from '../../models/insumo.model';
 import Swal from 'sweetalert2';
 import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 
 // Declaración de módulo para qrcode
 declare const require: any;
@@ -1854,6 +1855,326 @@ export class DashboardComponent implements OnInit {
 
   closeRankingModal() {
     this.showRankingModal = false;
+  }
+
+  /**
+   * Genera y descarga directamente en PDF el Reporte General y Completo de Asistencia
+   * omitiendo a Estudiantina Tonantzin Guadalupe, eliminados y en permiso temporal.
+   */
+  async downloadGeneralAttendancePDF() {
+    const { value: period } = await Swal.fire({
+      title: '📄 Generar Reporte General de Asistencia (PDF)',
+      text: 'Selecciona el periodo que deseas incluir en el reporte completo:',
+      input: 'select',
+      inputOptions: {
+        '6months': 'Últimos 6 meses',
+        '3months': 'Últimos 3 meses',
+        'month': 'Mes actual',
+        'all': 'Todo el historial completo'
+      },
+      inputValue: '6months',
+      showCancelButton: true,
+      confirmButtonText: '📥 Descargar PDF',
+      cancelButtonText: 'Cancelar',
+      confirmButtonColor: '#189d98'
+    });
+
+    if (!period) return;
+
+    try {
+      Swal.fire({
+        title: 'Generando PDF...',
+        text: 'Calculando estadísticas de todos los integrantes',
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        }
+      });
+
+      const [usersSnapshot, attendanceSnapshot] = await Promise.all([
+        this.firestore.collection('users').get().toPromise(),
+        this.firestore.collection('attendance').get().toPromise()
+      ]);
+
+      const allUsers = usersSnapshot?.docs.map(doc => ({
+        uid: doc.id,
+        ...(doc.data() as any)
+      })) || [];
+
+      // Omitir cuenta institucional Estudiantina Tonantzin Guadalupe, eliminados y en permiso temporal
+      const activeUsers = allUsers.filter(user => {
+        const cleanName = (user?.name || '').trim().toLowerCase();
+        const cleanEmail = (user?.email || '').trim().toLowerCase();
+        return (
+          !user.deleted &&
+          !user.onLeave &&
+          user.name &&
+          cleanName !== 'estudiantina tonantzin guadalupe' &&
+          cleanName !== 'estudiantina tonantzin' &&
+          cleanEmail !== 'estudiantina@tonantzin.com'
+        );
+      });
+
+      const allAttendances = (attendanceSnapshot?.docs.map(doc => doc.data() as any) || [])
+        .filter(att => !att.status || att.status === 'completed');
+
+      const now = new Date();
+      let startLimit: Date | null = null;
+      let periodLabel = 'Todo el historial';
+
+      if (period === '6months') {
+        startLimit = new Date(now.getFullYear(), now.getMonth() - 6, now.getDate());
+        periodLabel = 'Últimos 6 meses';
+      } else if (period === '3months') {
+        startLimit = new Date(now.getFullYear(), now.getMonth() - 3, now.getDate());
+        periodLabel = 'Últimos 3 meses';
+      } else if (period === 'month') {
+        startLimit = new Date(now.getFullYear(), now.getMonth(), 1);
+        periodLabel = 'Mes actual';
+      }
+
+      const filteredAttendances = allAttendances
+        .filter(att => {
+          const d = this.parseAnyDate(att.date);
+          return !startLimit || d >= startLimit;
+        })
+        .sort((a, b) => this.parseAnyDate(b.date).getTime() - this.parseAnyDate(a.date).getTime());
+
+      let rehearsalSessions = 0;
+      let eventSessions = 0;
+      let massSessions = 0;
+      filteredAttendances.forEach(att => {
+        if (att.type === 'ensayo') rehearsalSessions++;
+        else if (att.type === 'evento') eventSessions++;
+        else if (att.type === 'misa dominical') massSessions++;
+      });
+
+      const reportRows = activeUsers.map(user => {
+        let totalEvents = 0;
+        let presente = 0;
+        let escuela = 0;
+        let enfermedad = 0;
+        let falta = 0;
+        let ensayosTotal = 0, ensayosAsistidos = 0;
+        let eventosTotal = 0, eventosAsistidos = 0;
+        let misasTotal = 0, misasAsistidas = 0;
+        let consecutiveAbsences = 0;
+        let countingConsecutive = true;
+
+        filteredAttendances.forEach(attendance => {
+          const userRecord = attendance.records?.find((r: any) => r.userId === user.uid);
+          if (userRecord) {
+            totalEvents++;
+            const wasPresent = ['presente', 'escuela', 'enfermedad'].includes(userRecord.status);
+
+            switch (userRecord.status) {
+              case 'presente': presente++; break;
+              case 'escuela': escuela++; break;
+              case 'enfermedad': enfermedad++; break;
+              case 'falta': falta++; break;
+            }
+
+            if (countingConsecutive) {
+              if (userRecord.status === 'falta') consecutiveAbsences++;
+              else countingConsecutive = false;
+            }
+
+            if (attendance.type === 'ensayo') {
+              ensayosTotal++;
+              if (wasPresent) ensayosAsistidos++;
+            } else if (attendance.type === 'evento') {
+              eventosTotal++;
+              if (wasPresent) eventosAsistidos++;
+            } else if (attendance.type === 'misa dominical') {
+              misasTotal++;
+              if (wasPresent) misasAsistidas++;
+            }
+          }
+        });
+
+        const participacion = totalEvents > 0 ? Math.round(((presente + escuela + enfermedad) / totalEvents) * 100) : 0;
+        const asistenciaEfectiva = totalEvents > 0 ? Math.round((presente / totalEvents) * 100) : 0;
+        const ensayosPct = ensayosTotal > 0 ? Math.round((ensayosAsistidos / ensayosTotal) * 100) : 0;
+        const eventosPct = eventosTotal > 0 ? Math.round((eventosAsistidos / eventosTotal) * 100) : 0;
+        const misasPct = misasTotal > 0 ? Math.round((misasAsistidas / misasTotal) * 100) : 0;
+
+        return {
+          name: user.name,
+          instrument: user.instrument || '-',
+          totalEvents,
+          participacion,
+          asistenciaEfectiva,
+          ensayosAsistidos,
+          ensayosTotal,
+          ensayosPct,
+          eventosAsistidos,
+          eventosTotal,
+          eventosPct,
+          misasAsistidas,
+          misasTotal,
+          misasPct,
+          presente,
+          escuela,
+          enfermedad,
+          falta,
+          consecutiveAbsences
+        };
+      }).sort((a, b) => b.participacion - a.participacion || b.asistenciaEfectiva - a.asistenciaEfectiva);
+
+      const totalMembers = reportRows.length;
+      const avgPart = totalMembers > 0 ? Math.round(reportRows.reduce((s, r) => s + r.participacion, 0) / totalMembers) : 0;
+      const avgEff = totalMembers > 0 ? Math.round(reportRows.reduce((s, r) => s + r.asistenciaEfectiva, 0) / totalMembers) : 0;
+      const excellentCount = reportRows.filter(r => r.participacion >= 90).length;
+      const atRiskCount = reportRows.filter(r => r.participacion < 60 || r.consecutiveAbsences >= 3).length;
+
+      const doc = new jsPDF('l', 'mm', 'a4');
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const nowStr = new Date().toLocaleDateString('es-MX', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+
+      // Encabezado oficial
+      doc.setFillColor(24, 157, 152);
+      doc.rect(0, 0, pageWidth, 24, 'F');
+
+      doc.setTextColor(255, 255, 255);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(15);
+      doc.text('ESTUDIANTINA TONANTZIN GUADALUPE', pageWidth / 2, 10, { align: 'center' });
+
+      doc.setFontSize(11);
+      doc.setFont('helvetica', 'normal');
+      doc.text(`REPORTE GENERAL Y COMPLETO DE ASISTENCIA DE INTEGRANTES (${periodLabel.toUpperCase()})`, pageWidth / 2, 18, { align: 'center' });
+
+      // Resumen Ejecutivo
+      doc.setTextColor(30, 41, 59);
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'bold');
+      doc.text(`Fecha de emisión: ${nowStr}`, 14, 31);
+      doc.text(`Integrantes Activos Evaluados: ${totalMembers}`, 98, 31);
+      doc.text(`Sesiones en Periodo: ${filteredAttendances.length} (Ensayos: ${rehearsalSessions} | Eventos: ${eventSessions} | Misas: ${massSessions})`, 162, 31);
+
+      doc.setFont('helvetica', 'normal');
+      doc.text(
+        `Promedio Grupal Participación: ${avgPart}%   |   Promedio Asistencia Efectiva: ${avgEff}%   |   Excelencia (>=90%): ${excellentCount}   |   En Riesgo (<60% o 3+ faltas): ${atRiskCount}`,
+        14,
+        37
+      );
+
+      const tableBody = reportRows.map((u, idx) => [
+        idx + 1,
+        u.name,
+        u.instrument,
+        u.totalEvents,
+        `${u.participacion}%`,
+        `${u.asistenciaEfectiva}%`,
+        `${u.ensayosAsistidos}/${u.ensayosTotal} (${u.ensayosPct}%)`,
+        `${u.eventosAsistidos}/${u.eventosTotal} (${u.eventosPct}%)`,
+        `${u.misasAsistidas}/${u.misasTotal} (${u.misasPct}%)`,
+        u.presente,
+        u.escuela,
+        u.enfermedad,
+        u.falta,
+        u.consecutiveAbsences >= 3 ? `${u.consecutiveAbsences} !` : u.consecutiveAbsences
+      ]);
+
+      (doc as any).autoTable({
+        startY: 42,
+        head: [[
+          '#',
+          'Integrante',
+          'Instrumento',
+          'Total',
+          '% Part.',
+          '% Efect.',
+          'Ensayos',
+          'Eventos',
+          'Misas Dom.',
+          'Pres.',
+          'Esc.',
+          'Salud',
+          'Faltas',
+          'Racha'
+        ]],
+        body: tableBody,
+        theme: 'grid',
+        headStyles: {
+          fillColor: [24, 157, 152],
+          textColor: 255,
+          fontStyle: 'bold',
+          halign: 'center',
+          fontSize: 8
+        },
+        styles: {
+          fontSize: 7.8,
+          cellPadding: 2,
+          halign: 'center',
+          valign: 'middle'
+        },
+        columnStyles: {
+          0: { cellWidth: 8 },
+          1: { halign: 'left', cellWidth: 48, fontStyle: 'bold' },
+          2: { halign: 'left', cellWidth: 25 },
+          3: { cellWidth: 12 },
+          4: { cellWidth: 16, fontStyle: 'bold' },
+          5: { cellWidth: 16 },
+          6: { cellWidth: 28 },
+          7: { cellWidth: 28 },
+          8: { cellWidth: 28 },
+          9: { cellWidth: 13 },
+          10: { cellWidth: 13 },
+          11: { cellWidth: 13 },
+          12: { cellWidth: 14, fontStyle: 'bold' },
+          13: { cellWidth: 14 }
+        },
+        didParseCell: (data: any) => {
+          if (data.section === 'body') {
+            const member = reportRows[data.row.index];
+            if (!member) return;
+            if (data.column.index === 4) {
+              if (member.participacion >= 90) {
+                data.cell.styles.fillColor = [220, 252, 231];
+                data.cell.styles.textColor = [22, 101, 52];
+              } else if (member.participacion < 60) {
+                data.cell.styles.fillColor = [254, 226, 226];
+                data.cell.styles.textColor = [153, 27, 27];
+              }
+            }
+            if (data.column.index === 12 && member.falta > 0) {
+              data.cell.styles.textColor = [220, 38, 38];
+            }
+            if (data.column.index === 13 && member.consecutiveAbsences >= 3) {
+              data.cell.styles.fillColor = [254, 226, 226];
+              data.cell.styles.textColor = [153, 27, 27];
+              data.cell.styles.fontStyle = 'bold';
+            }
+          }
+        }
+      });
+
+      const dateSuffix = new Date().toISOString().split('T')[0];
+      const fileName = `Reporte_General_Asistencia_Estudiantina_${dateSuffix}.pdf`;
+      doc.save(fileName);
+
+      Swal.fire({
+        icon: 'success',
+        title: '¡Reporte PDF descargado!',
+        text: `Se descargó "${fileName}" con el reporte completo de ${totalMembers} integrantes.`,
+        timer: 2600,
+        showConfirmButton: false
+      });
+    } catch (error) {
+      console.error('Error generando PDF general de asistencia:', error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'No se pudo generar el reporte PDF.'
+      });
+    }
   }
 
   // ==========================================

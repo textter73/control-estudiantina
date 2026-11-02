@@ -732,10 +732,18 @@
                                                                         y misas</p>
                                                                     </div>
                                                                   </div>
-                                                                  <button class="songbook-quick-link"
-                                                                    (click)="goToTracking()">
-                                                                    📋 Ver Mi Historial →
-                                                                  </button>
+                                                                  <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                                                                    <button class="songbook-quick-link"
+                                                                      *ngIf="isAdmin || canManageAttendance"
+                                                                      (click)="downloadGeneralAttendancePDF()"
+                                                                      style="background: #189d98; color: #ffffff;">
+                                                                      📄 Descargar Reporte PDF
+                                                                    </button>
+                                                                    <button class="songbook-quick-link"
+                                                                      (click)="goToTracking()">
+                                                                      📋 Ver Mi Historial →
+                                                                    </button>
+                                                                  </div>
                                                                 </div>
 
                                                                 <!-- Métricas Rápidas en Grid -->
@@ -1618,7 +1626,12 @@
         </div>
       </div>
 
-      <div class="modal-footer">
+      <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 0.75rem; flex-wrap: wrap;">
+        <button class="songbook-quick-link" *ngIf="isAdmin || canManageAttendance"
+          (click)="downloadGeneralAttendancePDF()"
+          style="background: #189d98; color: #ffffff; border: none;">
+          📄 Descargar Reporte General PDF
+        </button>
         <button class="close-btn-footer" (click)="closeRankingModal()">Cerrar</button>
       </div>
     </div>

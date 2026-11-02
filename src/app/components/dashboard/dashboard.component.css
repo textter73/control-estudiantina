@@ -8613,3 +8613,421 @@
     font-size: 0.7rem;
   }
 }
+
+/* =============================================================== */
+/* DISTINCIÓN DE EVENTOS Y MI ASISTENCIA EN EL CALENDARIO          */
+/* =============================================================== */
+.events-agenda-header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.events-agenda-title-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.65rem;
+  min-width: 0;
+}
+
+.events-agenda-badges {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.attendance-badge-count {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  background: #ede9fe;
+  color: #5b21b6;
+  border: 1px solid #ddd6fe;
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.agenda-filter-pills {
+  display: inline-flex;
+  align-items: center;
+  background: #f1f5f9;
+  padding: 0.25rem;
+  border-radius: 10px;
+  gap: 0.25rem;
+  border: 1px solid #e2e8f0;
+}
+
+.agenda-filter-pill {
+  border: none;
+  background: transparent;
+  color: #475569;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 0.38rem 0.75rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.agenda-filter-pill:hover {
+  color: #1e293b;
+  background: rgba(255, 255, 255, 0.6);
+}
+
+.agenda-filter-pill.active {
+  background: #189d98;
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(24, 157, 152, 0.25);
+}
+
+/* Indicadores combinados dentro de la celda del día */
+.agenda-cal-indicators {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  min-height: 16px;
+}
+
+/* Días que solo tienen asistencia (sin evento programado) */
+.agenda-cal-day.has-attendance:not(.has-events):not(.selected) {
+  background: #f8fafc;
+  border: 1px dashed #94a3b8;
+}
+
+.agenda-cal-day.has-attendance:not(.has-events):not(.selected).att-day-presente {
+  background: #f0fdf4;
+  border: 1px dashed #10b981;
+}
+
+.agenda-cal-day.has-attendance:not(.has-events):not(.selected).att-day-escuela {
+  background: #eff6ff;
+  border: 1px dashed #3b82f6;
+}
+
+.agenda-cal-day.has-attendance:not(.has-events):not(.selected).att-day-enfermedad {
+  background: #fffbeb;
+  border: 1px dashed #f59e0b;
+}
+
+.agenda-cal-day.has-attendance:not(.has-events):not(.selected).att-day-falta {
+  background: #fef2f2;
+  border: 1px dashed #ef4444;
+}
+
+/* Píldora de asistencia dentro de la celda del calendario (forma rectangular redondeada vs círculo de evento) */
+.agenda-cal-att-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 15px;
+  padding: 0 4px;
+  border-radius: 4px;
+  font-size: 0.58rem;
+  font-weight: 800;
+  line-height: 1;
+  color: #ffffff;
+  background: #10b981;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+}
+
+.agenda-cal-att-pill.att-pill-presente {
+  background: #0d9488;
+}
+
+.agenda-cal-att-pill.att-pill-escuela {
+  background: #2563eb;
+}
+
+.agenda-cal-att-pill.att-pill-enfermedad {
+  background: #d97706;
+}
+
+.agenda-cal-att-pill.att-pill-falta {
+  background: #dc2626;
+}
+
+.agenda-cal-day.selected .agenda-cal-att-pill {
+  background: #ffffff;
+  color: #0f6b68;
+}
+
+/* Leyendas agrupadas */
+.agenda-legend-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  margin-top: 0.85rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid #f1f5f9;
+}
+
+.agenda-legend-group {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem 0.75rem;
+}
+
+.legend-group-label {
+  font-size: 0.73rem;
+  font-weight: 700;
+  color: #334155;
+}
+
+.agenda-legend-group .agenda-legend {
+  margin-top: 0;
+}
+
+.legend-pill {
+  display: inline-block;
+  width: 16px;
+  height: 10px;
+  border-radius: 3px;
+}
+
+.legend-pill.att-pill-presente {
+  background: #0d9488;
+}
+
+.legend-pill.att-pill-escuela {
+  background: #2563eb;
+}
+
+.legend-pill.att-pill-enfermedad {
+  background: #d97706;
+}
+
+.legend-pill.att-pill-falta {
+  background: #dc2626;
+}
+
+/* Etiqueta diferenciadora en tarjetas de la lista */
+.agenda-kind-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.2rem 0.55rem;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.agenda-kind-tag.kind-event {
+  background: rgba(24, 157, 152, 0.12);
+  color: #0f6b68;
+  border: 1px solid rgba(24, 157, 152, 0.3);
+}
+
+.agenda-kind-tag.kind-attendance {
+  background: #ede9fe;
+  color: #5b21b6;
+  border: 1px solid #ddd6fe;
+}
+
+/* Lista de tarjetas de Mi Asistencia */
+.agenda-attendance-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+}
+
+.agenda-attendance-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-left: 4px solid #0d9488;
+  border-radius: 12px;
+  padding: 0.9rem 1.1rem;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.04);
+  transition: all 0.2s ease;
+}
+
+.agenda-attendance-item:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+}
+
+.agenda-attendance-item.att-card-presente {
+  border-left-color: #10b981;
+}
+
+.agenda-attendance-item.att-card-escuela {
+  border-left-color: #3b82f6;
+}
+
+.agenda-attendance-item.att-card-enfermedad {
+  border-left-color: #f59e0b;
+}
+
+.agenda-attendance-item.att-card-falta {
+  border-left-color: #ef4444;
+  background: #fffafa;
+}
+
+.attendance-date-block {
+  background: linear-gradient(160deg, #4f46e5, #3730a3);
+}
+
+.attendance-date-block.att-block-presente {
+  background: linear-gradient(160deg, #0d9488, #0f766e);
+}
+
+.attendance-date-block.att-block-escuela {
+  background: linear-gradient(160deg, #2563eb, #1d4ed8);
+}
+
+.attendance-date-block.att-block-enfermedad {
+  background: linear-gradient(160deg, #d97706, #b45309);
+}
+
+.attendance-date-block.att-block-falta {
+  background: linear-gradient(160deg, #ef4444, #b91c1c);
+}
+
+.agenda-attendance-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.agenda-attendance-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.agenda-attendance-tags {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0.15rem;
+}
+
+.agenda-att-activity-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.2rem 0.55rem;
+  border-radius: 6px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  background: #f1f5f9;
+  color: #334155;
+}
+
+.agenda-attendance-title {
+  margin: 0;
+  font-size: 0.96rem;
+  font-weight: 700;
+  color: #1e293b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.agenda-attendance-sub {
+  font-size: 0.8rem;
+  color: #64748b;
+}
+
+.agenda-attendance-status-wrap {
+  flex-shrink: 0;
+}
+
+.agenda-att-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.4rem 0.85rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.agenda-att-status-badge.att-status-presente {
+  background: #dcfce7;
+  color: #166534;
+  border: 1px solid #bbf7d0;
+}
+
+.agenda-att-status-badge.att-status-escuela {
+  background: #dbeafe;
+  color: #1e40af;
+  border: 1px solid #bfdbfe;
+}
+
+.agenda-att-status-badge.att-status-enfermedad {
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fde68a;
+}
+
+.agenda-att-status-badge.att-status-falta {
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+}
+
+@media (max-width: 768px) {
+  .events-agenda-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .agenda-filter-pills {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .agenda-filter-pill {
+    flex: 1;
+    text-align: center;
+    padding: 0.4rem 0.45rem;
+    font-size: 0.74rem;
+  }
+
+  .agenda-cal-att-pill {
+    min-width: 14px;
+    height: 13px;
+    font-size: 0.52rem;
+    padding: 0 3px;
+  }
+
+  .agenda-attendance-item {
+    padding: 0.8rem;
+    gap: 0.75rem;
+  }
+
+  .agenda-attendance-body {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .agenda-attendance-title {
+    white-space: normal;
+  }
+}

@@ -34,11 +34,13 @@ export class DashboardComponent implements OnInit {
   activeEvents: any[] = [];
   eventsByMonth: { monthKey: string, monthName: string, events: any[] }[] = [];
 
-  // Calendario tipo agenda (Próximos Eventos)
+  // Calendario tipo agenda (Próximos Eventos y Mi Asistencia)
   readonly calendarWeekDays = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
   calendarMonth: Date = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
-  calendarDays: { date: Date, key: string, day: number, inMonth: boolean, isToday: boolean, events: any[] }[] = [];
+  calendarDays: { date: Date, key: string, day: number, inMonth: boolean, isToday: boolean, events: any[], attendances: { dateKey: string, date: string, type: string, status: string }[] }[] = [];
   selectedCalendarKey: string | null = null;
+  calendarViewFilter: 'all' | 'events' | 'attendance' = 'all';
+  myAttendanceRecords: { dateKey: string, date: string, type: string, status: string }[] = [];
   private calendarInitialized = false;
   transportRequests: any[] = [];
   ticketSales: any[] = [];
@@ -280,6 +282,7 @@ export class DashboardComponent implements OnInit {
       let eventTotal = 0, eventAttended = 0;
       let rehearsalTotal = 0, rehearsalAttended = 0;
       let massTotal = 0, massAttended = 0;
+      const userAttendanceList: { dateKey: string, date: string, type: string, status: string }[] = [];
 
       attendances.forEach(attendance => {
         const userRecord = attendance.records?.find((record: any) => record.userId === this.user.uid);
@@ -295,6 +298,18 @@ export class DashboardComponent implements OnInit {
           // Contar estadísticas por estado
           if (stats.hasOwnProperty(userRecord.status)) {
             stats[userRecord.status as keyof typeof stats]++;
+          }
+
+          // Guardar registro para mostrar en el calendario del dashboard
+          if (attendance.date) {
+            const parsedDate = this.parseAnyDate(attendance.date);
+            const dateKey = this.toDateKey(parsedDate);
+            userAttendanceList.push({
+              dateKey,
+              date: dateKey,
+              type: attendance.type || 'ensayo',
+              status: userRecord.status
+            });
           }
 
           // Contar por tipo de actividad
@@ -361,6 +376,10 @@ export class DashboardComponent implements OnInit {
       this.participationAttendances = participationCount;
       this.attendancePercentage = totalCount > 0 ? Math.round((presentCount / totalCount) * 100) : 0;
       this.participationPercentage = totalCount > 0 ? Math.round((participationCount / totalCount) * 100) : 0;
+
+      // Ordenar registros de asistencia por fecha (más reciente primero) y actualizar calendario
+      this.myAttendanceRecords = userAttendanceList.sort((a, b) => b.dateKey.localeCompare(a.dateKey));
+      this.buildCalendar();
     });
   }
 
@@ -470,6 +489,21 @@ export class DashboardComponent implements OnInit {
   }
 
   // ===================== Calendario tipo agenda =====================
+  parseAnyDate(rawDate: any): Date {
+    if (!rawDate) return new Date();
+    if (rawDate.toDate && typeof rawDate.toDate === 'function') {
+      return rawDate.toDate();
+    }
+    if (rawDate instanceof Date) {
+      return rawDate;
+    }
+    if (typeof rawDate === 'string') {
+      const cleanStr = rawDate.split('T')[0];
+      return this.parseEventDate(cleanStr);
+    }
+    return new Date(rawDate);
+  }
+
   private toDateKey(d: Date): string {
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
   }
@@ -484,6 +518,12 @@ export class DashboardComponent implements OnInit {
       const key = this.toDateKey(this.parseEventDate(e.date));
       if (!eventsByDay.has(key)) eventsByDay.set(key, []);
       eventsByDay.get(key)!.push(e);
+    });
+
+    const attendancesByDay = new Map<string, { dateKey: string, date: string, type: string, status: string }[]>();
+    this.myAttendanceRecords.forEach(att => {
+      if (!attendancesByDay.has(att.dateKey)) attendancesByDay.set(att.dateKey, []);
+      attendancesByDay.get(att.dateKey)!.push(att);
     });
 
     // Semana inicia en lunes
@@ -503,13 +543,18 @@ export class DashboardComponent implements OnInit {
         day: d.getDate(),
         inMonth: d.getMonth() === month,
         isToday: key === todayKey,
-        events: eventsByDay.get(key) || []
+        events: eventsByDay.get(key) || [],
+        attendances: attendancesByDay.get(key) || []
       });
     }
 
     if (this.selectedCalendarKey && !this.selectedCalendarKey.startsWith(`${year}-${String(month + 1).padStart(2, '0')}`)) {
       this.selectedCalendarKey = null;
     }
+  }
+
+  setCalendarViewFilter(filter: 'all' | 'events' | 'attendance') {
+    this.calendarViewFilter = filter;
   }
 
   get calendarMonthLabel(): string {
@@ -546,11 +591,41 @@ export class DashboardComponent implements OnInit {
     return this.calendarDays.filter(c => c.inMonth).reduce((acc, c) => acc.concat(c.events), [] as any[]);
   }
 
+  get filteredAgendaEvents(): any[] {
+    if (this.calendarViewFilter === 'attendance') return [];
+    return this.agendaEvents;
+  }
+
+  /** Registros de asistencia que se muestran en la agenda: día seleccionado o todo el mes visible */
+  get agendaAttendances(): { dateKey: string, date: string, type: string, status: string }[] {
+    if (this.calendarViewFilter === 'events') return [];
+    if (this.selectedCalendarKey) {
+      return this.calendarDays.find(c => c.key === this.selectedCalendarKey)?.attendances || [];
+    }
+    return this.calendarDays
+      .filter(c => c.inMonth)
+      .reduce((acc, c) => acc.concat(c.attendances), [] as { dateKey: string, date: string, type: string, status: string }[])
+      .sort((a, b) => b.dateKey.localeCompare(a.dateKey));
+  }
+
+  get monthEventsCount(): number {
+    return this.calendarDays.filter(c => c.inMonth).reduce((n, c) => n + c.events.length, 0);
+  }
+
+  get monthAttendancesCount(): number {
+    return this.calendarDays.filter(c => c.inMonth).reduce((n, c) => n + c.attendances.length, 0);
+  }
+
   get agendaTitle(): string {
-    if (!this.selectedCalendarKey) return `Eventos de ${this.calendarMonthLabel}`;
+    const prefix = this.calendarViewFilter === 'events'
+      ? 'Eventos'
+      : this.calendarViewFilter === 'attendance'
+        ? 'Mi Asistencia'
+        : 'Eventos y Asistencia';
+    if (!this.selectedCalendarKey) return `${prefix} de ${this.calendarMonthLabel}`;
     const d = this.parseEventDate(this.selectedCalendarKey);
     const dayNames = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
-    return `${dayNames[d.getDay()]} ${d.getDate()}`;
+    return `${dayNames[d.getDay()]} ${d.getDate()} (${prefix})`;
   }
 
   getEventShortMonth(event: any): string {
@@ -562,9 +637,9 @@ export class DashboardComponent implements OnInit {
     return cell.key;
   }
 
-  /** Estado del día según mis confirmaciones. Prioridad: pendiente > tal vez > asistiré > no asistiré */
+  /** Estado del día según mis confirmaciones de evento. Prioridad: pendiente > tal vez > asistiré > no asistiré */
   getDayStatus(cell: { events: any[] }): 'pending' | 'maybe' | 'yes' | 'no' | null {
-    if (!cell.events.length) return null;
+    if (this.calendarViewFilter === 'attendance' || !cell.events.length) return null;
     const classes = cell.events.map(e => this.getConfirmationClass(e.userConfirmation));
     if (classes.includes('confirmation-pending')) return 'pending';
     if (classes.includes('confirmation-maybe')) return 'maybe';
@@ -580,6 +655,76 @@ export class DashboardComponent implements OnInit {
       case 'no': return '✕';
       default: return '';
     }
+  }
+
+  /** Estado principal de asistencia en un día del calendario */
+  getDayAttendanceStatus(cell: { attendances: { status: string }[] }): string | null {
+    if (this.calendarViewFilter === 'events' || !cell.attendances || !cell.attendances.length) return null;
+    const statuses = cell.attendances.map(a => a.status);
+    if (statuses.includes('falta')) return 'falta';
+    if (statuses.includes('enfermedad')) return 'enfermedad';
+    if (statuses.includes('escuela')) return 'escuela';
+    return 'presente';
+  }
+
+  getDayAttendanceIcon(cell: { attendances: { status: string }[] }): string {
+    switch (this.getDayAttendanceStatus(cell)) {
+      case 'presente': return '●';
+      case 'escuela': return '🏫';
+      case 'enfermedad': return '🩺';
+      case 'falta': return '✕';
+      default: return '';
+    }
+  }
+
+  getAttendanceStatusText(status: string): string {
+    switch (status) {
+      case 'presente': return 'Presente';
+      case 'escuela': return 'Permiso Escuela';
+      case 'enfermedad': return 'Justificado Salud';
+      case 'falta': return 'Falta';
+      default: return status;
+    }
+  }
+
+  getAttendanceStatusIcon(status: string): string {
+    switch (status) {
+      case 'presente': return '✅';
+      case 'escuela': return '🏫';
+      case 'enfermedad': return '🩺';
+      case 'falta': return '❌';
+      default: return '📋';
+    }
+  }
+
+  getAttendanceActivityText(type: string): string {
+    switch (type) {
+      case 'ensayo': return 'Ensayo Regular';
+      case 'evento': return 'Pase de Lista de Evento';
+      case 'misa dominical': return 'Misa Dominical';
+      default: return type || 'Actividad';
+    }
+  }
+
+  getAttendanceActivityIcon(type: string): string {
+    switch (type) {
+      case 'ensayo': return '🎵';
+      case 'evento': return '🎉';
+      case 'misa dominical': return '⛪';
+      default: return '📋';
+    }
+  }
+
+  getCalendarDayTooltip(cell: { events: any[], attendances: { type: string, status: string }[] }): string | null {
+    const parts: string[] = [];
+    if (this.calendarViewFilter !== 'attendance' && cell.events.length) {
+      parts.push(`📅 ${cell.events.length} evento(s): ${this.getConfirmationText(cell.events[0].userConfirmation)}`);
+    }
+    if (this.calendarViewFilter !== 'events' && cell.attendances?.length) {
+      const attTexts = cell.attendances.map(a => `${this.getAttendanceActivityText(a.type)} (${this.getAttendanceStatusText(a.status)})`);
+      parts.push(`📋 Asistencia: ${attTexts.join(', ')}`);
+    }
+    return parts.length ? parts.join(' | ') : null;
   }
 
   get pendingConfirmationsThisMonth(): number {

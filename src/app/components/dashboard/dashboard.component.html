@@ -1231,26 +1231,26 @@
           <div class="dash-tree-level" *ngFor="let area of mesaDirectivaAreas; let isLast = last">
             <div class="dash-tree-trunk"></div>
 
-            <!-- Cabecera de la Dirección / Área -->
-            <div class="dash-tree-rank-node" [style.borderColor]="area.accentColor">
-              <span class="dash-tree-rank-order" [style.background]="area.accentColor">
-                {{ area.title }}
-              </span>
-              <span class="dash-tree-rank-icon">{{ area.icon }}</span>
-              <span class="dash-tree-rank-title">{{ area.headRoleTitle || area.title }}</span>
+            <!-- Cabecera de la Dirección / Área (solo el título de la dirección y su descripción) -->
+            <div class="dash-tree-rank-node dash-mesa-area-node" [style.borderColor]="area.accentColor">
+              <div class="dash-mesa-area-title-row">
+                <span class="dash-tree-rank-icon">{{ area.icon }}</span>
+                <span class="dash-tree-rank-title">{{ area.title }}</span>
+              </div>
+              <p class="dash-mesa-area-desc" *ngIf="area.subtitle">{{ area.subtitle }}</p>
             </div>
 
             <!-- Tallo hacia el Jefe / Titular del Área -->
             <ng-container *ngIf="getDashboardMemberById(area.headUserId) as headMember; else dashEmptyHeadTpl">
               <div class="dash-tree-stem" [style.background]="area.accentColor"></div>
               <div class="dash-tree-leaves-row single-leaf">
-                <div class="dash-tree-leaf"
+                <div class="dash-tree-leaf dash-mesa-leaf"
                   (click)="openOrganigramaMemberModal(headMember, undefined, $event, area.headRoleTitle)"
                   title="Haz clic para ver el perfil completo de {{ headMember.name }}">
-                  <div class="dash-leaf-card" [class.is-me]="headMember.uid === user?.uid"
+                  <div class="dash-leaf-card dash-mesa-card" [class.is-me]="headMember.uid === user?.uid"
                     [style.borderTopColor]="area.accentColor">
                     <span class="dash-mesa-role-tag head" [style.background]="area.accentColor">
-                      👑 {{ area.headRoleTitle || 'Titular' }}
+                      👑 {{ area.headRoleTitle || area.title }}
                     </span>
                     <div class="dash-leaf-photo-wrap" [style.borderColor]="area.accentColor">
                       <img *ngIf="headMember.profileImage" [src]="headMember.profileImage" [alt]="headMember.name"
@@ -1260,9 +1260,10 @@
                         {{ getMemberInitials(headMember.name) }}
                       </div>
                     </div>
-                    <span class="dash-leaf-name" [title]="headMember.name">{{ headMember.nickname || headMember.name
-                      }}</span>
+                    <span class="dash-leaf-name full-text">{{ headMember.name }}</span>
+                    <span class="dash-leaf-inst" *ngIf="headMember.nickname">"{{ headMember.nickname }}"</span>
                     <span class="dash-leaf-inst">🎸 {{ headMember.instrument || 'Integrante' }}</span>
+                    <p class="dash-mesa-role-desc" *ngIf="area.subtitle">{{ area.subtitle }}</p>
                   </div>
                 </div>
               </div>
@@ -1271,18 +1272,18 @@
             <ng-template #dashEmptyHeadTpl>
               <div class="dash-tree-stem" [style.background]="area.accentColor"></div>
               <div class="dash-tree-leaves-row single-leaf">
-                <div class="dash-tree-leaf">
-                  <div class="dash-leaf-card dash-vacant-card" [style.borderTopColor]="area.accentColor">
+                <div class="dash-tree-leaf dash-mesa-leaf">
+                  <div class="dash-leaf-card dash-mesa-card dash-vacant-card" [style.borderTopColor]="area.accentColor">
                     <span class="dash-mesa-role-tag vacant">
-                      ✨ VACANTE
+                      ✨ VACANTE DISPONIBLE
                     </span>
                     <div class="dash-leaf-photo-wrap dash-vacant-avatar" [style.borderColor]="area.accentColor">
                       <span>{{ area.icon }}</span>
                     </div>
-                    <span class="dash-leaf-name" [title]="area.headRoleTitle || area.title">
+                    <span class="dash-leaf-name full-text">
                       {{ area.headRoleTitle || area.title }}
                     </span>
-                    <span class="dash-leaf-inst">Puesto disponible</span>
+                    <p class="dash-mesa-role-desc" *ngIf="area.subtitle">{{ area.subtitle }}</p>
                     <button type="button" class="dash-apply-wa-btn"
                       (click)="applyForVacantRole(area.headRoleTitle || area.title, area.title, $event)">
                       💬 Postularme
@@ -1292,18 +1293,17 @@
               </div>
             </ng-template>
 
-            <!-- Ramas de Subordinados que cuelgan debajo del Jefe / Titular -->
+            <!-- Ramas de Subordinados que cuelgan directamente debajo del Titular -->
             <ng-container *ngIf="area.subordinates && area.subordinates.length > 0">
               <div class="dash-tree-stem" [style.background]="area.accentColor"></div>
-              <span class="dash-mesa-sub-caption">↳ Subordinados / Equipo ({{ area.subordinates.length }})</span>
               <div class="dash-tree-leaves-row" [class.single-leaf]="area.subordinates.length === 1">
                 <ng-container *ngFor="let sub of area.subordinates">
                   <!-- Subordinado con integrante asignado -->
-                  <div class="dash-tree-leaf" *ngIf="getDashboardMemberById(sub.userId) as subMember"
+                  <div class="dash-tree-leaf dash-mesa-leaf" *ngIf="getDashboardMemberById(sub.userId) as subMember"
                     (click)="openOrganigramaMemberModal(subMember, undefined, $event, sub.roleTitle)"
                     title="Haz clic para ver el perfil completo de {{ subMember.name }}">
                     <div class="dash-leaf-line-up"></div>
-                    <div class="dash-leaf-card" [class.is-me]="subMember.uid === user?.uid"
+                    <div class="dash-leaf-card dash-mesa-card" [class.is-me]="subMember.uid === user?.uid"
                       [style.borderTopColor]="area.accentColor">
                       <span class="dash-mesa-role-tag sub">{{ sub.roleTitle || 'Auxiliar' }}</span>
                       <div class="dash-leaf-photo-wrap" [style.borderColor]="area.accentColor">
@@ -1314,24 +1314,29 @@
                           {{ getMemberInitials(subMember.name) }}
                         </div>
                       </div>
-                      <span class="dash-leaf-name" [title]="subMember.name">{{ subMember.nickname || subMember.name
-                        }}</span>
+                      <span class="dash-leaf-name full-text">{{ subMember.name }}</span>
+                      <span class="dash-leaf-inst" *ngIf="subMember.nickname">"{{ subMember.nickname }}"</span>
                       <span class="dash-leaf-inst">🎸 {{ subMember.instrument || 'Integrante' }}</span>
+                      <p class="dash-mesa-role-desc" *ngIf="sub.description || area.subtitle">
+                        {{ sub.description || area.subtitle }}
+                      </p>
                     </div>
                   </div>
 
                   <!-- Subordinado Vacante (sin integrante asignado) -->
-                  <div class="dash-tree-leaf" *ngIf="!getDashboardMemberById(sub.userId)">
+                  <div class="dash-tree-leaf dash-mesa-leaf" *ngIf="!getDashboardMemberById(sub.userId)">
                     <div class="dash-leaf-line-up"></div>
-                    <div class="dash-leaf-card dash-vacant-card" [style.borderTopColor]="area.accentColor">
-                      <span class="dash-mesa-role-tag vacant">✨ VACANTE</span>
+                    <div class="dash-leaf-card dash-mesa-card dash-vacant-card" [style.borderTopColor]="area.accentColor">
+                      <span class="dash-mesa-role-tag vacant">✨ VACANTE DISPONIBLE</span>
                       <div class="dash-leaf-photo-wrap dash-vacant-avatar" [style.borderColor]="area.accentColor">
                         <span>🙋‍♂️</span>
                       </div>
-                      <span class="dash-leaf-name" [title]="sub.roleTitle || 'Auxiliar'">
+                      <span class="dash-leaf-name full-text">
                         {{ sub.roleTitle || 'Auxiliar' }}
                       </span>
-                      <span class="dash-leaf-inst">Puesto disponible</span>
+                      <p class="dash-mesa-role-desc" *ngIf="sub.description || area.subtitle">
+                        {{ sub.description || area.subtitle }}
+                      </p>
                       <button type="button" class="dash-apply-wa-btn"
                         (click)="applyForVacantRole(sub.roleTitle || 'Auxiliar', area.title, $event)">
                         💬 Postularme

@@ -1065,21 +1065,40 @@
 }
 
 .mesa-head-card {
-  width: 210px;
+  width: 240px;
   border-width: 2px;
+}
+
+.tree-person-leaf.mesa-person-leaf {
+  width: 240px;
 }
 
 .mesa-role-pill {
   display: inline-block;
-  font-size: 0.68rem;
+  font-size: 0.72rem;
   font-weight: 800;
-  padding: 0.2rem 0.65rem;
-  border-radius: 999px;
+  padding: 0.24rem 0.7rem;
+  border-radius: 10px;
   margin-bottom: 0.45rem;
   max-width: 100%;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: normal;
+  line-height: 1.25;
+  text-align: center;
+}
+
+.leaf-name.full-leaf-name {
+  white-space: normal;
+  overflow: visible;
+  text-overflow: unset;
+  line-height: 1.25;
+}
+
+.mesa-card-role-desc {
+  margin: 0.35rem 0 0;
+  font-size: 0.74rem;
+  color: #64748b;
+  line-height: 1.35;
+  text-align: center;
 }
 
 .mesa-role-pill.head-pill {

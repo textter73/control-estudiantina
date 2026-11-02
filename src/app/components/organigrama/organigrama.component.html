@@ -68,12 +68,9 @@
 
           <!-- NODO CABECERA DE LA DIRECCIÓN / ÁREA -->
           <div class="tree-rank-badge-node" [style.borderColor]="area.accentColor">
-            <span class="tree-rank-order-pill" [style.background]="area.accentColor">
-              {{ area.title }}
-            </span>
             <div class="tree-rank-title-line">
               <span class="tree-rank-emoji">{{ area.icon }}</span>
-              <h3>{{ area.headRoleTitle || area.title }}</h3>
+              <h3>{{ area.title }}</h3>
             </div>
             <p class="tree-rank-desc" *ngIf="area.subtitle">{{ area.subtitle }}</p>
 
@@ -101,13 +98,13 @@
           <ng-container *ngIf="getMemberById(area.headUserId) as headMember; else unassignedHeadTpl">
             <div class="tree-stem-down" [style.background]="area.accentColor"></div>
             <div class="tree-nodes-branch-row single-node">
-              <div class="tree-person-leaf">
+              <div class="tree-person-leaf mesa-person-leaf">
                 <div class="tree-person-card mesa-head-card admin-clickable"
                   [class.is-me]="headMember.uid === currentUser?.uid" [style.borderColor]="area.accentColor"
                   (click)="openMemberProfileModal(headMember, undefined, $event, area.headRoleTitle)"
                   title="Haz clic para ver el perfil completo de {{ headMember.name }}">
 
-                  <span class="mesa-role-pill head-pill" [style.background]="area.accentColor">
+                  <span class="mesa-role-pill head-pill full-role-pill" [style.background]="area.accentColor">
                     👑 {{ area.headRoleTitle || area.title }}
                   </span>
 
@@ -120,59 +117,57 @@
                     </div>
                   </div>
 
-                  <h4 class="leaf-name" [title]="headMember.name">{{ headMember.name }}</h4>
+                  <h4 class="leaf-name full-leaf-name">{{ headMember.name }}</h4>
                   <span class="leaf-nickname" *ngIf="headMember.nickname">"{{ headMember.nickname }}"</span>
                   <span class="leaf-instrument">🎸 {{ headMember.instrument || 'Integrante' }}</span>
+                  <p class="mesa-card-role-desc" *ngIf="area.subtitle">{{ area.subtitle }}</p>
                 </div>
               </div>
             </div>
           </ng-container>
 
           <ng-template #unassignedHeadTpl>
-                <div class="tree-stem-down" [style.background]="area.accentColor"></div>
-                <div class="tree-nodes-branch-row single-node">
-                  <div class="tree-person-leaf">
-                    <div class="tree-person-card mesa-head-card mesa-vacant-card"
-                      [style.borderTopColor]="area.accentColor">
-                      <span class="mesa-role-pill vacant-pill">
-                        ✨ VACANTE DISPONIBLE
-                      </span>
-                      <div class="leaf-photo-wrapper mesa-vacant-avatar" [style.borderColor]="area.accentColor">
-                        <span>{{ area.icon }}</span>
-                      </div>
-                      <h4 class="leaf-name" [title]="area.headRoleTitle || area.title">
-                        {{ area.headRoleTitle || area.title }}
-                      </h4>
-                      <span class="leaf-instrument">Puesto vacante</span>
-                      <button type="button" class="mesa-apply-wa-btn"
-                        (click)="applyForVacantRole(area.headRoleTitle || area.title, area.title, $event)">
-                        💬 Postularme
-                      </button>
-                    </div>
+            <div class="tree-stem-down" [style.background]="area.accentColor"></div>
+            <div class="tree-nodes-branch-row single-node">
+              <div class="tree-person-leaf mesa-person-leaf">
+                <div class="tree-person-card mesa-head-card mesa-vacant-card"
+                  [style.borderTopColor]="area.accentColor">
+                  <span class="mesa-role-pill vacant-pill full-role-pill">
+                    ✨ VACANTE DISPONIBLE
+                  </span>
+                  <div class="leaf-photo-wrapper mesa-vacant-avatar" [style.borderColor]="area.accentColor">
+                    <span>{{ area.icon }}</span>
                   </div>
+                  <h4 class="leaf-name full-leaf-name">
+                    {{ area.headRoleTitle || area.title }}
+                  </h4>
+                  <p class="mesa-card-role-desc" *ngIf="area.subtitle">{{ area.subtitle }}</p>
+                  <button type="button" class="mesa-apply-wa-btn"
+                    (click)="applyForVacantRole(area.headRoleTitle || area.title, area.title, $event)">
+                    💬 Postularme
+                  </button>
                 </div>
+              </div>
+            </div>
           </ng-template>
 
-          <!-- RAMA DE SUBORDINADOS / AUXILIARES QUE CUELGAN DEBAJO DEL JEFE -->
+          <!-- RAMA DE SUBORDINADOS / AUXILIARES QUE CUELGAN DIRECTAMENTE DEBAJO DEL JEFE -->
           <ng-container *ngIf="area.subordinates && area.subordinates.length > 0">
             <div class="tree-stem-down" [style.background]="area.accentColor"></div>
-            <div class="mesa-subordinates-label">
-              ↳ Subordinados / Equipo a su cargo ({{ area.subordinates.length }})
-            </div>
-            <div class="tree-stem-small"></div>
 
             <div class="tree-nodes-branch-row" [class.single-node]="area.subordinates.length === 1">
               <ng-container *ngFor="let sub of area.subordinates">
                 <!-- Subordinado con integrante asignado -->
-                <div class="tree-person-leaf" *ngIf="getMemberById(sub.userId) as subMember">
+                <div class="tree-person-leaf mesa-person-leaf" *ngIf="getMemberById(sub.userId) as subMember">
                   <div class="leaf-connector-up"></div>
 
-                  <div class="tree-person-card admin-clickable" [class.is-me]="subMember.uid === currentUser?.uid"
+                  <div class="tree-person-card mesa-head-card admin-clickable"
+                    [class.is-me]="subMember.uid === currentUser?.uid"
                     [style.borderTopColor]="area.accentColor"
                     (click)="openMemberProfileModal(subMember, undefined, $event, sub.roleTitle)"
                     title="Haz clic para ver el perfil completo de {{ subMember.name }}">
 
-                    <span class="mesa-role-pill sub-pill">
+                    <span class="mesa-role-pill sub-pill full-role-pill">
                       {{ sub.roleTitle || 'Auxiliar' }}
                     </span>
 
@@ -185,25 +180,30 @@
                       </div>
                     </div>
 
-                    <h4 class="leaf-name" [title]="subMember.name">{{ subMember.name }}</h4>
+                    <h4 class="leaf-name full-leaf-name">{{ subMember.name }}</h4>
                     <span class="leaf-nickname" *ngIf="subMember.nickname">"{{ subMember.nickname }}"</span>
                     <span class="leaf-instrument">🎸 {{ subMember.instrument || 'Integrante' }}</span>
+                    <p class="mesa-card-role-desc" *ngIf="sub.description || area.subtitle">
+                      {{ sub.description || area.subtitle }}
+                    </p>
                   </div>
                 </div>
 
                 <!-- Subordinado Vacante -->
-                <div class="tree-person-leaf" *ngIf="!getMemberById(sub.userId)">
+                <div class="tree-person-leaf mesa-person-leaf" *ngIf="!getMemberById(sub.userId)">
                   <div class="leaf-connector-up"></div>
 
-                  <div class="tree-person-card mesa-vacant-card" [style.borderTopColor]="area.accentColor">
-                    <span class="mesa-role-pill vacant-pill">✨ VACANTE</span>
+                  <div class="tree-person-card mesa-head-card mesa-vacant-card" [style.borderTopColor]="area.accentColor">
+                    <span class="mesa-role-pill vacant-pill full-role-pill">✨ VACANTE DISPONIBLE</span>
                     <div class="leaf-photo-wrapper mesa-vacant-avatar" [style.borderColor]="area.accentColor">
                       <span>🙋‍♂️</span>
                     </div>
-                    <h4 class="leaf-name" [title]="sub.roleTitle || 'Auxiliar'">
+                    <h4 class="leaf-name full-leaf-name">
                       {{ sub.roleTitle || 'Auxiliar' }}
                     </h4>
-                    <span class="leaf-instrument">Puesto vacante</span>
+                    <p class="mesa-card-role-desc" *ngIf="sub.description || area.subtitle">
+                      {{ sub.description || area.subtitle }}
+                    </p>
                     <button type="button" class="mesa-apply-wa-btn"
                       (click)="applyForVacantRole(sub.roleTitle || 'Auxiliar', area.title, $event)">
                       💬 Postularme
@@ -509,6 +509,8 @@
               </select>
               <input type="text" class="mesa-input" [(ngModel)]="newSubordinateRoleTitle"
                 placeholder="Cargo (ej. Coordinador de Redes, Auxiliar de Eventos)">
+              <input type="text" class="mesa-input" [(ngModel)]="newSubordinateDescription"
+                placeholder="Descripción del puesto (opcional)">
               <button type="button" class="mesa-add-sub-btn" (click)="addSubordinateToForm()"
                 [disabled]="!newSubordinateUserId && !newSubordinateRoleTitle.trim()">
                 + Agregar
@@ -520,6 +522,7 @@
                 <div class="mesa-sub-chip-info">
                   <b>{{ getMemberById(sub.userId)?.name || '✨ Puesto Vacante' }}</b>
                   <span>· {{ sub.roleTitle }}</span>
+                  <small *ngIf="sub.description" style="display:block; color:#64748b; margin-top:2px;">{{ sub.description }}</small>
                 </div>
                 <button type="button" class="mesa-sub-remove-btn" (click)="removeSubordinateFromForm(sIdx)">✕</button>
               </div>

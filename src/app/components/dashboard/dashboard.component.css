@@ -9497,21 +9497,67 @@
 }
 
 .dash-mesa-head-node {
-  width: 175px;
+  width: 220px;
   cursor: pointer;
+}
+
+.dash-mesa-area-node {
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.7rem 1.4rem;
+  max-width: 520px;
+  text-align: center;
+}
+
+.dash-mesa-area-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.dash-mesa-area-desc {
+  margin: 0;
+  font-size: 0.78rem;
+  color: #64748b;
+  line-height: 1.35;
+}
+
+.dash-tree-leaf.dash-mesa-leaf {
+  width: 230px;
+}
+
+.dash-leaf-card.dash-mesa-card {
+  padding: 0.85rem 0.75rem;
+}
+
+.dash-leaf-name.full-text {
+  white-space: normal;
+  overflow: visible;
+  text-overflow: unset;
+  line-height: 1.25;
+}
+
+.dash-mesa-role-desc {
+  margin: 0.35rem 0 0;
+  font-size: 0.72rem;
+  color: #64748b;
+  line-height: 1.35;
+  text-align: center;
 }
 
 .dash-mesa-role-tag {
   display: inline-block;
-  font-size: 0.63rem;
+  font-size: 0.68rem;
   font-weight: 800;
-  padding: 0.16rem 0.55rem;
-  border-radius: 999px;
-  margin-bottom: 0.35rem;
+  padding: 0.2rem 0.65rem;
+  border-radius: 10px;
+  margin-bottom: 0.4rem;
   max-width: 100%;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: normal;
+  line-height: 1.25;
+  text-align: center;
 }
 
 .dash-mesa-role-tag.head {

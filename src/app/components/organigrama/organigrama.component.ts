@@ -20,6 +20,7 @@ export interface RankConfig {
 export interface MesaSubordinate {
   userId: string;
   roleTitle: string;
+  description?: string;
 }
 
 export interface MesaDirectivaArea {
@@ -39,7 +40,7 @@ export const DEFAULT_MESA_DIRECTIVA: MesaDirectivaArea[] = [
     id: 'direccion-musical',
     order: 1,
     title: 'Dirección Musical',
-    subtitle: 'Dirección artística, repertorio, ensayos y formación musical',
+    subtitle: 'Dirección artística, repertorio, ensayos y formación musical de la agrupación',
     icon: '🎼',
     accentColor: '#b45309',
     headRoleTitle: 'Director Musical',
@@ -50,7 +51,7 @@ export const DEFAULT_MESA_DIRECTIVA: MesaDirectivaArea[] = [
     id: 'secretaria-general',
     order: 2,
     title: 'Secretaría General',
-    subtitle: 'Organización interna, actas, comunicación oficial y seguimiento',
+    subtitle: 'Organización interna, actas, comunicación oficial y seguimiento administrativo',
     icon: '📋',
     accentColor: '#0f6b68',
     headRoleTitle: 'Secretario General',
@@ -61,7 +62,7 @@ export const DEFAULT_MESA_DIRECTIVA: MesaDirectivaArea[] = [
     id: 'direccion-finanzas',
     order: 3,
     title: 'Dirección de Finanzas',
-    subtitle: 'Administración financiera, estados de cuenta, cuotas y pagos',
+    subtitle: 'Administración financiera, estados de cuenta, cuotas y control de pagos',
     icon: '🏦',
     accentColor: '#1d4ed8',
     headRoleTitle: 'Director de Finanzas',
@@ -78,7 +79,11 @@ export const DEFAULT_MESA_DIRECTIVA: MesaDirectivaArea[] = [
     headRoleTitle: 'Director de Redes Sociales',
     headUserId: '',
     subordinates: [
-      { userId: '', roleTitle: 'Coordinador de Redes Sociales' }
+      {
+        userId: '',
+        roleTitle: 'Coordinador de Redes Sociales',
+        description: 'Creación de contenido, publicaciones y cobertura multimedia de eventos'
+      }
     ]
   },
   {
@@ -91,20 +96,28 @@ export const DEFAULT_MESA_DIRECTIVA: MesaDirectivaArea[] = [
     headRoleTitle: 'Director de Eventos',
     headUserId: '',
     subordinates: [
-      { userId: '', roleTitle: 'Auxiliar de Eventos' }
+      {
+        userId: '',
+        roleTitle: 'Auxiliar de Eventos',
+        description: 'Apoyo logístico, acomodo de transporte y organización en presentaciones'
+      }
     ]
   },
   {
     id: 'gestion-insumos',
     order: 6,
     title: 'Gestión de Insumos',
-    subtitle: 'Control de almacén, inventario, préstamos y materiales',
+    subtitle: 'Control de almacén, inventario, préstamos y materiales de la agrupación',
     icon: '📦',
     accentColor: '#047857',
     headRoleTitle: 'Encargado de Insumos',
     headUserId: '',
     subordinates: [
-      { userId: '', roleTitle: 'Auxiliar de Insumos' }
+      {
+        userId: '',
+        roleTitle: 'Auxiliar de Insumos',
+        description: 'Apoyo en entrega de materiales, revisión de inventario y resguardo'
+      }
     ]
   }
 ];
@@ -222,6 +235,7 @@ export class OrganigramaComponent implements OnInit {
   editingMesaArea: MesaDirectivaArea | null = null;
   newSubordinateUserId = '';
   newSubordinateRoleTitle = '';
+  newSubordinateDescription = '';
 
   readonly areaIcons = ['🎼', '📋', '🏦', '📱', '🎉', '📦', '🏛️', '🎭', '🚌', '🎤', '🎸', '📢', '🤝', '⭐'];
   readonly areaColors = [
@@ -536,6 +550,7 @@ export class OrganigramaComponent implements OnInit {
     this.editingMesaArea = null;
     this.newSubordinateUserId = '';
     this.newSubordinateRoleTitle = '';
+    this.newSubordinateDescription = '';
   }
 
   addSubordinateToForm() {
@@ -545,10 +560,12 @@ export class OrganigramaComponent implements OnInit {
     const cleanUserId = this.newSubordinateUserId === '__VACANTE__' ? '' : this.newSubordinateUserId;
     this.editingMesaArea.subordinates.push({
       userId: cleanUserId,
-      roleTitle: roleLabel
+      roleTitle: roleLabel,
+      description: this.newSubordinateDescription.trim()
     });
     this.newSubordinateUserId = '';
     this.newSubordinateRoleTitle = '';
+    this.newSubordinateDescription = '';
   }
 
   applyForVacantRole(roleTitle: string, areaTitle: string, event?: Event) {

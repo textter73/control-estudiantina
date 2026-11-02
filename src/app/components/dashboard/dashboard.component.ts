@@ -50,6 +50,7 @@ export class DashboardComponent implements OnInit {
   showMovementsModal = false;
   showRankingModal = false;
   showProfileModal = false;
+  showEvaluationDetailModal = false;
 
   // Indicadores y Ranking de Letras Aprendidas
   songs: any[] = [];
@@ -2103,6 +2104,31 @@ export class DashboardComponent implements OnInit {
     if (!this.lastUserEvaluation) return 0;
     const c = this.lastUserEvaluation.compromiso;
     return c.ensayos + c.eventos + c.misas;
+  }
+
+  getEvaluationTotalPercentage(): number {
+    if (!this.lastUserEvaluation) return 0;
+    return Math.round((this.lastUserEvaluation.puntuacionTotal / 44) * 100);
+  }
+
+  getCantoPercentage(): number {
+    return Math.round((this.getCantoTotal() / 16) * 100);
+  }
+
+  getInstrumentoPercentage(): number {
+    return Math.round((this.getInstrumentoTotal() / 16) * 100);
+  }
+
+  getCompromisoPercentage(): number {
+    return Math.round((this.getCompromisoTotal() / 12) * 100);
+  }
+
+  openEvaluationDetailModal() {
+    this.showEvaluationDetailModal = true;
+  }
+
+  closeEvaluationDetailModal() {
+    this.showEvaluationDetailModal = false;
   }
 
   // Convertir Firestore Timestamp a Date

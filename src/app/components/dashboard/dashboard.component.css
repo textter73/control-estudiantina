@@ -7296,6 +7296,138 @@
 }
 
 /* =============================================================== */
+/* SECCIÓN: MI ÚLTIMA EVALUACIÓN (DASHBOARD & MODAL)                */
+/* =============================================================== */
+.eval-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.activity-metric-card.eval-canto-metric {
+  border-left: 4px solid #8b5cf6;
+}
+
+.activity-metric-card.eval-inst-metric {
+  border-left: 4px solid #189d98;
+}
+
+.activity-metric-card.eval-comp-metric {
+  border-left: 4px solid #f59e0b;
+}
+
+.mini-bar-fill.eval-canto-bar {
+  background: linear-gradient(90deg, #7c3aed, #8b5cf6);
+}
+
+.mini-bar-fill.eval-inst-bar {
+  background: linear-gradient(90deg, #0f6b68, #189d98);
+}
+
+.mini-bar-fill.eval-comp-bar {
+  background: linear-gradient(90deg, #d97706, #f59e0b);
+}
+
+.eval-comments-subsection {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-left: 4px solid #189d98;
+  border-radius: 12px;
+  padding: 0.9rem 1.15rem;
+  margin-bottom: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.eval-comments-label {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 0.25rem;
+}
+
+.eval-comments-text p {
+  margin: 0;
+  font-size: 0.88rem;
+  color: #334155;
+  line-height: 1.45;
+}
+
+.eval-meta-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.eval-meta-chip {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 0.3rem 0.65rem;
+  font-size: 0.78rem;
+  color: #475569;
+}
+
+.eval-meta-chip b {
+  color: #1e293b;
+}
+
+.eval-empty-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  text-align: left;
+}
+
+.eval-empty-icon {
+  font-size: 2rem;
+  width: 52px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f1f5f9;
+  border-radius: 12px;
+  flex-shrink: 0;
+}
+
+.eval-empty-card h3 {
+  margin: 0 0 0.25rem 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.eval-empty-card p {
+  margin: 0;
+  font-size: 0.88rem;
+  color: #64748b;
+}
+
+.eval-detail-modal-content {
+  max-width: 860px;
+}
+
+.eval-modal-grid {
+  margin-top: 0;
+}
+
+@media (max-width: 768px) {
+  .eval-header-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .eval-empty-card {
+    flex-direction: column;
+    text-align: center;
+  }
+}
+
+/* =============================================================== */
 /* MODAL: RANKING DE LETRAS APRENDIDAS                              */
 /* =============================================================== */
 .song-ranking-modal,

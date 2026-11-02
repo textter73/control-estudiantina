@@ -21,7 +21,7 @@ export class EventManagementComponent implements OnInit {
   isEditing = false;
   editingEventId: string | null = null;
   isChangingStatus: { [key: string]: boolean } = {};
-  
+
   eventForm: any = this.getDefaultEventForm();
 
   getDefaultEventForm() {
@@ -50,7 +50,7 @@ export class EventManagementComponent implements OnInit {
     private afAuth: AngularFireAuth,
     private router: Router,
     private notificationService: NotificationService
-  ) {}
+  ) { }
 
   ngOnInit() {
     this.afAuth.authState.subscribe(async (user) => {
@@ -58,7 +58,7 @@ export class EventManagementComponent implements OnInit {
         this.user = user;
         const userDoc = await this.firestore.collection('users').doc(user.uid).get().toPromise();
         this.userProfile = userDoc?.data();
-        
+
         if (this.canManageEvents()) {
           this.loadEvents();
           this.loadUsers();
@@ -72,8 +72,8 @@ export class EventManagementComponent implements OnInit {
   }
 
   canManageEvents(): boolean {
-    return this.userProfile?.profiles?.includes('administrador') || 
-           this.userProfile?.profiles?.includes('agenda') || false;
+    return this.userProfile?.profiles?.includes('administrador') ||
+      this.userProfile?.profiles?.includes('agenda') || false;
   }
 
   loadEvents() {
@@ -84,8 +84,8 @@ export class EventManagementComponent implements OnInit {
 
   loadUsers() {
     this.firestore.collection('users').valueChanges().subscribe((users: any[]) => {
-      // Filtrar usuarios que no están desactivados
-      this.users = users.filter(user => !user.deleted);
+      // Filtrar usuarios activos (no desactivados ni en permiso/descanso)
+      this.users = users.filter(user => !user.deleted && !user.onLeave);
     });
   }
 
@@ -122,11 +122,11 @@ export class EventManagementComponent implements OnInit {
 
     try {
       const eventRef = await this.firestore.collection('events').add(eventData);
-      
+
       if (this.eventForm.requiresTransport) {
         await this.createTransportRequest(eventRef.id, eventData);
       }
-      
+
       Swal.fire('Éxito', 'Evento creado correctamente', 'success');
       this.resetForm();
     } catch (error) {
@@ -165,7 +165,7 @@ export class EventManagementComponent implements OnInit {
 
       try {
         await this.firestore.collection('events').doc(eventId).update({ status: newStatus });
-        
+
         // Si el evento se cancela, notificar a todos los usuarios
         if (newStatus === 'cancelado') {
           const eventDoc = await this.firestore.collection('events').doc(eventId).get().toPromise();
@@ -174,7 +174,7 @@ export class EventManagementComponent implements OnInit {
             await this.sendCancellationNotifications(eventData);
           }
         }
-        
+
         Swal.fire('Éxito', 'Estado actualizado', 'success');
       } catch (error) {
         Swal.fire('Error', 'Error al actualizar estado', 'error');
@@ -325,7 +325,7 @@ export class EventManagementComponent implements OnInit {
         maxCompanions: this.eventForm.allowCompanions ? (Number(this.eventForm.maxCompanions) || 2) : 2,
         updatedAt: new Date()
       };
-      
+
       await this.firestore.collection('events').doc(this.editingEventId).update(dataToUpdate);
       Swal.fire('Éxito', 'Evento actualizado correctamente', 'success');
       this.resetForm();
@@ -388,9 +388,9 @@ export class EventManagementComponent implements OnInit {
     try {
       // Formatear la fecha del evento
       const eventDate = new Date(eventData.date);
-      const formattedDate = eventDate.toLocaleDateString('es-MX', { 
-        day: 'numeric', 
-        month: 'long', 
+      const formattedDate = eventDate.toLocaleDateString('es-MX', {
+        day: 'numeric',
+        month: 'long',
         year: 'numeric',
         weekday: 'long'
       });
@@ -412,12 +412,12 @@ export class EventManagementComponent implements OnInit {
         // Enviar notificación a cada usuario activo
         for (const userDoc of usersSnapshot.docs) {
           const userData = userDoc.data() as any;
-          
+
           // Saltar usuarios eliminados
           if (userData.deleted) {
             continue;
           }
-          
+
           await this.notificationService.sendNotificationToUser(
             userDoc.id, // Usar el ID del documento, no userData.uid
             title,
@@ -439,9 +439,9 @@ export class EventManagementComponent implements OnInit {
     try {
       // Formatear la fecha del evento
       const eventDate = new Date(eventData.date);
-      const formattedDate = eventDate.toLocaleDateString('es-MX', { 
-        day: 'numeric', 
-        month: 'long', 
+      const formattedDate = eventDate.toLocaleDateString('es-MX', {
+        day: 'numeric',
+        month: 'long',
         year: 'numeric',
         weekday: 'long'
       });
@@ -463,12 +463,12 @@ export class EventManagementComponent implements OnInit {
         // Enviar notificación a cada usuario activo
         for (const userDoc of usersSnapshot.docs) {
           const userData = userDoc.data() as any;
-          
+
           // Saltar usuarios eliminados
           if (userData.deleted) {
             continue;
           }
-          
+
           await this.notificationService.sendNotificationToUser(
             userDoc.id, // Usar el ID del documento, no userData.uid
             title,

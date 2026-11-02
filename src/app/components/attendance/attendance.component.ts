@@ -90,9 +90,10 @@ export class AttendanceComponent implements OnInit, OnDestroy {
 
   loadUsers() {
     this.firestore.collection('users').valueChanges().subscribe(async (users: any[]) => {
-      // Filtrar usuarios que no están desactivados y excluir "Estudiantina Tonantzin Guadalupe"
+      // Filtrar usuarios activos (no desactivados ni en permiso/descanso) y excluir "Estudiantina Tonantzin Guadalupe"
       this.users = users.filter(user => 
         !user.deleted && 
+        !user.onLeave &&
         user.name !== 'Estudiantina Tonantzin Guadalupe'
       );
       

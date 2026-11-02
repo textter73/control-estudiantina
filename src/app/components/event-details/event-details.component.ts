@@ -28,7 +28,7 @@ export class EventDetailsComponent implements OnInit {
     private firestore: AngularFirestore,
     private afAuth: AngularFireAuth,
     private notificationService: NotificationService
-  ) {}
+  ) { }
 
   goBack() {
     const returnUrl = this.route.snapshot.queryParams['returnUrl'];
@@ -42,7 +42,7 @@ export class EventDetailsComponent implements OnInit {
   ngOnInit() {
     this.eventId = this.route.snapshot.params['id'];
     this.disableConfirm = this.route.snapshot.queryParams['disableConfirm'] === 'true';
-    
+
     this.afAuth.authState.subscribe(async (user) => {
       if (user) {
         this.user = user;
@@ -67,8 +67,8 @@ export class EventDetailsComponent implements OnInit {
 
   loadUsers() {
     this.firestore.collection('users').valueChanges().subscribe((users: any[]) => {
-      // Filtrar usuarios que no están desactivados
-      this.users = users.filter(user => !user.deleted);
+      // Filtrar usuarios activos (no desactivados ni en permiso/descanso)
+      this.users = users.filter(user => !user.deleted && !user.onLeave);
     });
   }
 
@@ -120,7 +120,7 @@ export class EventDetailsComponent implements OnInit {
 
     const confirmations = this.event.confirmations || [];
     const existingIndex = confirmations.findIndex((c: any) => c && c.userId === this.user.uid);
-    
+
     if (existingIndex >= 0) {
       confirmations[existingIndex] = confirmation;
     } else {
@@ -129,11 +129,11 @@ export class EventDetailsComponent implements OnInit {
 
     try {
       await this.firestore.collection('events').doc(this.eventId).update({ confirmations });
-      
+
       // Enviar notificación al usuario confirmando su respuesta
       // NOTIFICACIONES DESACTIVADAS
       // await this.sendConfirmationNotification();
-      
+
       Swal.fire('Éxito', 'Confirmación registrada', 'success');
     } catch (error) {
       Swal.fire('Error', 'Error al registrar confirmación', 'error');
@@ -166,25 +166,25 @@ export class EventDetailsComponent implements OnInit {
       let dateText = this.event.date;
       if (this.event.date) {
         const eventDate = new Date(this.event.date + 'T00:00:00');
-        dateText = eventDate.toLocaleDateString('es-MX', { 
-          weekday: 'long', 
-          year: 'numeric', 
-          month: 'long', 
-          day: 'numeric' 
+        dateText = eventDate.toLocaleDateString('es-MX', {
+          weekday: 'long',
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric'
         });
       }
 
       const title = `${icon} Confirmación registrada`;
-      
+
       let body = `Tu respuesta para el evento "${this.event.title}" ha sido registrada:\n\n` +
-                 `Respuesta: ${responseText}\n` +
-                 `Fecha: ${dateText}`;
+        `Respuesta: ${responseText}\n` +
+        `Fecha: ${dateText}`;
 
       // Agregar información de hora y ubicación si están disponibles
       if (this.event.startTime) {
         body += `\nHora: ${this.event.startTime}`;
       }
-      
+
       if (this.event.location) {
         body += `\n📍 ${this.event.location}`;
       }
@@ -209,7 +209,7 @@ export class EventDetailsComponent implements OnInit {
       if (adminUsers && !adminUsers.empty) {
         const adminTitle = `${icon} Nueva Confirmación`;
         const adminBody = `${this.userProfile?.name || this.user.email} confirmó "${responseText}" para el evento "${this.event.title}"`;
-        
+
         for (const adminDoc of adminUsers.docs) {
           // No enviar al mismo usuario si es administrador
           if (adminDoc.id !== this.user.uid) {
@@ -302,21 +302,21 @@ export class EventDetailsComponent implements OnInit {
       await Swal.fire('Error', 'No hay confirmaciones para copiar', 'error');
       return;
     }
-      const iconMap: { [key: string]: string } = {
-        'asistire': '✅',
-        'tal-vez': '🤔',
-        'no-asistire': '❌'
-      };
-      const lines = this.event.confirmations.map((c: any, idx: number) => {
-        if (!c) return '';
-        const name = c.userName || this.getUserName(c.userId);
-        const icon = iconMap[c.response] || '';
-        let line = `${idx + 1}. ${icon} ${name}`;
-        if (this.canHaveCompanions() && c.companions && Number(c.companions) > 0) {
-          line += ` (${c.companions} acompañantes)`;
-        }
-        return line;
-      }).filter((l: string) => l && l.length > 0);
+    const iconMap: { [key: string]: string } = {
+      'asistire': '✅',
+      'tal-vez': '🤔',
+      'no-asistire': '❌'
+    };
+    const lines = this.event.confirmations.map((c: any, idx: number) => {
+      if (!c) return '';
+      const name = c.userName || this.getUserName(c.userId);
+      const icon = iconMap[c.response] || '';
+      let line = `${idx + 1}. ${icon} ${name}`;
+      if (this.canHaveCompanions() && c.companions && Number(c.companions) > 0) {
+        line += ` (${c.companions} acompañantes)`;
+      }
+      return line;
+    }).filter((l: string) => l && l.length > 0);
     // Calcular totales
     const totalIntegrantes = lines.length;
     const totalAcompanantes = this.event.confirmations.reduce((sum: number, c: any) => sum + (c?.companions ? Number(c.companions) : 0), 0);
@@ -392,13 +392,13 @@ export class EventDetailsComponent implements OnInit {
   getConfirmationStats() {
     const confirmations = this.event?.confirmations || [];
     const asistireConfirmations = confirmations.filter((c: any) => c && c.response === 'asistire');
-    
+
     const totalCompanions = asistireConfirmations.reduce((total: number, c: any) => {
       return total + (parseInt(c?.companions) || 0);
     }, 0);
-    
+
     const totalPeople = asistireConfirmations.length + totalCompanions;
-    
+
     return {
       asistire: asistireConfirmations.length,
       noAsistire: confirmations.filter((c: any) => c && c.response === 'no-asistire').length,
@@ -412,7 +412,7 @@ export class EventDetailsComponent implements OnInit {
 
   getTotalPeople(): number {
     if (!this.event?.confirmations) return 0;
-    
+
     return this.event.confirmations
       .filter((c: any) => c && c.response === 'asistire')
       .reduce((total: number, c: any) => {
@@ -456,10 +456,10 @@ export class EventDetailsComponent implements OnInit {
 
     if (result.isConfirmed) {
       const selectedResponse = result.value;
-      
+
       // Obtener usuarios que no han confirmado
       const confirmedUserIds = (this.event.confirmations || []).map((c: any) => c?.userId).filter(Boolean);
-      const pendingUsers = this.users.filter(user => 
+      const pendingUsers = this.users.filter(user =>
         user.uid && !confirmedUserIds.includes(user.uid)
       );
 
@@ -480,7 +480,7 @@ export class EventDetailsComponent implements OnInit {
 
       if (confirmMass.isConfirmed) {
         const confirmations = this.event.confirmations || [];
-        
+
         // Agregar confirmaciones para usuarios pendientes
         pendingUsers.forEach(user => {
           confirmations.push({
@@ -511,7 +511,7 @@ export class EventDetailsComponent implements OnInit {
 
     // Obtener usuarios que no han confirmado
     const confirmedUserIds = (this.event.confirmations || []).map((c: any) => c?.userId).filter(Boolean);
-    const pendingUsers = this.users.filter(user => 
+    const pendingUsers = this.users.filter(user =>
       user.uid && !confirmedUserIds.includes(user.uid)
     );
 
@@ -533,9 +533,9 @@ export class EventDetailsComponent implements OnInit {
           <label style="display: block; margin-bottom: 0.5rem;">Usuario:</label>
           <select id="user-select" class="swal2-input" style="width: 100%;">
             <option value="">Selecciona un usuario</option>
-            ${Object.entries(userOptions).map(([uid, name]) => 
-              `<option value="${uid}">${name}</option>`
-            ).join('')}
+            ${Object.entries(userOptions).map(([uid, name]) =>
+        `<option value="${uid}">${name}</option>`
+      ).join('')}
           </select>
         </div>
         <div style="margin-bottom: 1rem;">
@@ -562,7 +562,7 @@ export class EventDetailsComponent implements OnInit {
         const userSelect = document.getElementById('user-select') as HTMLSelectElement;
         const responseSelect = document.getElementById('response-select') as HTMLSelectElement;
         const companionsInput = document.getElementById('companions-input') as HTMLInputElement;
-        
+
         if (!userSelect.value) {
           Swal.showValidationMessage('Debes seleccionar un usuario');
           return false;
@@ -571,7 +571,7 @@ export class EventDetailsComponent implements OnInit {
           Swal.showValidationMessage('Debes seleccionar una respuesta');
           return false;
         }
-        
+
         return {
           userId: userSelect.value,
           userName: userOptions[userSelect.value],
@@ -584,7 +584,7 @@ export class EventDetailsComponent implements OnInit {
     if (result.isConfirmed) {
       const confirmationData = result.value;
       const confirmations = this.event.confirmations || [];
-      
+
       confirmations.push({
         ...confirmationData,
         timestamp: new Date()
@@ -602,7 +602,7 @@ export class EventDetailsComponent implements OnInit {
   // Obtener usuarios que no han confirmado
   getPendingUsers(): any[] {
     const confirmedUserIds = (this.event?.confirmations || []).map((c: any) => c?.userId).filter(Boolean);
-    return this.users.filter(user => 
+    return this.users.filter(user =>
       user.uid && !confirmedUserIds.includes(user.uid)
     );
   }
@@ -611,8 +611,8 @@ export class EventDetailsComponent implements OnInit {
    * Verifica si el usuario puede tomar asistencia
    */
   canTakeAttendance(): boolean {
-    return this.userProfile?.profiles?.includes('administrador') || 
-           this.userProfile?.profiles?.includes('asistencia') || false;
+    return this.userProfile?.profiles?.includes('administrador') ||
+      this.userProfile?.profiles?.includes('asistencia') || false;
   }
 
   /**

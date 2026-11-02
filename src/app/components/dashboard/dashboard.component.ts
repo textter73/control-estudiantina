@@ -1686,9 +1686,10 @@ export class DashboardComponent implements OnInit {
         ...(doc.data() as any)
       })) || [];
 
-      // Filtrar solo usuarios activos (no eliminados) y excluir "Estudiantina Tonantzin"
+      // Filtrar solo usuarios activos (no eliminados ni en permiso/descanso) y excluir "Estudiantina Tonantzin"
       const users = allUsers.filter(user =>
         !user.deleted &&
+        !user.onLeave &&
         user.name !== 'Estudiantina Tonantzin Guadalupe' &&
         user.name !== 'estudiantina tonantzin' &&
         user.email !== 'estudiantina@tonantzin.com'
@@ -1764,9 +1765,10 @@ export class DashboardComponent implements OnInit {
         ...(doc.data() as any)
       })) || [];
 
-      // Filtrar solo usuarios activos
+      // Filtrar solo usuarios activos (excluir usuarios en permiso/descanso)
       const users = allUsers.filter(user =>
         !user.deleted &&
+        !user.onLeave &&
         user.name !== 'Estudiantina Tonantzin Guadalupe'
       );
 
@@ -1867,6 +1869,7 @@ export class DashboardComponent implements OnInit {
     this.firestore.collection('users').valueChanges({ idField: 'uid' }).subscribe((allUsers: any[]) => {
       this.activeMembersForSongs = (allUsers || []).filter(user =>
         !user.deleted &&
+        !user.onLeave &&
         user.name &&
         user.name !== 'Estudiantina Tonantzin Guadalupe' &&
         user.name !== 'estudiantina tonantzin' &&

@@ -46,8 +46,8 @@ export class AttendanceSummaryComponent implements OnInit {
 
   loadData() {
     this.firestore.collection('users').valueChanges().subscribe((users: any[]) => {
-      // Filtrar usuarios que no están desactivados
-      this.users = users.filter(user => !user.deleted);
+      // Filtrar usuarios activos (no desactivados ni en permiso/descanso)
+      this.users = users.filter(user => !user.deleted && !user.onLeave);
       this.loadAttendances();
     });
   }

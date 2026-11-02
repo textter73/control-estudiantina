@@ -987,6 +987,7 @@ export class SongbookListComponent implements OnInit, OnDestroy {
     this.authService.firestore.collection('users').valueChanges({ idField: 'uid' }).subscribe((allUsers: any[]) => {
       this.activeUsers = allUsers.filter(user =>
         !user.deleted &&
+        !user.onLeave &&
         user.name &&
         user.name !== 'Estudiantina Tonantzin Guadalupe' &&
         user.name !== 'estudiantina tonantzin' &&

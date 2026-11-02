@@ -451,6 +451,162 @@ tbody tr:hover {
   font-style: italic;
 }
 
+/* Estilos para nuevos estados: En Permiso / Descanso Temporal */
+.admin-view-tabs {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  background: #ffffff;
+  padding: 0.35rem;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.05);
+}
+
+.admin-tab-btn {
+  border: none;
+  background: transparent;
+  color: #475569;
+  font-size: 0.88rem;
+  font-weight: 600;
+  padding: 0.55rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.admin-tab-btn:hover {
+  background: #f1f5f9;
+  color: #1e293b;
+}
+
+.admin-tab-btn.active {
+  background: #189d98;
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(24, 157, 152, 0.28);
+}
+
+.admin-tab-btn.tab-leave.active {
+  background: #d97706;
+  box-shadow: 0 2px 8px rgba(217, 119, 6, 0.28);
+}
+
+.admin-tab-btn.tab-deleted.active {
+  background: #dc2626;
+  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.28);
+}
+
+.users-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 1.1rem;
+}
+
+.card-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.35rem;
+}
+
+.card-title-row h3 {
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.active-member-badge {
+  background: #dcfce7;
+  color: #166534;
+  border: 1px solid #bbf7d0;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.on-leave-user {
+  border-left: 4px solid #f59e0b;
+  background: #fffdf9;
+}
+
+.on-leave-badge {
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fde68a;
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.leave-finance-pill {
+  display: inline-block;
+  margin-top: 0.2rem;
+  margin-bottom: 0.75rem;
+  padding: 0.35rem 0.65rem;
+  background: #f0fdfa;
+  color: #0f6b68;
+  border: 1px solid #ccfbf1;
+  border-radius: 8px;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.leave-btn {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: #ffffff;
+  border: none;
+  padding: 0.55rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.leave-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.35);
+}
+
+.return-active-btn {
+  background: linear-gradient(135deg, #189d98 0%, #0f6b68 100%);
+  color: #ffffff;
+  border: none;
+  padding: 0.65rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 700;
+  transition: all 0.2s ease;
+  width: 100%;
+}
+
+.return-active-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(24, 157, 152, 0.35);
+}
+
+.empty-admin-state {
+  grid-column: 1 / -1;
+  text-align: center;
+  background: #ffffff;
+  border: 1px dashed #cbd5e1;
+  border-radius: 12px;
+  padding: 2.5rem 1rem;
+  color: #64748b;
+}
+
+.empty-admin-state span {
+  display: block;
+  font-size: 2.2rem;
+  margin-bottom: 0.5rem;
+}
+
 /* Responsive para nuevos elementos */
 @media (max-width: 768px) {
   .header-top {
@@ -458,13 +614,29 @@ tbody tr:hover {
     gap: 10px;
     align-items: stretch;
   }
+
+  .admin-view-tabs {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .admin-tab-btn {
+    flex: 1;
+    text-align: center;
+    padding: 0.5rem 0.4rem;
+    font-size: 0.78rem;
+  }
+
+  .users-cards {
+    grid-template-columns: 1fr;
+  }
   
   .card-actions {
     flex-direction: column;
     gap: 8px;
   }
   
-  .deactivate-btn, .reactivate-btn {
+  .deactivate-btn, .reactivate-btn, .leave-btn, .return-active-btn {
     width: 100%;
   }
 }

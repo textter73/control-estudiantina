@@ -11,6 +11,17 @@ import Swal from 'sweetalert2';
 })
 export class AdminComponent implements OnInit {
   users: any[] = [];
+  onLeaveUsers: any[] = [];
+  deletedUsers: any[] = [];
+  activeView: 'active' | 'onLeave' | 'deleted' = 'active';
+  showDeletedUsers = false;
+
+  readonly leaveReasons: { [key: string]: string } = {
+    'salud': '🩺 Salud / Enfermedad',
+    'descanso': '⏸️ Descanso Temporal',
+    'permiso': '📋 Permiso Personal / Estudios'
+  };
+
   availableProfiles = ['administrador', 'finanzas', 'asistencia', 'agenda', 'transporte', 'editor-canciones', 'documentador', 'insumos'];
   profileDescriptions: { [key: string]: string } = {};
 
@@ -36,10 +47,109 @@ export class AdminComponent implements OnInit {
   }
 
   async loadUsers() {
-    this.firestore.collection('users').valueChanges().subscribe((users: any[]) => {
-      // Filtrar usuarios que no están marcados como eliminados
-      this.users = users.filter(user => !user.deleted);
+    this.firestore.collection('users').valueChanges().subscribe((allUsers: any[]) => {
+      // Filtrar usuarios activos (no eliminados y no en permiso/descanso)
+      this.users = allUsers.filter(user => !user.deleted && !user.onLeave);
+      // Usuarios en permiso o descanso temporal (siguen activos en finanzas)
+      this.onLeaveUsers = allUsers.filter(user => !user.deleted && user.onLeave);
+      // Usuarios desactivados
+      this.deletedUsers = allUsers.filter(user => user.deleted);
     });
+  }
+
+  setView(view: 'active' | 'onLeave' | 'deleted') {
+    this.activeView = view;
+    this.showDeletedUsers = view === 'deleted';
+  }
+
+  getLeaveReasonLabel(reason?: string): string {
+    if (!reason) return '⏸️ En Permiso / Descanso';
+    return this.leaveReasons[reason] || reason;
+  }
+
+  async setUserOnLeave(userId: string, userName: string) {
+    const { value: selectedReason } = await Swal.fire({
+      title: `Poner en permiso a ${userName}`,
+      html: `<p style="color:#475569;font-size:0.92rem;margin-bottom:0.5rem;">
+        El integrante <b>no aparecerá en pases de lista, evaluaciones ni estadísticas</b> mientras esté ausente, pero <b>mantendrá acceso a su cuenta y a Finanzas</b>.
+      </p>`,
+      input: 'select',
+      inputOptions: this.leaveReasons,
+      inputPlaceholder: 'Selecciona el motivo de ausencia',
+      showCancelButton: true,
+      confirmButtonText: 'Poner en Permiso',
+      cancelButtonText: 'Cancelar',
+      confirmButtonColor: '#f59e0b',
+      inputValidator: (value) => {
+        if (!value) {
+          return 'Debes seleccionar un motivo';
+        }
+        return null;
+      }
+    });
+
+    if (selectedReason) {
+      try {
+        const currentUser = await this.authService.afAuth.currentUser;
+        await this.firestore.collection('users').doc(userId).update({
+          onLeave: true,
+          leaveReason: selectedReason,
+          onLeaveAt: new Date(),
+          onLeaveBy: currentUser?.uid || 'admin'
+        });
+
+        Swal.fire({
+          icon: 'success',
+          title: 'Integrante en permiso',
+          text: `${userName} fue marcado como "${this.getLeaveReasonLabel(selectedReason)}". Sigue activo en Finanzas.`,
+          timer: 2600,
+          showConfirmButton: false
+        });
+      } catch (error) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'No se pudo actualizar el estado del integrante'
+        });
+      }
+    }
+  }
+
+  async returnUserFromLeave(userId: string, userName: string) {
+    const result = await Swal.fire({
+      title: `¿Regresar a ${userName} como integrante activo?`,
+      text: `Volverá a aparecer normalmente en los pases de lista, evaluaciones y estadísticas conservando todo su historial.`,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, regresar a activo',
+      cancelButtonText: 'Cancelar',
+      confirmButtonColor: '#189d98'
+    });
+
+    if (result.isConfirmed) {
+      try {
+        const currentUser = await this.authService.afAuth.currentUser;
+        await this.firestore.collection('users').doc(userId).update({
+          onLeave: false,
+          returnedFromLeaveAt: new Date(),
+          returnedFromLeaveBy: currentUser?.uid || 'admin'
+        });
+
+        Swal.fire({
+          icon: 'success',
+          title: 'Integrante activo nuevamente',
+          text: `${userName} ha regresado a las listas y estadísticas activas.`,
+          timer: 2200,
+          showConfirmButton: false
+        });
+      } catch (error) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'No se pudo reactivar al integrante de su permiso'
+        });
+      }
+    }
   }
 
   async assignProfile(userId: string, userName: string) {
@@ -214,21 +324,8 @@ export class AdminComponent implements OnInit {
     }
   }
 
-  // Variables para controlar la vista de usuarios
-  showDeletedUsers = false;
-  deletedUsers: any[] = [];
-
   toggleDeletedUsersView() {
     this.showDeletedUsers = !this.showDeletedUsers;
-    if (this.showDeletedUsers) {
-      this.loadDeletedUsers();
-    }
-  }
-
-  async loadDeletedUsers() {
-    this.firestore.collection('users').valueChanges().subscribe((users: any[]) => {
-      // Filtrar solo usuarios que están marcados como eliminados
-      this.deletedUsers = users.filter(user => user.deleted);
-    });
+    this.activeView = this.showDeletedUsers ? 'deleted' : 'active';
   }
 }

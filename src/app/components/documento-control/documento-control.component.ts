@@ -70,7 +70,7 @@ export class DocumentoControlComponent implements OnInit {
 
   async ngOnInit() {
     await this.checkAdminRole();
-    
+
     if (this.isAdmin) {
       this.loadUsers();
       this.loadDocuments();
@@ -82,11 +82,11 @@ export class DocumentoControlComponent implements OnInit {
   async checkAdminRole() {
     try {
       const user = await this.authService.afAuth.currentUser;
-      
+
       if (user) {
         const userDoc = await this.firestore.collection('users').doc(user.uid).get().toPromise();
         const userData = userDoc?.data() as any;
-        
+
         this.isAdmin = userData?.profiles?.includes('administrador') || userData?.profiles?.includes('documentador');
       } else {
         this.isAdmin = false;
@@ -100,7 +100,9 @@ export class DocumentoControlComponent implements OnInit {
   loadUsers() {
     this.firestore.collection('users').valueChanges({ idField: 'uid' }).subscribe({
       next: (users: any[]) => {
-        this.usuarios = users.sort((a, b) => a.name.localeCompare(b.name));
+        this.usuarios = users
+          .filter(user => !user.deleted && !user.onLeave)
+          .sort((a, b) => (a.name || '').localeCompare(b.name || ''));
         this.filteredUsuarios = [...this.usuarios]; // Inicializar lista filtrada
       },
       error: (error) => {
@@ -114,19 +116,19 @@ export class DocumentoControlComponent implements OnInit {
     const timeout = setTimeout(() => {
       this.loading = false;
     }, 10000); // 10 segundos
-    
-    this.firestore.collection('documentos-fisicos', ref => 
+
+    this.firestore.collection('documentos-fisicos', ref =>
       ref.where('esVersionActual', '==', true)
     ).valueChanges({ idField: 'id' }).subscribe({
       next: (docs: any[]) => {
         clearTimeout(timeout);
-        
+
         // Ordenar por fecha de creación en el cliente
         this.documentos = docs.sort((a, b) => {
           if (!a.fechaCreacion || !b.fechaCreacion) return 0;
           return b.fechaCreacion.seconds - a.fechaCreacion.seconds;
         });
-        
+
         this.loading = false;
       },
       error: (error) => {
@@ -223,7 +225,7 @@ export class DocumentoControlComponent implements OnInit {
 
   async toggleEntrega(documento: DocumentoFisico, usuarioId: string) {
     const yaEntregado = documento.personasEntregadas.includes(usuarioId);
-    
+
     try {
       let nuevasEntregas;
       if (yaEntregado) {
@@ -320,8 +322,8 @@ export class DocumentoControlComponent implements OnInit {
       this.filteredUsuarios = [...this.usuarios];
     } else {
       const term = this.searchTerm.toLowerCase();
-      this.filteredUsuarios = this.usuarios.filter(user => 
-        user.name.toLowerCase().includes(term) || 
+      this.filteredUsuarios = this.usuarios.filter(user =>
+        user.name.toLowerCase().includes(term) ||
         user.email.toLowerCase().includes(term)
       );
     }
@@ -333,8 +335,8 @@ export class DocumentoControlComponent implements OnInit {
       this.filteredUsuariosEdit = [...this.usuarios];
     } else {
       const term = this.searchTermEdit.toLowerCase();
-      this.filteredUsuariosEdit = this.usuarios.filter(user => 
-        user.name.toLowerCase().includes(term) || 
+      this.filteredUsuariosEdit = this.usuarios.filter(user =>
+        user.name.toLowerCase().includes(term) ||
         user.email.toLowerCase().includes(term)
       );
     }
@@ -367,7 +369,7 @@ export class DocumentoControlComponent implements OnInit {
   // Método para formatear el texto del documento con saltos de línea
   formatDocumentText(texto: string): string {
     if (!texto) return '';
-    
+
     // Convertir saltos de línea a <br> y mantener espacios
     return texto
       .replace(/\n/g, '<br>')
@@ -508,11 +510,11 @@ export class DocumentoControlComponent implements OnInit {
       personasRequeridas: [...documento.personasRequeridas]
     };
     this.historialCambios = '';
-    
+
     // Inicializar la búsqueda de usuarios para edición
     this.searchTermEdit = '';
     this.filteredUsuariosEdit = [...this.usuarios];
-    
+
     this.showEditModal = true;
   }
 
@@ -621,10 +623,10 @@ export class DocumentoControlComponent implements OnInit {
     try {
       // Cargar todas las versiones de este documento
       const versiones: DocumentoFisico[] = [];
-      
+
       // Agregar la versión actual
       versiones.push(documento);
-      
+
       // Buscar versiones anteriores siguiendo la cadena
       let versionAnterior = documento.versionAnterior;
       while (versionAnterior) {
@@ -642,7 +644,7 @@ export class DocumentoControlComponent implements OnInit {
           break;
         }
       }
-      
+
       // Ordenar por versión descendente
       this.versiones = versiones.sort((a, b) => b.version - a.version);
     } catch (error) {

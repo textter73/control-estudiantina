@@ -19,12 +19,12 @@ export class MemberEvaluationComponent implements OnInit {
   selectedUser: any = null;
   currentEvaluation: UserEvaluation | null = null;
   existingEvaluation: UserEvaluation | null = null;
-  userProfileLevel: {level: number, taxPercentage: number} | null = null;
-  
+  userProfileLevel: { level: number, taxPercentage: number } | null = null;
+
   // Criterios de evaluación
   evaluationCriteria = EVALUATION_CRITERIA;
   levelConfigurations = LEVEL_CONFIGURATIONS;
-  
+
   // Formulario de evaluación
   evaluationForm: UserEvaluation = {
     userId: '',
@@ -53,12 +53,12 @@ export class MemberEvaluationComponent implements OnInit {
     impuestoPorcentaje: 70,
     comentarios: ''
   };
-  
+
   isLoading = false;
   isLoadingUsers = true;
   allEvaluations: UserEvaluation[] = [];
   currentUserName = '';
-  
+
   // Sistema de evaluación por lotes
   batchEvaluations: UserEvaluation[] = [];
   evaluationPeriod: string = '';
@@ -91,7 +91,7 @@ export class MemberEvaluationComponent implements OnInit {
     private evaluationService: UserEvaluationService,
     private authService: AuthService,
     private router: Router
-  ) {}
+  ) { }
 
   ngOnInit() {
     this.loadCurrentUser();
@@ -116,27 +116,27 @@ export class MemberEvaluationComponent implements OnInit {
 
   async loadUsers() {
     this.isLoadingUsers = true;
-    
+
     // Usar el mismo patrón que funciona en admin.component.ts
     this.firestore.collection('users').valueChanges({ idField: 'uid' }).subscribe({
       next: (allUsers: any[]) => {
-        
-        // Filtrar usuarios que NO están eliminados (mismo patrón que admin.component.ts)
-        const activeUsers = allUsers.filter(user => !user.deleted);
-        
+
+        // Filtrar usuarios activos (que NO están eliminados ni en permiso/descanso)
+        const activeUsers = allUsers.filter(user => !user.deleted && !user.onLeave);
+
         // Ordenar en el cliente por nombre
         this.users = activeUsers.sort((a, b) => {
           const nameA = a.name ? a.name.toLowerCase() : '';
           const nameB = b.name ? b.name.toLowerCase() : '';
           return nameA.localeCompare(nameB);
         });
-        
+
         this.isLoadingUsers = false;
       },
       error: (error) => {
         console.error('Error cargando usuarios:', error);
         this.isLoadingUsers = false;
-        
+
         // Mostrar error al usuario
         Swal.fire({
           icon: 'error',
@@ -155,7 +155,7 @@ export class MemberEvaluationComponent implements OnInit {
 
   async onUserSelected() {
     if (!this.selectedUserId) return;
-    
+
     this.selectedUser = this.users.find(user => user.uid === this.selectedUserId);
     if (!this.selectedUser) return;
 
@@ -170,7 +170,7 @@ export class MemberEvaluationComponent implements OnInit {
     // Cargar evaluación existente si la hay
     this.evaluationService.getUserEvaluation(this.selectedUserId).subscribe(evaluation => {
       this.existingEvaluation = evaluation || null;
-      
+
       if (evaluation) {
         // Cargar datos de evaluación existente y asegurar que sean números
         // NOTA: NO cargamos compromiso porque se calcula automáticamente desde asistencia
@@ -204,7 +204,7 @@ export class MemberEvaluationComponent implements OnInit {
     if (!this.selectedUserId) return;
 
     this.firestore.collection('attendance').valueChanges().subscribe((attendances: any[]) => {
-      
+
       // Contadores por tipo de actividad
       let ensayoTotal = 0, ensayoAttended = 0;
       let eventoTotal = 0, eventoAttended = 0;
@@ -215,7 +215,7 @@ export class MemberEvaluationComponent implements OnInit {
         const userRecord = attendance.records?.find((record: any) => record.userId === this.selectedUserId);
         if (userRecord) {
           userRecordsFound++;
-          
+
           // Considerar presente si el estado es 'presente', 'escuela', o 'enfermedad'
           const wasPresent = ['presente', 'escuela', 'enfermedad'].includes(userRecord.status);
 
@@ -266,9 +266,9 @@ export class MemberEvaluationComponent implements OnInit {
     // 3 puntos = 85-99%
     // 2 puntos = 75-84%
     // 1 punto = <75%
-    
+
     let nivel: number;
-    
+
     if (percentage >= 100) {
       nivel = 4;  // 100%
     } else if (percentage >= 85 && percentage < 100) {
@@ -278,7 +278,7 @@ export class MemberEvaluationComponent implements OnInit {
     } else {
       nivel = 1;  // <75%
     }
-    
+
     return nivel;
   }
 
@@ -322,28 +322,28 @@ export class MemberEvaluationComponent implements OnInit {
   calculatePreviewScore(): { total: number, nivel: number, impuesto: number } {
     // Normalizar valores antes de calcular
     this.normalizeFormValues();
-    
+
     // Asegurar que todos los valores sean números
-    const cantoTotal = Number(this.evaluationForm.canto.afinacion) + 
-                      Number(this.evaluationForm.canto.rangoVocal) + 
-                      Number(this.evaluationForm.canto.controlVocal) + 
-                      Number(this.evaluationForm.canto.expresividad);
-    
-    const instrumentoTotal = Number(this.evaluationForm.instrumento.tecnica) + 
-                            Number(this.evaluationForm.instrumento.precision) + 
-                            Number(this.evaluationForm.instrumento.creatividad) + 
-                            Number(this.evaluationForm.instrumento.versatilidad);
-    
-    const compromisoTotal = Number(this.evaluationForm.compromiso.ensayos) + 
-                           Number(this.evaluationForm.compromiso.eventos) + 
-                           Number(this.evaluationForm.compromiso.misas);
-    
+    const cantoTotal = Number(this.evaluationForm.canto.afinacion) +
+      Number(this.evaluationForm.canto.rangoVocal) +
+      Number(this.evaluationForm.canto.controlVocal) +
+      Number(this.evaluationForm.canto.expresividad);
+
+    const instrumentoTotal = Number(this.evaluationForm.instrumento.tecnica) +
+      Number(this.evaluationForm.instrumento.precision) +
+      Number(this.evaluationForm.instrumento.creatividad) +
+      Number(this.evaluationForm.instrumento.versatilidad);
+
+    const compromisoTotal = Number(this.evaluationForm.compromiso.ensayos) +
+      Number(this.evaluationForm.compromiso.eventos) +
+      Number(this.evaluationForm.compromiso.misas);
+
     const total = cantoTotal + instrumentoTotal + compromisoTotal;
-    
+
     // Determinar nivel
     let nivel = 6;
     let impuesto = 70;
-    
+
     for (const config of LEVEL_CONFIGURATIONS) {
       if (total >= config.puntuacionMin && total <= config.puntuacionMax) {
         nivel = config.nivel;
@@ -351,57 +351,57 @@ export class MemberEvaluationComponent implements OnInit {
         break;
       }
     }
-    
+
     return { total, nivel, impuesto };
   }
 
   getCantoTotal(): number {
-    return Number(this.evaluationForm.canto.afinacion || 0) + 
-           Number(this.evaluationForm.canto.rangoVocal || 0) + 
-           Number(this.evaluationForm.canto.controlVocal || 0) + 
-           Number(this.evaluationForm.canto.expresividad || 0);
+    return Number(this.evaluationForm.canto.afinacion || 0) +
+      Number(this.evaluationForm.canto.rangoVocal || 0) +
+      Number(this.evaluationForm.canto.controlVocal || 0) +
+      Number(this.evaluationForm.canto.expresividad || 0);
   }
 
   getInstrumentoTotal(): number {
-    return Number(this.evaluationForm.instrumento.tecnica || 0) + 
-           Number(this.evaluationForm.instrumento.precision || 0) + 
-           Number(this.evaluationForm.instrumento.creatividad || 0) + 
-           Number(this.evaluationForm.instrumento.versatilidad || 0);
+    return Number(this.evaluationForm.instrumento.tecnica || 0) +
+      Number(this.evaluationForm.instrumento.precision || 0) +
+      Number(this.evaluationForm.instrumento.creatividad || 0) +
+      Number(this.evaluationForm.instrumento.versatilidad || 0);
   }
 
   getCompromisoTotal(): number {
-    return Number(this.evaluationForm.compromiso.ensayos || 0) + 
-           Number(this.evaluationForm.compromiso.eventos || 0) + 
-           Number(this.evaluationForm.compromiso.misas || 0);
+    return Number(this.evaluationForm.compromiso.ensayos || 0) +
+      Number(this.evaluationForm.compromiso.eventos || 0) +
+      Number(this.evaluationForm.compromiso.misas || 0);
   }
 
   /**
    * Calcula el total de canto para una evaluación específica
    */
   getCantoTotalForEval(evaluation: UserEvaluation): number {
-    return Number(evaluation.canto.afinacion || 0) + 
-           Number(evaluation.canto.rangoVocal || 0) + 
-           Number(evaluation.canto.controlVocal || 0) + 
-           Number(evaluation.canto.expresividad || 0);
+    return Number(evaluation.canto.afinacion || 0) +
+      Number(evaluation.canto.rangoVocal || 0) +
+      Number(evaluation.canto.controlVocal || 0) +
+      Number(evaluation.canto.expresividad || 0);
   }
 
   /**
    * Calcula el total de instrumento para una evaluación específica
    */
   getInstrumentoTotalForEval(evaluation: UserEvaluation): number {
-    return Number(evaluation.instrumento.tecnica || 0) + 
-           Number(evaluation.instrumento.precision || 0) + 
-           Number(evaluation.instrumento.creatividad || 0) + 
-           Number(evaluation.instrumento.versatilidad || 0);
+    return Number(evaluation.instrumento.tecnica || 0) +
+      Number(evaluation.instrumento.precision || 0) +
+      Number(evaluation.instrumento.creatividad || 0) +
+      Number(evaluation.instrumento.versatilidad || 0);
   }
 
   /**
    * Calcula el total de compromiso para una evaluación específica
    */
   getCompromisoTotalForEval(evaluation: UserEvaluation): number {
-    return Number(evaluation.compromiso.ensayos || 0) + 
-           Number(evaluation.compromiso.eventos || 0) + 
-           Number(evaluation.compromiso.misas || 0);
+    return Number(evaluation.compromiso.ensayos || 0) +
+      Number(evaluation.compromiso.eventos || 0) +
+      Number(evaluation.compromiso.misas || 0);
   }
 
   async saveEvaluation() {
@@ -621,7 +621,7 @@ export class MemberEvaluationComponent implements OnInit {
       try {
         await this.evaluationService.deleteEvaluation(evaluationId);
         this.loadAllEvaluations();
-        
+
         Swal.fire({
           icon: 'success',
           title: 'Eliminado',
@@ -666,13 +666,13 @@ export class MemberEvaluationComponent implements OnInit {
     this.evaluationForm.canto.rangoVocal = Number(this.evaluationForm.canto.rangoVocal);
     this.evaluationForm.canto.controlVocal = Number(this.evaluationForm.canto.controlVocal);
     this.evaluationForm.canto.expresividad = Number(this.evaluationForm.canto.expresividad);
-    
+
     // Instrumento
     this.evaluationForm.instrumento.tecnica = Number(this.evaluationForm.instrumento.tecnica);
     this.evaluationForm.instrumento.precision = Number(this.evaluationForm.instrumento.precision);
     this.evaluationForm.instrumento.creatividad = Number(this.evaluationForm.instrumento.creatividad);
     this.evaluationForm.instrumento.versatilidad = Number(this.evaluationForm.instrumento.versatilidad);
-    
+
     // Compromiso
     this.evaluationForm.compromiso.ensayos = Number(this.evaluationForm.compromiso.ensayos);
     this.evaluationForm.compromiso.eventos = Number(this.evaluationForm.compromiso.eventos);
@@ -694,14 +694,14 @@ export class MemberEvaluationComponent implements OnInit {
     }).then((result) => {
       if (result.isConfirmed) {
         this.batchEvaluations = this.batchEvaluations.filter(e => e.userId !== userId);
-        
+
         // Auto-guardar o limpiar si está vacío
         if (this.batchEvaluations.length > 0) {
           this.autoSaveDraft();
         } else {
           this.clearDraftBatch();
         }
-        
+
         Swal.fire({
           icon: 'success',
           title: 'Eliminado',
@@ -782,10 +782,10 @@ export class MemberEvaluationComponent implements OnInit {
         this.batchEvaluations = [];
         this.evaluationPeriod = '';
         this.showBatchPanel = false;
-        
+
         // Limpiar borrador guardado
         this.clearDraftBatch();
-        
+
         Swal.fire({
           icon: 'success',
           title: 'Lote cancelado',
@@ -801,7 +801,7 @@ export class MemberEvaluationComponent implements OnInit {
   }
 
   // ============= EXPORTAR A PDF =============
-  
+
   /**
    * Genera un PDF con el formato de evaluación
    */
@@ -817,7 +817,7 @@ export class MemberEvaluationComponent implements OnInit {
 
     try {
       const doc = new jsPDF('landscape', 'mm', 'a4');
-      
+
       // Título
       const currentYear = new Date().getFullYear();
       doc.setFontSize(16);
@@ -826,16 +826,16 @@ export class MemberEvaluationComponent implements OnInit {
 
       // Preparar datos para la tabla
       const sortedEvals = this.sortedBatchEvaluations;
-      
+
       const tableData = sortedEvals.map(evaluation => {
         const instrumento = evaluation.instrumento;
         const canto = evaluation.canto;
         const compromiso = evaluation.compromiso;
-        
+
         const compromisoTotal = Number(compromiso.ensayos) + Number(compromiso.eventos) + Number(compromiso.misas);
-        const total = this.getCantoTotalForEval(evaluation) + 
-                     this.getInstrumentoTotalForEval(evaluation) + 
-                     compromisoTotal;
+        const total = this.getCantoTotalForEval(evaluation) +
+          this.getInstrumentoTotalForEval(evaluation) +
+          compromisoTotal;
 
         return [
           evaluation.userName,
@@ -882,7 +882,7 @@ export class MemberEvaluationComponent implements OnInit {
         ]],
         body: tableData,
         theme: 'grid',
-        headStyles: { 
+        headStyles: {
           fillColor: [24, 157, 152],
           textColor: 255,
           fontStyle: 'bold',
@@ -915,7 +915,7 @@ export class MemberEvaluationComponent implements OnInit {
           if (data.section === 'body' && data.column.index === 11) {
             const nivel = tableData[data.row.index][11];
             let color;
-            switch(nivel) {
+            switch (nivel) {
               case 1: color = [40, 167, 69]; break;   // Verde
               case 2: color = [32, 201, 151]; break;  // Verde agua
               case 3: color = [52, 152, 219]; break;  // Azul
@@ -957,7 +957,7 @@ export class MemberEvaluationComponent implements OnInit {
   }
 
   // ============= SISTEMA DE GUARDADO EN BORRADOR =============
-  
+
   private readonly DRAFT_STORAGE_KEY = 'evaluation_batch_draft';
 
   /**
@@ -1013,7 +1013,7 @@ export class MemberEvaluationComponent implements OnInit {
       if (!draftJson) return;
 
       const draft = JSON.parse(draftJson);
-      
+
       // Verificar que el borrador tenga datos válidos
       if (draft.evaluations && Array.isArray(draft.evaluations) && draft.evaluations.length > 0) {
         this.batchEvaluations = draft.evaluations;
@@ -1102,7 +1102,7 @@ export class MemberEvaluationComponent implements OnInit {
   }
 
   // ============= UTILIDAD: CORREGIR USERID EN EVALUACIONES =============
-  
+
   /**
    * Corrige el userId en todas las evaluaciones existentes
    * para que coincidan con el uid real del usuario
@@ -1131,9 +1131,9 @@ export class MemberEvaluationComponent implements OnInit {
 
     try {
       const result = await this.evaluationService.fixUserIdInEvaluations();
-      
+
       const alreadyCorrect = result.total - result.updated - result.notFound;
-      
+
       Swal.fire({
         icon: 'success',
         title: '✅ Corrección Completada',

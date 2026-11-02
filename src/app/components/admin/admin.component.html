@@ -4,17 +4,37 @@
       <button class="back-btn" routerLink="/dashboard">
         ← Volver al Dashboard
       </button>
-      <button class="toggle-deleted-btn" (click)="toggleDeletedUsersView()">
-        {{ showDeletedUsers ? 'Ver Usuarios Activos' : 'Ver Usuarios Desactivados' }}
-      </button>
+
+      <div class="admin-view-tabs" role="tablist">
+        <button type="button" class="admin-tab-btn" [class.active]="activeView === 'active'"
+          (click)="setView('active')">
+          ✅ Activos ({{ users.length }})
+        </button>
+        <button type="button" class="admin-tab-btn tab-leave" [class.active]="activeView === 'onLeave'"
+          (click)="setView('onLeave')">
+          ⏸️ En Permiso / Descanso ({{ onLeaveUsers.length }})
+        </button>
+        <button type="button" class="admin-tab-btn tab-deleted" [class.active]="activeView === 'deleted'"
+          (click)="setView('deleted')">
+          🚫 Desactivados ({{ deletedUsers.length }})
+        </button>
+      </div>
     </div>
-    <h1>{{ showDeletedUsers ? 'Usuarios Desactivados' : 'Administración de Usuarios' }}</h1>
-    <p>{{ showDeletedUsers ? 'Usuarios que han sido desactivados del sistema' : 'Gestiona los perfiles de los integrantes del sistema' }}</p>
+
+    <h1 *ngIf="activeView === 'active'">Administración de Usuarios Activos</h1>
+    <h1 *ngIf="activeView === 'onLeave'">Integrantes en Permiso / Descanso</h1>
+    <h1 *ngIf="activeView === 'deleted'">Usuarios Desactivados</h1>
+
+    <p *ngIf="activeView === 'active'">Gestiona los perfiles y el estado de actividad de los integrantes</p>
+    <p *ngIf="activeView === 'onLeave'">
+      Integrantes ausentes temporalmente (salud, descanso o permiso). No aparecen en pases de lista ni estadísticas, pero conservan acceso total a su cuenta y Finanzas.
+    </p>
+    <p *ngIf="activeView === 'deleted'">Usuarios que han sido dados de baja del sistema</p>
   </header>
 
   <main class="admin-main">
     <!-- Información sobre perfiles disponibles -->
-    <div class="profiles-info" *ngIf="!showDeletedUsers">
+    <div class="profiles-info" *ngIf="activeView === 'active'">
       <h3>📋 Perfiles Disponibles</h3>
       <div class="profiles-grid">
         <div class="profile-info-card" *ngFor="let profile of availableProfiles">
@@ -24,11 +44,14 @@
       </div>
     </div>
 
-    <!-- Vista de tarjetas para móvil - Usuarios Activos -->
-    <div class="users-cards mobile-view" *ngIf="!showDeletedUsers">
+    <!-- Vista de tarjetas - Usuarios Activos -->
+    <div class="users-cards" *ngIf="activeView === 'active'">
       <div class="user-card" *ngFor="let user of users">
         <div class="card-header">
-          <h3>{{ user.name }}</h3>
+          <div class="card-title-row">
+            <h3>{{ user.name }}</h3>
+            <span class="active-member-badge">ACTIVO</span>
+          </div>
           <p class="user-email">{{ user.email }}</p>
         </div>
         
@@ -58,21 +81,92 @@
             Quitar Perfil
           </button>
           <button 
+            class="leave-btn" 
+            (click)="setUserOnLeave(user.uid, user.name)">
+            ⏸️ Permiso / Descanso
+          </button>
+          <button 
             class="deactivate-btn" 
             (click)="deactivateUser(user.uid, user.name)">
             Desactivar Usuario
           </button>
         </div>
       </div>
+
+      <div class="empty-admin-state" *ngIf="users.length === 0">
+        <span>👥</span>
+        <p>No hay usuarios activos en este momento.</p>
+      </div>
+    </div>
+
+    <!-- Vista de tarjetas - Usuarios en Permiso / Descanso Temporal -->
+    <div class="users-cards" *ngIf="activeView === 'onLeave'">
+      <div class="user-card on-leave-user" *ngFor="let user of onLeaveUsers">
+        <div class="card-header">
+          <div class="card-title-row">
+            <h3>{{ user.name }}</h3>
+            <span class="on-leave-badge">{{ getLeaveReasonLabel(user.leaveReason) }}</span>
+          </div>
+          <p class="user-email">{{ user.email }}</p>
+          <div class="leave-finance-pill">
+            💰 Activo en Finanzas y Estado de Cuenta · Oculto en estadísticas y asistencia
+          </div>
+        </div>
+
+        <div class="card-body">
+          <div class="profiles-section">
+            <label class="section-label">Perfiles asignados:</label>
+            <div class="profiles-list">
+              <span class="profile-tag" *ngFor="let profile of user.profiles">
+                {{ profile }}
+              </span>
+              <span *ngIf="user.profiles?.length === 0" class="no-profiles">
+                Sin perfiles asignados
+              </span>
+            </div>
+          </div>
+
+          <div class="deletion-info" *ngIf="user.onLeaveAt">
+            <p class="deletion-date">
+              En permiso desde: {{ (user.onLeaveAt?.toDate ? user.onLeaveAt.toDate() : user.onLeaveAt) | date:'dd/MM/yyyy HH:mm' }}
+            </p>
+          </div>
+        </div>
+
+        <div class="card-actions">
+          <button 
+            class="return-active-btn" 
+            (click)="returnUserFromLeave(user.uid, user.name)">
+            ▶️ Regresar a Activo (Conservar Historial)
+          </button>
+          <button 
+            class="leave-btn" 
+            (click)="setUserOnLeave(user.uid, user.name)">
+            Cambiar Motivo
+          </button>
+          <button 
+            class="deactivate-btn" 
+            (click)="deactivateUser(user.uid, user.name)">
+            Desactivar Definitivo
+          </button>
+        </div>
+      </div>
+
+      <div class="empty-admin-state" *ngIf="onLeaveUsers.length === 0">
+        <span>⏸️</span>
+        <p>No hay integrantes en permiso o descanso temporal actualmente.</p>
+      </div>
     </div>
 
     <!-- Vista de tarjetas para usuarios eliminados -->
-    <div class="users-cards mobile-view" *ngIf="showDeletedUsers">
+    <div class="users-cards" *ngIf="activeView === 'deleted'">
       <div class="user-card deleted-user" *ngFor="let user of deletedUsers">
         <div class="card-header">
-          <h3>{{ user.name }}</h3>
+          <div class="card-title-row">
+            <h3>{{ user.name }}</h3>
+            <span class="deleted-badge">DESACTIVADO</span>
+          </div>
           <p class="user-email">{{ user.email }}</p>
-          <span class="deleted-badge">DESACTIVADO</span>
         </div>
         
         <div class="card-body">
@@ -97,9 +191,14 @@
           <button 
             class="reactivate-btn" 
             (click)="reactivateUser(user.uid, user.name)">
-            Reactivar Usuario
+            Reactivar Usuario (Reiniciar Asistencias)
           </button>
         </div>
+      </div>
+
+      <div class="empty-admin-state" *ngIf="deletedUsers.length === 0">
+        <span>✅</span>
+        <p>No hay usuarios desactivados.</p>
       </div>
     </div>
   </main>

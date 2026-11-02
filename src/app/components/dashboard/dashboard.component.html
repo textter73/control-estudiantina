@@ -1,4 +1,4 @@
-<div class="dashboard-container">
+﻿<div class="dashboard-container">
   <header class="dashboard-header">
     <div class="header-content">
       <div class="logo-section">
@@ -464,373 +464,166 @@
       </div>
     </div>
 
-    <!-- Mi Última Evaluación -->
-    <div class="evaluation-section" *ngIf="lastUserEvaluation">
-      <div class="evaluation-card">
-        <div class="evaluation-header">
-          <div class="evaluation-title-section">
-            <h3>🎭 Mi Última Evaluación</h3>
-            <span class="evaluation-date" *ngIf="getEvaluationDate()">
-              {{ getEvaluationDate() | date:'dd/MM/yyyy' }}
-              <!-- =============================================================== -->
-              <!-- MI ÚLTIMA EVALUACIÓN -->
-              <!-- =============================================================== -->
-              <div class="song-learning-dashboard-section evaluation-dashboard-section" *ngIf="lastUserEvaluation">
-                <div class="song-learning-card">
-                  <div class="song-learning-header">
-                    <div class="song-learning-title-wrap">
-                      <span class="song-learning-main-icon">🎭</span>
-                      <div>
-                        <h3>Mi Última Evaluación</h3>
-                        <p>
-                          Nivel {{ lastUserEvaluation.nivel }} • Impuesto {{ lastUserEvaluation.impuestoPorcentaje
-                          }}%<span *ngIf="getEvaluationDate()"> • {{ getEvaluationDate() | date:'dd/MM/yyyy' }}</span>
-                        </p>
-                      </div>
-                    </div>
-                    <div class="eval-header-actions">
-                      <span class="level-badge" [class]="getLevelBadgeClass(lastUserEvaluation.nivel)">
-                        🏆 Nivel {{ lastUserEvaluation.nivel }}
-                      </span>
-                      <button type="button" class="songbook-quick-link" (click)="openEvaluationDetailModal()">
-                        📋 Ver Desglose →
-                      </button>
-                    </div>
-                    <div class="evaluation-summary">
-                      <div class="summary-item">
-                        <span class="summary-label">Nivel</span>
-                        <span class="summary-value" [class]="getLevelBadgeClass(lastUserEvaluation.nivel)">
-                          Nivel {{ lastUserEvaluation.nivel }}
-                        </span>
-                      </div>
+    <!-- =============================================================== -->
+    <!-- MI ÚLTIMA EVALUACIÓN -->
+    <!-- =============================================================== -->
+    <div class="song-learning-dashboard-section evaluation-dashboard-section" *ngIf="lastUserEvaluation">
+      <div class="song-learning-card">
+        <div class="song-learning-header">
+          <div class="song-learning-title-wrap">
+            <span class="song-learning-main-icon">🎭</span>
+            <div>
+              <h3>Mi Última Evaluación</h3>
+              <p>
+                Nivel {{ lastUserEvaluation.nivel }} • Impuesto {{ lastUserEvaluation.impuestoPorcentaje }}%<span *ngIf="getEvaluationDate()"> • {{ getEvaluationDate() | date:'dd/MM/yyyy' }}</span>
+              </p>
+            </div>
+          </div>
+          <div class="eval-header-actions">
+            <span class="level-badge" [class]="getLevelBadgeClass(lastUserEvaluation.nivel)">
+              🏆 Nivel {{ lastUserEvaluation.nivel }}
+            </span>
+            <button type="button" class="songbook-quick-link" (click)="openEvaluationDetailModal()">
+              📋 Ver Desglose →
+            </button>
+          </div>
+        </div>
 
-                      <!-- Métricas Rápidas en Grid -->
-                      <div class="song-learning-metrics-grid">
-                        <!-- Radial Puntuación Total -->
-                        <div class="learning-metric-card radial-card" (click)="openEvaluationDetailModal()">
-                          <div class="radial-wrap">
-                            <svg width="120" height="120" viewBox="0 0 120 120">
-                              <circle cx="60" cy="60" r="48" fill="none" stroke="#e2e8f0" stroke-width="10"></circle>
-                              <circle cx="60" cy="60" r="48" fill="none" stroke="#189d98" stroke-width="10"
-                                [attr.stroke-dasharray]="301.59"
-                                [attr.stroke-dashoffset]="301.59 - (getEvaluationTotalPercentage() * 301.59) / 100"
-                                transform="rotate(-90 60 60)" stroke-linecap="round">
-                              </circle>
-                            </svg>
-                            <div class="radial-center">
-                              <span class="radial-percent">{{ getEvaluationTotalPercentage() }}%</span>
-                              <span class="radial-label">Total</span>
-                            </div>
-                          </div>
-                          <div class="summary-item">
-                            <span class="summary-label">Puntuación Total</span>
-                            <span class="summary-value score">{{ lastUserEvaluation.puntuacionTotal }}/44</span>
-                            <div class="metric-caption">
-                              <span class="metric-val">{{ lastUserEvaluation.puntuacionTotal }} de 44 pts</span>
-                              <span class="metric-sub">Impuesto: {{ lastUserEvaluation.impuestoPorcentaje }}%</span>
-                            </div>
-                            <div class="summary-item">
-                              <span class="summary-label">Impuesto</span>
-                              <span class="summary-value tax">{{ lastUserEvaluation.impuestoPorcentaje }}%</span>
-                            </div>
-                          </div>
-                        </div>
+        <!-- Métricas Rápidas en Grid -->
+        <div class="song-learning-metrics-grid">
+          <!-- Radial Puntuación Total -->
+          <div class="learning-metric-card radial-card" (click)="openEvaluationDetailModal()">
+            <div class="radial-wrap">
+              <svg width="120" height="120" viewBox="0 0 120 120">
+                <circle cx="60" cy="60" r="48" fill="none" stroke="#e2e8f0" stroke-width="10"></circle>
+                <circle 
+                  cx="60" cy="60" r="48" 
+                  fill="none" 
+                  stroke="#189d98" 
+                  stroke-width="10"
+                  [attr.stroke-dasharray]="301.59"
+                  [attr.stroke-dashoffset]="301.59 - (getEvaluationTotalPercentage() * 301.59) / 100"
+                  transform="rotate(-90 60 60)"
+                  stroke-linecap="round">
+                </circle>
+              </svg>
+              <div class="radial-center">
+                <span class="radial-percent">{{ getEvaluationTotalPercentage() }}%</span>
+                <span class="radial-label">Total</span>
+              </div>
+            </div>
+            <div class="metric-caption">
+              <span class="metric-val">{{ lastUserEvaluation.puntuacionTotal }} de 44 pts</span>
+              <span class="metric-sub">Impuesto: {{ lastUserEvaluation.impuestoPorcentaje }}%</span>
+            </div>
+          </div>
 
-                        <div class="evaluation-content">
-                          <!-- Canto -->
-                          <div class="evaluation-category">
-                            <div class="category-header">
-                              <span class="category-icon">🎤</span>
-                              <h4>Canto</h4>
-                              <span class="category-total">{{ getCantoTotal() }}/16</span>
-                              <div class="learning-metric-card personal-card activity-metric-card eval-canto-metric"
-                                (click)="openEvaluationDetailModal()">
-                                <div class="metric-top-row">
-                                  <span class="metric-badge-icon">🎤</span>
-                                  <span class="metric-pill" [ngClass]="getAttendancePillClass(getCantoPercentage())">
-                                    {{ getCantoPercentage() }}%
-                                  </span>
-                                </div>
-                                <div class="category-items">
-                                  <div class="evaluation-item">
-                                    <span class="item-label">Afinación</span>
-                                    <div class="item-value">
-                                      <div class="stars">
-                                        <span *ngFor="let star of [1,2,3,4]"
-                                          [class.filled]="star <= lastUserEvaluation.canto.afinacion">★</span>
-                                      </div>
-                                      <span class="item-text">{{
-                                        getEvaluationLevelText(lastUserEvaluation.canto.afinacion) }}</span>
-                                    </div>
-                                    <div class="metric-main-info">
-                                      <span class="metric-label">Canto</span>
-                                      <div class="metric-number-row">
-                                        <span class="metric-large-num">{{ getCantoTotal() }}</span>
-                                        <span class="metric-total-sub">/ 16 puntos</span>
-                                      </div>
-                                      <div class="evaluation-item">
-                                        <span class="item-label">Rango Vocal</span>
-                                        <div class="item-value">
-                                          <div class="stars">
-                                            <span *ngFor="let star of [1,2,3,4]"
-                                              [class.filled]="star <= lastUserEvaluation.canto.rangoVocal">★</span>
-                                          </div>
-                                          <span class="item-text">{{
-                                            getEvaluationLevelText(lastUserEvaluation.canto.rangoVocal) }}</span>
-                                        </div>
-                                        <div class="metric-mini-bar">
-                                          <div class="mini-bar-fill eval-canto-bar"
-                                            [style.width.%]="getCantoPercentage()"></div>
-                                        </div>
-                                        <div class="evaluation-item">
-                                          <span class="item-label">Control Vocal</span>
-                                          <div class="item-value">
-                                            <div class="stars">
-                                              <span *ngFor="let star of [1,2,3,4]"
-                                                [class.filled]="star <= lastUserEvaluation.canto.controlVocal">★</span>
-                                            </div>
-                                            <span class="item-text">{{
-                                              getEvaluationLevelText(lastUserEvaluation.canto.controlVocal) }}</span>
-                                          </div>
-                                        </div>
-                                        <div class="evaluation-item">
-                                          <span class="item-label">Expresividad</span>
-                                          <div class="item-value">
-                                            <div class="stars">
-                                              <span *ngFor="let star of [1,2,3,4]"
-                                                [class.filled]="star <= lastUserEvaluation.canto.expresividad">★</span>
-                                            </div>
-                                            <span class="item-text">{{
-                                              getEvaluationLevelText(lastUserEvaluation.canto.expresividad) }}</span>
-                                          </div>
-                                        </div>
-                                      </div>
-                                    </div>
+          <!-- Canto -->
+          <div class="learning-metric-card personal-card activity-metric-card eval-canto-metric" (click)="openEvaluationDetailModal()">
+            <div class="metric-top-row">
+              <span class="metric-badge-icon">🎤</span>
+              <span class="metric-pill" [ngClass]="getAttendancePillClass(getCantoPercentage())">
+                {{ getCantoPercentage() }}%
+              </span>
+            </div>
+            <div class="metric-main-info">
+              <span class="metric-label">Canto</span>
+              <div class="metric-number-row">
+                <span class="metric-large-num">{{ getCantoTotal() }}</span>
+                <span class="metric-total-sub">/ 16 puntos</span>
+              </div>
+              <div class="metric-mini-bar">
+                <div class="mini-bar-fill eval-canto-bar" [style.width.%]="getCantoPercentage()"></div>
+              </div>
+            </div>
+          </div>
 
-                                    <!-- Instrumento -->
-                                    <div class="evaluation-category">
-                                      <div class="category-header">
-                                        <span class="category-icon">🎸</span>
-                                        <h4>Instrumento</h4>
-                                        <span class="category-total">{{ getInstrumentoTotal() }}/16</span>
-                                        <div
-                                          class="learning-metric-card personal-card activity-metric-card eval-inst-metric"
-                                          (click)="openEvaluationDetailModal()">
-                                          <div class="metric-top-row">
-                                            <span class="metric-badge-icon">🎸</span>
-                                            <span class="metric-pill"
-                                              [ngClass]="getAttendancePillClass(getInstrumentoPercentage())">
-                                              {{ getInstrumentoPercentage() }}%
-                                            </span>
-                                          </div>
-                                          <div class="category-items">
-                                            <div class="evaluation-item">
-                                              <span class="item-label">Técnica</span>
-                                              <div class="item-value">
-                                                <div class="stars">
-                                                  <span *ngFor="let star of [1,2,3,4]"
-                                                    [class.filled]="star <= lastUserEvaluation.instrumento.tecnica">★</span>
-                                                </div>
-                                                <span class="item-text">{{
-                                                  getEvaluationLevelText(lastUserEvaluation.instrumento.tecnica)
-                                                  }}</span>
-                                              </div>
-                                              <div class="metric-main-info">
-                                                <span class="metric-label">Instrumento</span>
-                                                <div class="metric-number-row">
-                                                  <span class="metric-large-num">{{ getInstrumentoTotal() }}</span>
-                                                  <span class="metric-total-sub">/ 16 puntos</span>
-                                                </div>
-                                                <div class="evaluation-item">
-                                                  <span class="item-label">Precisión</span>
-                                                  <div class="item-value">
-                                                    <div class="stars">
-                                                      <span *ngFor="let star of [1,2,3,4]"
-                                                        [class.filled]="star <= lastUserEvaluation.instrumento.precision">★</span>
-                                                    </div>
-                                                    <span class="item-text">{{
-                                                      getEvaluationLevelText(lastUserEvaluation.instrumento.precision)
-                                                      }}</span>
-                                                  </div>
-                                                  <div class="metric-mini-bar">
-                                                    <div class="mini-bar-fill eval-inst-bar"
-                                                      [style.width.%]="getInstrumentoPercentage()"></div>
-                                                  </div>
-                                                  <div class="evaluation-item">
-                                                    <span class="item-label">Creatividad</span>
-                                                    <div class="item-value">
-                                                      <div class="stars">
-                                                        <span *ngFor="let star of [1,2,3,4]"
-                                                          [class.filled]="star <= lastUserEvaluation.instrumento.creatividad">★</span>
-                                                      </div>
-                                                      <span class="item-text">{{
-                                                        getEvaluationLevelText(lastUserEvaluation.instrumento.creatividad)
-                                                        }}</span>
-                                                    </div>
-                                                  </div>
-                                                  <div class="evaluation-item">
-                                                    <span class="item-label">Versatilidad</span>
-                                                    <div class="item-value">
-                                                      <div class="stars">
-                                                        <span *ngFor="let star of [1,2,3,4]"
-                                                          [class.filled]="star <= lastUserEvaluation.instrumento.versatilidad">★</span>
-                                                      </div>
-                                                      <span class="item-text">{{
-                                                        getEvaluationLevelText(lastUserEvaluation.instrumento.versatilidad)
-                                                        }}</span>
-                                                    </div>
-                                                  </div>
-                                                </div>
-                                              </div>
+          <!-- Instrumento -->
+          <div class="learning-metric-card personal-card activity-metric-card eval-inst-metric" (click)="openEvaluationDetailModal()">
+            <div class="metric-top-row">
+              <span class="metric-badge-icon">🎸</span>
+              <span class="metric-pill" [ngClass]="getAttendancePillClass(getInstrumentoPercentage())">
+                {{ getInstrumentoPercentage() }}%
+              </span>
+            </div>
+            <div class="metric-main-info">
+              <span class="metric-label">Instrumento</span>
+              <div class="metric-number-row">
+                <span class="metric-large-num">{{ getInstrumentoTotal() }}</span>
+                <span class="metric-total-sub">/ 16 puntos</span>
+              </div>
+              <div class="metric-mini-bar">
+                <div class="mini-bar-fill eval-inst-bar" [style.width.%]="getInstrumentoPercentage()"></div>
+              </div>
+            </div>
+          </div>
 
-                                              <!-- Compromiso -->
-                                              <div class="evaluation-category">
-                                                <div class="category-header">
-                                                  <span class="category-icon">💪</span>
-                                                  <h4>Compromiso</h4>
-                                                  <span class="category-total">{{ getCompromisoTotal() }}/12</span>
-                                                  <div
-                                                    class="learning-metric-card personal-card activity-metric-card eval-comp-metric"
-                                                    (click)="openEvaluationDetailModal()">
-                                                    <div class="metric-top-row">
-                                                      <span class="metric-badge-icon">💪</span>
-                                                      <span class="metric-pill"
-                                                        [ngClass]="getAttendancePillClass(getCompromisoPercentage())">
-                                                        {{ getCompromisoPercentage() }}%
-                                                      </span>
-                                                    </div>
-                                                    <div class="category-items">
-                                                      <div class="evaluation-item">
-                                                        <span class="item-label">Ensayos</span>
-                                                        <div class="item-value">
-                                                          <div class="stars">
-                                                            <span *ngFor="let star of [1,2,3,4]"
-                                                              [class.filled]="star <= lastUserEvaluation.compromiso.ensayos">★</span>
-                                                          </div>
-                                                          <span class="item-text">{{
-                                                            getEvaluationLevelText(lastUserEvaluation.compromiso.ensayos)
-                                                            }}</span>
-                                                        </div>
-                                                        <div class="metric-main-info">
-                                                          <span class="metric-label">Compromiso</span>
-                                                          <div class="metric-number-row">
-                                                            <span class="metric-large-num">{{ getCompromisoTotal()
-                                                              }}</span>
-                                                            <span class="metric-total-sub">/ 12 puntos</span>
-                                                          </div>
-                                                          <div class="evaluation-item">
-                                                            <span class="item-label">Eventos</span>
-                                                            <div class="item-value">
-                                                              <div class="stars">
-                                                                <span *ngFor="let star of [1,2,3,4]"
-                                                                  [class.filled]="star <= lastUserEvaluation.compromiso.eventos">★</span>
-                                                              </div>
-                                                              <span class="item-text">{{
-                                                                getEvaluationLevelText(lastUserEvaluation.compromiso.eventos)
-                                                                }}</span>
-                                                            </div>
-                                                            <div class="metric-mini-bar">
-                                                              <div class="mini-bar-fill eval-comp-bar"
-                                                                [style.width.%]="getCompromisoPercentage()"></div>
-                                                            </div>
-                                                            <div class="evaluation-item">
-                                                              <span class="item-label">Misas</span>
-                                                              <div class="item-value">
-                                                                <div class="stars">
-                                                                  <span *ngFor="let star of [1,2,3,4]"
-                                                                    [class.filled]="star <= lastUserEvaluation.compromiso.misas">★</span>
-                                                                </div>
-                                                                <span class="item-text">{{
-                                                                  getEvaluationLevelText(lastUserEvaluation.compromiso.misas)
-                                                                  }}</span>
-                                                              </div>
-                                                            </div>
-                                                          </div>
-                                                        </div>
-                                                      </div>
+          <!-- Compromiso -->
+          <div class="learning-metric-card personal-card activity-metric-card eval-comp-metric" (click)="openEvaluationDetailModal()">
+            <div class="metric-top-row">
+              <span class="metric-badge-icon">💪</span>
+              <span class="metric-pill" [ngClass]="getAttendancePillClass(getCompromisoPercentage())">
+                {{ getCompromisoPercentage() }}%
+              </span>
+            </div>
+            <div class="metric-main-info">
+              <span class="metric-label">Compromiso</span>
+              <div class="metric-number-row">
+                <span class="metric-large-num">{{ getCompromisoTotal() }}</span>
+                <span class="metric-total-sub">/ 12 puntos</span>
+              </div>
+              <div class="metric-mini-bar">
+                <div class="mini-bar-fill eval-comp-bar" [style.width.%]="getCompromisoPercentage()"></div>
+              </div>
+            </div>
+          </div>
+        </div>
 
-                                                      <!-- Comentarios -->
-                                                      <div class="evaluation-comments"
-                                                        *ngIf="lastUserEvaluation.comentarios">
-                                                        <h4>📝 Comentarios del Evaluador</h4>
-                                                        <!-- Subsección integrada: Comentarios y Metadatos del Evaluador -->
-                                                        <div class="eval-comments-subsection"
-                                                          *ngIf="lastUserEvaluation.comentarios || lastUserEvaluation.evaluatedBy || lastUserEvaluation.evaluationPeriod">
-                                                          <div class="eval-comments-text"
-                                                            *ngIf="lastUserEvaluation.comentarios">
-                                                            <span class="eval-comments-label">📝 Comentarios del
-                                                              Evaluador:</span>
-                                                            <p>{{ lastUserEvaluation.comentarios }}</p>
-                                                          </div>
-                                                          <div class="eval-meta-chips"
-                                                            *ngIf="lastUserEvaluation.evaluatedBy || lastUserEvaluation.evaluationPeriod">
-                                                            <span class="eval-meta-chip"
-                                                              *ngIf="lastUserEvaluation.evaluatedBy">
-                                                              👤 Evaluado por: <b>{{ lastUserEvaluation.evaluatedBy
-                                                                }}</b>
-                                                            </span>
-                                                            <span class="eval-meta-chip"
-                                                              *ngIf="lastUserEvaluation.evaluationPeriod">
-                                                              📅 Período: <b>{{ lastUserEvaluation.evaluationPeriod
-                                                                }}</b>
-                                                            </span>
-                                                          </div>
-                                                        </div>
+        <!-- Subsección integrada: Comentarios y Metadatos del Evaluador -->
+        <div class="eval-comments-subsection" *ngIf="lastUserEvaluation.comentarios || lastUserEvaluation.evaluatedBy || lastUserEvaluation.evaluationPeriod">
+          <div class="eval-comments-text" *ngIf="lastUserEvaluation.comentarios">
+            <span class="eval-comments-label">📝 Comentarios del Evaluador:</span>
+            <p>{{ lastUserEvaluation.comentarios }}</p>
+          </div>
+          <div class="eval-meta-chips" *ngIf="lastUserEvaluation.evaluatedBy || lastUserEvaluation.evaluationPeriod">
+            <span class="eval-meta-chip" *ngIf="lastUserEvaluation.evaluatedBy">
+              👤 Evaluado por: <b>{{ lastUserEvaluation.evaluatedBy }}</b>
+            </span>
+            <span class="eval-meta-chip" *ngIf="lastUserEvaluation.evaluationPeriod">
+              📅 Período: <b>{{ lastUserEvaluation.evaluationPeriod }}</b>
+            </span>
+          </div>
+        </div>
 
-                                                        <!-- Información adicional -->
-                                                        <div class="evaluation-footer">
-                                                          <div class="footer-item"
-                                                            *ngIf="lastUserEvaluation.evaluatedBy">
-                                                            <span class="footer-label">Evaluado por:</span>
-                                                            <span class="footer-value">{{ lastUserEvaluation.evaluatedBy
-                                                              }}</span>
-                                                            <!-- Botón Clic Destacado para ver el Desglose Completo por Rubro -->
-                                                            <div class="song-ranking-cta-wrap">
-                                                              <button type="button" class="song-ranking-cta-btn"
-                                                                (click)="openEvaluationDetailModal()">
-                                                                <div class="cta-left-content">
-                                                                  <span class="cta-trophy-icon">⭐</span>
-                                                                  <div class="cta-text-box">
-                                                                    <h4>Desglose por Rubros</h4>
-                                                                    <p>Ver calificaciones detalladas de Canto,
-                                                                      Instrumento y Compromiso</p>
-                                                                  </div>
-                                                                </div>
-                                                                <div class="footer-item"
-                                                                  *ngIf="lastUserEvaluation.evaluationPeriod">
-                                                                  <span class="footer-label">Período:</span>
-                                                                  <span class="footer-value">{{
-                                                                    lastUserEvaluation.evaluationPeriod }}</span>
-                                                                  <div class="cta-right-action">
-                                                                    <span class="cta-members-count">11 criterios</span>
-                                                                    <span class="cta-arrow">→</span>
-                                                                  </div>
-                                                                </div>
-                                                              </button>
-                                                            </div>
-                                                          </div>
-                                                        </div>
+        <!-- Botón Clic Destacado para ver el Desglose Completo por Rubro -->
+        <div class="song-ranking-cta-wrap">
+          <button type="button" class="song-ranking-cta-btn" (click)="openEvaluationDetailModal()">
+            <div class="cta-left-content">
+              <span class="cta-trophy-icon">⭐</span>
+              <div class="cta-text-box">
+                <h4>Desglose por Rubros</h4>
+                <p>Ver calificaciones detalladas de Canto, Instrumento y Compromiso</p>
+              </div>
+            </div>
+            <div class="cta-right-action">
+              <span class="cta-members-count">11 criterios</span>
+              <span class="cta-arrow">→</span>
+            </div>
+          </button>
+        </div>
+      </div>
+    </div>
 
-                                                        <!-- Sin Evaluación -->
-                                                        <div class="no-evaluation-message" *ngIf="!lastUserEvaluation">
-                                                          <div class="message-card">
-                                                            <span class="message-icon">📋</span>
-                                                            <h3>Sin Evaluación</h3>
-                                                            <p>Aún no has sido evaluado. Las evaluaciones te ayudarán a
-                                                              conocer tu nivel y áreas de mejora.</p>
-                                                            <div
-                                                              class="song-learning-dashboard-section evaluation-dashboard-section"
-                                                              *ngIf="!lastUserEvaluation">
-                                                              <div class="song-learning-card eval-empty-card">
-                                                                <span class="eval-empty-icon">📋</span>
-                                                                <div>
-                                                                  <h3>Sin Evaluación</h3>
-                                                                  <p>Aún no has sido evaluado. Las evaluaciones te
-                                                                    ayudarán a conocer tu nivel y áreas de mejora.</p>
-                                                                </div>
-                                                              </div>
-                                                            </div>
-
+    <!-- Sin Evaluación -->
+    <div class="song-learning-dashboard-section evaluation-dashboard-section" *ngIf="!lastUserEvaluation">
+      <div class="song-learning-card eval-empty-card">
+        <span class="eval-empty-icon">📋</span>
+        <div>
+          <h3>Sin Evaluación</h3>
+          <p>Aún no has sido evaluado. Las evaluaciones te ayudarán a conocer tu nivel y áreas de mejora.</p>
+        </div>
+      </div>
+    </div>
                                                             <!-- =============================================================== -->
                                                             <!-- INDICADORES DE ASISTENCIA POR ACTIVIDAD -->
                                                             <!-- =============================================================== -->

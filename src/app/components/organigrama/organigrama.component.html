@@ -7,7 +7,8 @@
         </button>
         <div class="org-header-titles">
           <h1>🏛️ Organigrama de la Agrupación</h1>
-          <p>Árbol jerárquico por Rangos y Niveles · Estudiantina Tonantzin Guadalupe</p>
+          <p>{{ isAdmin ? 'Árbol jerárquico por Rangos y Niveles · Estudiantina Tonantzin Guadalupe' : 'Árbol jerárquico
+            por Rangos · Estudiantina Tonantzin Guadalupe' }}</p>
         </div>
       </div>
     </div>
@@ -22,8 +23,7 @@
           🏛️ Árbol Completo ({{ totalAssignedCount }})
         </button>
         <button type="button" class="org-rank-pill" *ngFor="let r of ranks"
-          [class.active]="selectedRankFilter === r.key"
-          (click)="selectedRankFilter = r.key; buildOrganigrama()">
+          [class.active]="selectedRankFilter === r.key" (click)="selectedRankFilter = r.key; buildOrganigrama()">
           <span>{{ r.icon }} {{ r.title }}</span>
           <span class="pill-count">{{ getRankCount(r.key) }}</span>
         </button>
@@ -32,8 +32,8 @@
       <div class="org-search-row">
         <div class="org-search-box">
           <span class="org-search-icon">🔍</span>
-          <input type="text" placeholder="Buscar integrante por nombre, apodo o instrumento..."
-            [(ngModel)]="searchTerm" (input)="buildOrganigrama()" class="org-search-input">
+          <input type="text" placeholder="Buscar integrante por nombre, apodo o instrumento..." [(ngModel)]="searchTerm"
+            (input)="buildOrganigrama()" class="org-search-input">
         </div>
 
         <span class="org-admin-hint" *ngIf="isAdmin">
@@ -120,9 +120,10 @@
           <!-- Tallo corto que sale debajo del título del Rango hacia sus niveles -->
           <div class="tree-stem-down" [style.background]="group.rank.accentColor"></div>
 
-          <div class="tree-levels-container">
+          <!-- VISTA ADMINISTRADOR: agrupado por Niveles internos dentro del Rango -->
+          <div class="tree-levels-container" *ngIf="isAdmin">
             <div class="tree-level-branch" *ngFor="let lvGroup of group.levelsGroup">
-              <!-- Etiqueta del Nivel (dentro del Rango) -->
+              <!-- Etiqueta del Nivel (solo visible para Administrador) -->
               <div class="tree-level-header-pill" [ngClass]="getLevelBadgeClass(lvGroup.level)">
                 🏆 {{ lvGroup.label }} ({{ lvGroup.members.length }})
               </div>
@@ -133,23 +134,18 @@
               <!-- Fila / Árbol de Nodos de Integrantes con Foto -->
               <div class="tree-nodes-branch-row" [class.single-node]="lvGroup.members.length === 1">
                 <div class="tree-person-leaf" *ngFor="let member of lvGroup.members">
-                  <!-- Línea vertical que conecta la barra superior con la tarjeta del integrante -->
                   <div class="leaf-connector-up"></div>
 
-                  <div class="tree-person-card"
-                    [class.is-me]="member.uid === currentUser?.uid"
-                    [class.admin-clickable]="isAdmin"
-                    [style.borderTopColor]="group.rank.accentColor"
-                    (click)="openAssignRankModal(member, $event)">
+                  <div class="tree-person-card admin-clickable" [class.is-me]="member.uid === currentUser?.uid"
+                    [style.borderTopColor]="group.rank.accentColor" (click)="openAssignRankModal(member, $event)">
 
-                    <button type="button" class="leaf-edit-btn" *ngIf="isAdmin"
-                      (click)="openAssignRankModal(member, $event)" title="Cambiar rango o nivel">
+                    <button type="button" class="leaf-edit-btn" (click)="openAssignRankModal(member, $event)"
+                      title="Cambiar rango o nivel">
                       ✏️
                     </button>
 
                     <span class="leaf-me-badge" *ngIf="member.uid === currentUser?.uid">Tú</span>
 
-                    <!-- FOTO DE PERFIL CARGADA (O INICIALES SI NO TIENE FOTO) -->
                     <div class="leaf-photo-wrapper" [style.borderColor]="group.rank.accentColor">
                       <img *ngIf="member.profileImage" [src]="member.profileImage" [alt]="member.name"
                         class="leaf-photo-img">
@@ -162,7 +158,36 @@
                       </span>
                     </div>
 
-                    <!-- DATOS DEL INTEGRANTE -->
+                    <h4 class="leaf-name" [title]="member.name">{{ member.name }}</h4>
+                    <span class="leaf-nickname" *ngIf="member.nickname">"{{ member.nickname }}"</span>
+                    <span class="leaf-instrument">🎸 {{ member.instrument || 'Integrante' }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- VISTA INTEGRANTES (NO ADMIN): integrantes del Rango sin mostrar niveles internos -->
+          <div class="tree-levels-container" *ngIf="!isAdmin">
+            <div class="tree-level-branch">
+              <div class="tree-nodes-branch-row" [class.single-node]="group.members.length === 1">
+                <div class="tree-person-leaf" *ngFor="let member of group.members">
+                  <div class="leaf-connector-up"></div>
+
+                  <div class="tree-person-card" [class.is-me]="member.uid === currentUser?.uid"
+                    [style.borderTopColor]="group.rank.accentColor">
+
+                    <span class="leaf-me-badge" *ngIf="member.uid === currentUser?.uid">Tú</span>
+
+                    <div class="leaf-photo-wrapper" [style.borderColor]="group.rank.accentColor">
+                      <img *ngIf="member.profileImage" [src]="member.profileImage" [alt]="member.name"
+                        class="leaf-photo-img">
+                      <div *ngIf="!member.profileImage" class="leaf-photo-initials"
+                        [style.background]="group.rank.accentColor">
+                        {{ getInitials(member.name) }}
+                      </div>
+                    </div>
+
                     <h4 class="leaf-name" [title]="member.name">{{ member.name }}</h4>
                     <span class="leaf-nickname" *ngIf="member.nickname">"{{ member.nickname }}"</span>
                     <span class="leaf-instrument">🎸 {{ member.instrument || 'Integrante' }}</span>

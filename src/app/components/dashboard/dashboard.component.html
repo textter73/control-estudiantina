@@ -107,7 +107,7 @@
         <span class="action-text">Mi asistencia</span>
       </button>
 
-      <button class="action" routerLink="/organigrama">
+      <button class="action" routerLink="/organigrama" *ngIf="isAdmin">
         <span class="action-icon">🏛️</span>
         <span class="action-text">Organigrama</span>
       </button>
@@ -1241,17 +1241,17 @@
             <span class="song-learning-main-icon">🏛️</span>
             <div>
               <h3>Organigrama de la Agrupación</h3>
-              <p>Árbol jerárquico por Rangos y Niveles · Estudiantina Tonantzin Guadalupe</p>
+              <p>{{ isAdmin ? 'Árbol jerárquico por Rangos y Niveles · Estudiantina Tonantzin Guadalupe' : 'Árbol jerárquico por Rangos · Estudiantina Tonantzin Guadalupe' }}</p>
             </div>
           </div>
-          <button class="songbook-quick-link" (click)="goToOrganigrama()">
+          <button class="songbook-quick-link" *ngIf="isAdmin" (click)="goToOrganigrama()">
             🏛️ Ver y Gestionar Árbol Completo →
           </button>
         </div>
 
         <div class="dash-org-tree">
           <!-- Nodo Raíz del Árbol -->
-          <div class="dash-tree-root" (click)="goToOrganigrama()">
+          <div class="dash-tree-root" [style.cursor]="isAdmin ? 'pointer' : 'default'" (click)="isAdmin && goToOrganigrama()">
             <img src="assets/estonantzin.jpeg" alt="Estudiantina Tonantzin Guadalupe" class="dash-tree-root-logo">
             <div class="dash-tree-root-text">
               <span class="dash-tree-root-tag">ESTRUCTURA OFICIAL</span>
@@ -1264,7 +1264,8 @@
             <div class="dash-tree-trunk"></div>
 
             <!-- Cabecera del Rango -->
-            <div class="dash-tree-rank-node" [style.borderColor]="item.rank.accentColor" (click)="goToOrganigrama()">
+            <div class="dash-tree-rank-node" [style.borderColor]="item.rank.accentColor"
+              [style.cursor]="isAdmin ? 'pointer' : 'default'" (click)="isAdmin && goToOrganigrama()">
               <span class="dash-tree-rank-order" [style.background]="item.rank.accentColor">
                 Rango {{ item.rank.order }}
               </span>
@@ -1280,7 +1281,8 @@
             <ng-container *ngIf="item.members.length > 0">
               <div class="dash-tree-stem" [style.background]="item.rank.accentColor"></div>
               <div class="dash-tree-leaves-row" [class.single-leaf]="item.members.length === 1">
-                <div class="dash-tree-leaf" *ngFor="let m of item.members" (click)="goToOrganigrama()">
+                <div class="dash-tree-leaf" *ngFor="let m of item.members"
+                  [style.cursor]="isAdmin ? 'pointer' : 'default'" (click)="isAdmin && goToOrganigrama()">
                   <div class="dash-leaf-line-up"></div>
                   <div class="dash-leaf-card" [class.is-me]="m.uid === user?.uid"
                     [style.borderTopColor]="item.rank.accentColor">
@@ -1290,7 +1292,7 @@
                         [style.background]="item.rank.accentColor">
                         {{ getMemberInitials(m.name) }}
                       </div>
-                      <span class="dash-leaf-level-pill" *ngIf="m.evaluationLevel"
+                      <span class="dash-leaf-level-pill" *ngIf="isAdmin && m.evaluationLevel"
                         [ngClass]="getLevelBadgeClass(m.evaluationLevel)">
                         N{{ m.evaluationLevel }}
                       </span>

@@ -2212,7 +2212,13 @@ export class DashboardComponent implements OnInit {
     return this.organigramaRanks.map(rank => {
       const members = (this.activeMembersForSongs || [])
         .filter(u => u.rank === rank.key)
-        .sort((a, b) => (Number(a.evaluationLevel) || 99) - (Number(b.evaluationLevel) || 99) || (a.name || '').localeCompare(b.name || ''));
+        .sort((a, b) => {
+          if (this.isAdmin) {
+            const diff = (Number(a.evaluationLevel) || 99) - (Number(b.evaluationLevel) || 99);
+            if (diff !== 0) return diff;
+          }
+          return (a.name || '').localeCompare(b.name || '');
+        });
       return { rank, members };
     });
   }

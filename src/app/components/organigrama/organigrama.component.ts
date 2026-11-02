@@ -197,9 +197,11 @@ export class OrganigramaComponent implements OnInit {
         const membersInRank = enriched
           .filter(m => m.rankKey === rank.key)
           .sort((a, b) => {
-            const lvA = a.resolvedLevel ?? 99;
-            const lvB = b.resolvedLevel ?? 99;
-            if (lvA !== lvB) return lvA - lvB;
+            if (this.isAdmin) {
+              const lvA = a.resolvedLevel ?? 99;
+              const lvB = b.resolvedLevel ?? 99;
+              if (lvA !== lvB) return lvA - lvB;
+            }
             return (a.name || '').localeCompare(b.name || '');
           });
 

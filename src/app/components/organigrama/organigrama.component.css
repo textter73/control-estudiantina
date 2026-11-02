@@ -1069,6 +1069,54 @@
   border-width: 2px;
 }
 
+.mesa-unified-badge-node {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 540px;
+}
+
+.mesa-inline-head-box {
+  margin-top: 0.65rem;
+  width: 100%;
+  background: #f8fafc;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 0.75rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  text-align: left;
+  transition: all 0.2s ease;
+}
+
+.mesa-inline-head-box.admin-clickable:hover {
+  background: #ffffff;
+  border-color: #189d98;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+}
+
+.mesa-inline-head-box.is-me {
+  background: #f0fdfa;
+  border-color: #189d98;
+}
+
+.mesa-inline-head-box.vacant {
+  background: #fffdf7;
+  border-style: dashed;
+  border-color: #cbd5e1;
+}
+
+.mesa-inline-head-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.15rem;
+  flex: 1;
+  min-width: 0;
+}
+
 .tree-person-leaf.mesa-person-leaf {
   width: 240px;
 }

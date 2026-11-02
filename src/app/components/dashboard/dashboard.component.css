@@ -9501,13 +9501,73 @@
   cursor: pointer;
 }
 
-.dash-mesa-area-node {
+.dash-mesa-area-node,
+.dash-mesa-unified-node {
   flex-direction: column;
   align-items: center;
-  gap: 0.25rem;
-  padding: 0.7rem 1.4rem;
+  gap: 0.35rem;
+  padding: 0.9rem 1.4rem;
   max-width: 520px;
+  width: 100%;
   text-align: center;
+  border-radius: 16px;
+}
+
+.dash-mesa-head-inline {
+  margin-top: 0.45rem;
+  width: 100%;
+  background: #f8fafc;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 0.7rem 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.dash-mesa-head-inline:hover {
+  background: #ffffff;
+  border-color: #189d98;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+}
+
+.dash-mesa-head-inline.is-me {
+  background: #f0fdfa;
+  border-color: #189d98;
+}
+
+.dash-mesa-head-inline.vacant {
+  background: #fffdf7;
+  border-style: dashed;
+  border-color: #cbd5e1;
+  cursor: default;
+}
+
+.dash-mesa-head-inline .dash-leaf-photo-wrap {
+  margin-bottom: 0;
+  flex-shrink: 0;
+}
+
+.dash-mesa-head-inline-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.15rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.dash-mesa-head-inline-info .dash-mesa-role-tag {
+  margin-bottom: 0.1rem;
+}
+
+.dash-mesa-head-inline-info .dash-apply-wa-btn {
+  width: auto;
+  padding: 0.35rem 0.9rem;
+  margin-top: 0.25rem;
 }
 
 .dash-mesa-area-title-row {

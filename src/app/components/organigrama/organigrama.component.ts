@@ -13,6 +13,8 @@ export interface RankConfig {
   accentColor: string;
   bgLight: string;
   borderColor: string;
+  supervisedBy?: string;
+  supervisesLabel?: string;
 }
 
 export const ESTUDIANTINA_RANKS: RankConfig[] = [
@@ -47,34 +49,48 @@ export const ESTUDIANTINA_RANKS: RankConfig[] = [
     borderColor: '#bfdbfe'
   },
   {
-    key: 'pardillo-discipulo',
+    key: 'jefe-aspirantes-pardillos',
     order: 4,
+    title: 'Jefe de Aspirantes y Pardillos',
+    subtitle: 'Responsable directo de Pardillos Discípulos, Pardillos Aprendices y Aspirantes',
+    icon: '🛡️',
+    accentColor: '#be123c',
+    bgLight: '#fff1f2',
+    borderColor: '#fecdd3',
+    supervisesLabel: 'Tiene bajo su responsabilidad a: Pardillo Discípulo · Pardillo Aprendiz · Aspirante'
+  },
+  {
+    key: 'pardillo-discipulo',
+    order: 5,
     title: 'Pardillo Discípulo',
     subtitle: 'Integrantes en formación avanzada bajo tutela directa',
     icon: '🎓',
     accentColor: '#6d28d9',
     bgLight: '#f5f3ff',
-    borderColor: '#ddd6fe'
+    borderColor: '#ddd6fe',
+    supervisedBy: 'Jefe de Aspirantes y Pardillos'
   },
   {
     key: 'pardillo-aprendiz',
-    order: 5,
+    order: 6,
     title: 'Pardillo Aprendiz',
     subtitle: 'Integrantes en etapa de aprendizaje musical y escénico',
     icon: '🌱',
     accentColor: '#047857',
     bgLight: '#ecfdf5',
-    borderColor: '#a7f3d0'
+    borderColor: '#a7f3d0',
+    supervisedBy: 'Jefe de Aspirantes y Pardillos'
   },
   {
     key: 'aspirante',
-    order: 6,
+    order: 7,
     title: 'Aspirante',
     subtitle: 'Nuevos ingresos en preparación inicial dentro de la estudiantina',
     icon: '✨',
     accentColor: '#475569',
     bgLight: '#f8fafc',
-    borderColor: '#cbd5e1'
+    borderColor: '#cbd5e1',
+    supervisedBy: 'Jefe de Aspirantes y Pardillos'
   }
 ];
 
@@ -191,17 +207,16 @@ export class OrganigramaComponent implements OnInit {
         );
       });
 
-    this.rankGroups = this.ranks
+    this.rankGroups = [...this.ranks]
+      .sort((a, b) => a.order - b.order)
       .filter(r => this.selectedRankFilter === 'all' || this.selectedRankFilter === r.key)
       .map(rank => {
         const membersInRank = enriched
           .filter(m => m.rankKey === rank.key)
           .sort((a, b) => {
-            if (this.isAdmin) {
-              const lvA = a.resolvedLevel ?? 99;
-              const lvB = b.resolvedLevel ?? 99;
-              if (lvA !== lvB) return lvA - lvB;
-            }
+            const lvA = a.resolvedLevel ?? 99;
+            const lvB = b.resolvedLevel ?? 99;
+            if (lvA !== lvB) return lvA - lvB; // Nivel 1 es el más alto, seguido de Nivel 2, 3...
             return (a.name || '').localeCompare(b.name || '');
           });
 

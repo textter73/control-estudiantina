@@ -2202,25 +2202,42 @@ export class DashboardComponent implements OnInit {
     }
   }
 
+  organigramaEvaluationsMap = new Map<string, number>();
+
   getUserRankConfig(): RankConfig | null {
     const rankKey = this.userProfile?.rank;
     if (!rankKey) return null;
     return this.organigramaRanks.find(r => r.key === rankKey) || null;
   }
 
+  getMemberOrganigramaLevel(member: any): number | null {
+    if (member?.evaluationLevel && !isNaN(Number(member.evaluationLevel))) {
+      return Number(member.evaluationLevel);
+    }
+    if (member?.uid && this.organigramaEvaluationsMap.has(member.uid)) {
+      return this.organigramaEvaluationsMap.get(member.uid)!;
+    }
+    return null;
+  }
+
   getOrganigramaRankSummary(): { rank: RankConfig; members: any[] }[] {
-    return this.organigramaRanks.map(rank => {
-      const members = (this.activeMembersForSongs || [])
-        .filter(u => u.rank === rank.key)
-        .sort((a, b) => {
-          if (this.isAdmin) {
-            const diff = (Number(a.evaluationLevel) || 99) - (Number(b.evaluationLevel) || 99);
-            if (diff !== 0) return diff;
-          }
-          return (a.name || '').localeCompare(b.name || '');
-        });
-      return { rank, members };
-    });
+    return [...this.organigramaRanks]
+      .sort((a, b) => a.order - b.order)
+      .map(rank => {
+        const members = (this.activeMembersForSongs || [])
+          .filter(u => u.rank === rank.key)
+          .map(u => ({
+            ...u,
+            resolvedLevel: this.getMemberOrganigramaLevel(u)
+          }))
+          .sort((a, b) => {
+            const lvA = a.resolvedLevel ?? 99;
+            const lvB = b.resolvedLevel ?? 99;
+            if (lvA !== lvB) return lvA - lvB; // Nivel 1 primero (el más alto), luego Nivel 2, etc.
+            return (a.name || '').localeCompare(b.name || '');
+          });
+        return { rank, members };
+      });
   }
 
   goToOrganigrama() {
@@ -2232,6 +2249,20 @@ export class DashboardComponent implements OnInit {
   // ==========================================
 
   loadSongLearningData() {
+    this.firestore.collection('user-evaluations').valueChanges().subscribe((evals: any[]) => {
+      this.organigramaEvaluationsMap.clear();
+      const sorted = [...(evals || [])].sort((a, b) => {
+        const dA = a.evaluatedAt?.toDate ? a.evaluatedAt.toDate().getTime() : 0;
+        const dB = b.evaluatedAt?.toDate ? b.evaluatedAt.toDate().getTime() : 0;
+        return dA - dB;
+      });
+      sorted.forEach(ev => {
+        if (ev.userId && ev.nivel) {
+          this.organigramaEvaluationsMap.set(ev.userId, Number(ev.nivel));
+        }
+      });
+    });
+
     this.firestore.collection('songs').valueChanges({ idField: 'id' }).subscribe((songs: any[]) => {
       this.songs = songs || [];
       this.calculateSongLearningMetrics();

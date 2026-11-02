@@ -9288,6 +9288,36 @@
   font-style: italic;
 }
 
+.dash-tree-supervision-tag {
+  margin-top: 0.3rem;
+  font-size: 0.72rem;
+  padding: 0.2rem 0.65rem;
+  border-radius: 999px;
+  text-align: center;
+}
+
+.dash-tree-supervision-tag.supervises {
+  background: #fff1f2;
+  color: #be123c;
+  border: 1px solid #fecdd3;
+  font-weight: 700;
+}
+
+.dash-tree-supervision-tag.supervised-by {
+  background: #f8fafc;
+  color: #475569;
+  border: 1px dashed #cbd5e1;
+}
+
+.dash-tree-supervision-tag.supervised-by b {
+  color: #be123c;
+  font-weight: 700;
+}
+
+.dash-tree-trunk.dash-supervised-trunk {
+  background: #be123c;
+}
+
 @media (max-width: 768px) {
   .dash-tree-leaves-row:not(.single-leaf)::before {
     left: 42px;

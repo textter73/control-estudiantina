@@ -1259,9 +1259,10 @@
             </div>
           </div>
 
-          <!-- Niveles del Árbol (1. Jefe de Tuna -> 6. Aspirante) -->
-          <div class="dash-tree-level" *ngFor="let item of getOrganigramaRankSummary(); let isLast = last">
-            <div class="dash-tree-trunk"></div>
+          <!-- Niveles del Árbol (1. Jefe de Tuna -> 7. Aspirante) -->
+          <div class="dash-tree-level" *ngFor="let item of getOrganigramaRankSummary(); let isLast = last"
+            [class.dash-supervised-level]="!!item.rank.supervisedBy">
+            <div class="dash-tree-trunk" [class.dash-supervised-trunk]="!!item.rank.supervisedBy"></div>
 
             <!-- Cabecera del Rango -->
             <div class="dash-tree-rank-node" [style.borderColor]="item.rank.accentColor"
@@ -1275,6 +1276,12 @@
                 [style.background]="item.rank.bgLight" [style.borderColor]="item.rank.borderColor">
                 {{ item.members.length }}
               </span>
+            </div>
+            <div class="dash-tree-supervision-tag supervises" *ngIf="item.rank.supervisesLabel">
+              🛡️ {{ item.rank.supervisesLabel }}
+            </div>
+            <div class="dash-tree-supervision-tag supervised-by" *ngIf="item.rank.supervisedBy">
+              ↳ A cargo de: <b>{{ item.rank.supervisedBy }}</b>
             </div>
 
             <!-- Ramas de Integrantes con su Foto Cargada -->
@@ -1292,9 +1299,9 @@
                         [style.background]="item.rank.accentColor">
                         {{ getMemberInitials(m.name) }}
                       </div>
-                      <span class="dash-leaf-level-pill" *ngIf="isAdmin && m.evaluationLevel"
-                        [ngClass]="getLevelBadgeClass(m.evaluationLevel)">
-                        N{{ m.evaluationLevel }}
+                      <span class="dash-leaf-level-pill" *ngIf="isAdmin && m.resolvedLevel"
+                        [ngClass]="getLevelBadgeClass(m.resolvedLevel)">
+                        N{{ m.resolvedLevel }}
                       </span>
                     </div>
                     <span class="dash-leaf-name" [title]="m.name">{{ m.nickname || m.name }}</span>

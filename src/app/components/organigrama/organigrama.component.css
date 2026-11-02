@@ -766,6 +766,39 @@
   border-radius: 999px;
 }
 
+.tree-supervises-pill {
+  margin-top: 0.5rem;
+  display: inline-block;
+  background: #fff1f2;
+  color: #be123c;
+  border: 1px solid #fecdd3;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+}
+
+.tree-supervised-by-pill {
+  margin-top: 0.45rem;
+  display: inline-block;
+  background: #f8fafc;
+  color: #475569;
+  border: 1px dashed #cbd5e1;
+  font-size: 0.73rem;
+  font-weight: 500;
+  padding: 0.2rem 0.7rem;
+  border-radius: 999px;
+}
+
+.tree-supervised-by-pill b {
+  color: #be123c;
+  font-weight: 700;
+}
+
+.tree-trunk-line.supervised-trunk {
+  background: #be123c;
+}
+
 @media (max-width: 768px) {
   .org-header-inner {
     flex-direction: column;

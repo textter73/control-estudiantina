@@ -90,14 +90,15 @@
         <div class="tree-root-info">
           <span class="tree-root-tag">AGRUPACIÓN OFICIAL</span>
           <h2>Estudiantina Tonantzin Guadalupe</h2>
-          <p>{{ totalAssignedCount }} integrantes ubicados en 6 rangos jerárquicos</p>
+          <p>{{ totalAssignedCount }} integrantes ubicados en {{ ranks.length }} rangos jerárquicos</p>
         </div>
       </div>
 
-      <!-- NIVELES DEL ÁRBOL (Rango 1 -> Rango 6) -->
-      <div class="tree-rank-level" *ngFor="let group of rankGroups; let isLast = last">
+      <!-- NIVELES DEL ÁRBOL (Rango 1 -> Rango 7) -->
+      <div class="tree-rank-level" *ngFor="let group of rankGroups; let isLast = last"
+        [class.supervised-rank-level]="!!group.rank.supervisedBy">
         <!-- Tronco vertical que baja desde el nivel anterior -->
-        <div class="tree-trunk-line"></div>
+        <div class="tree-trunk-line" [class.supervised-trunk]="!!group.rank.supervisedBy"></div>
 
         <!-- NODO CABECERA DEL RANGO -->
         <div class="tree-rank-badge-node" [style.borderColor]="group.rank.accentColor">
@@ -113,6 +114,12 @@
             </span>
           </div>
           <p class="tree-rank-desc">{{ group.rank.subtitle }}</p>
+          <div class="tree-supervises-pill" *ngIf="group.rank.supervisesLabel">
+            🛡️ {{ group.rank.supervisesLabel }}
+          </div>
+          <div class="tree-supervised-by-pill" *ngIf="group.rank.supervisedBy">
+            ↳ Bajo responsabilidad de: <b>{{ group.rank.supervisedBy }}</b>
+          </div>
         </div>
 
         <!-- RAMAS DE NIVELES E INTEGRANTES QUE CUELGAN DEL RANGO -->

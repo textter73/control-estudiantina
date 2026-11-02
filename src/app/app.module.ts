@@ -43,6 +43,7 @@ import { UserEvaluationService } from './services/user-evaluation.service';
 import { ServiceWorkerModule } from '@angular/service-worker';
 import { environment } from '../environments/environment';
 import { InstrumentMaintenanceComponent } from './components/instrument-maintenance/instrument-maintenance.component';
+import { OrganigramaComponent } from './components/organigrama/organigrama.component';
 
 @NgModule({
   declarations: [
@@ -71,7 +72,8 @@ import { InstrumentMaintenanceComponent } from './components/instrument-maintena
     PayrollHistoryComponent,
     CalendarViewComponent,
     SafePipe,
-    InstrumentMaintenanceComponent
+    InstrumentMaintenanceComponent,
+    OrganigramaComponent
   ],
   imports: [
     BrowserModule,

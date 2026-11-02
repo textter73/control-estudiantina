@@ -56,6 +56,18 @@
         </div>
         
         <div class="card-body">
+          <div class="profiles-section" style="margin-bottom: 0.75rem;">
+            <label class="section-label">Rango en el Organigrama:</label>
+            <div class="profiles-list">
+              <span class="profile-tag" style="background: #189d98;" *ngIf="user.rank">
+                {{ getRankLabel(user.rank) }}
+              </span>
+              <span *ngIf="!user.rank" class="no-profiles">
+                Sin rango asignado
+              </span>
+            </div>
+          </div>
+
           <div class="profiles-section">
             <label class="section-label">Perfiles asignados:</label>
             <div class="profiles-list">
@@ -70,6 +82,12 @@
         </div>
         
         <div class="card-actions">
+          <button 
+            class="assign-btn" 
+            (click)="assignRank(user.uid, user.name, user.rank)"
+            style="background: linear-gradient(135deg, #189d98 0%, #0f6b68 100%);">
+            🏛️ Asignar Rango
+          </button>
           <button 
             class="assign-btn" 
             (click)="assignProfile(user.uid, user.name)">

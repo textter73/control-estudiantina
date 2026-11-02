@@ -1,0 +1,797 @@
+.org-page {
+  min-height: 100vh;
+  background-color: #f5f7fa;
+  padding-bottom: 3.5rem;
+}
+
+.org-header {
+  background: linear-gradient(135deg, #189d98 0%, #0f6b68 100%);
+  color: #ffffff;
+  padding: 1.25rem 0;
+  box-shadow: 0 4px 14px rgba(15, 107, 104, 0.18);
+}
+
+.org-header-inner {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.org-header-left {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1.15rem;
+  min-width: 0;
+}
+
+.org-back-btn {
+  background: rgba(255, 255, 255, 0.18);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  padding: 0.55rem 1rem;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.org-back-btn:hover {
+  background: rgba(255, 255, 255, 0.28);
+  transform: translateY(-1px);
+}
+
+.org-header-titles h1 {
+  margin: 0;
+  font-size: 1.45rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.org-header-titles p {
+  margin: 0.2rem 0 0 0;
+  font-size: 0.86rem;
+  opacity: 0.92;
+}
+
+.org-pdf-btn {
+  background: #ffffff;
+  color: #0f6b68;
+  border: none;
+  padding: 0.65rem 1.15rem;
+  border-radius: 10px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.org-pdf-btn:hover {
+  background: #f0fdfa;
+  transform: translateY(-1px);
+}
+
+.org-main {
+  max-width: 1280px;
+  margin: 1.5rem auto 0 auto;
+  padding: 0 1.25rem;
+}
+
+/* Barra de Herramientas y Píldoras de Rango */
+.org-toolbar-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 1.15rem 1.25rem;
+  margin-bottom: 1.25rem;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+  display: flex;
+  flex-direction: column;
+  gap: 0.95rem;
+}
+
+.org-rank-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.org-rank-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  color: #334155;
+  padding: 0.45rem 0.85rem;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.org-rank-pill:hover {
+  border-color: #189d98;
+  color: #0f6b68;
+}
+
+.org-rank-pill.active {
+  background: #189d98;
+  border-color: #189d98;
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(24, 157, 152, 0.25);
+}
+
+.pill-count {
+  background: rgba(15, 23, 42, 0.08);
+  padding: 0.1rem 0.45rem;
+  border-radius: 999px;
+  font-size: 0.74rem;
+  font-weight: 700;
+}
+
+.org-rank-pill.active .pill-count {
+  background: rgba(255, 255, 255, 0.25);
+  color: #ffffff;
+}
+
+.org-search-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.org-search-box {
+  position: relative;
+  flex: 1;
+  min-width: 240px;
+  max-width: 440px;
+}
+
+.org-search-icon {
+  position: absolute;
+  left: 0.9rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.95rem;
+}
+
+.org-search-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.6rem 0.95rem 0.6rem 2.4rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  font-size: 0.88rem;
+  color: #1e293b;
+  transition: all 0.2s ease;
+}
+
+.org-search-input:focus {
+  outline: none;
+  border-color: #189d98;
+  box-shadow: 0 0 0 3px rgba(24, 157, 152, 0.12);
+}
+
+.org-admin-hint {
+  font-size: 0.8rem;
+  color: #0f6b68;
+  background: #f0fdfa;
+  border: 1px solid #ccfbf1;
+  padding: 0.45rem 0.8rem;
+  border-radius: 8px;
+}
+
+/* Bandeja de pendientes de asignar rango */
+.org-unassigned-card {
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  border-radius: 14px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.org-unassigned-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  cursor: pointer;
+}
+
+.org-unassigned-title {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.unassigned-badge {
+  background: #d97706;
+  color: #ffffff;
+  font-weight: 800;
+  font-size: 0.9rem;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.org-unassigned-title h3 {
+  margin: 0;
+  font-size: 1rem;
+  color: #92400e;
+}
+
+.org-unassigned-title p {
+  margin: 0.15rem 0 0 0;
+  font-size: 0.8rem;
+  color: #b45309;
+}
+
+.org-collapse-btn {
+  border: 1px solid #fcd34d;
+  background: #ffffff;
+  color: #92400e;
+  padding: 0.35rem 0.75rem;
+  border-radius: 8px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.org-unassigned-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 0.65rem;
+  margin-top: 0.95rem;
+}
+
+.org-member-chip.unassigned {
+  background: #ffffff;
+  border: 1px dashed #f59e0b;
+  border-radius: 10px;
+  padding: 0.55rem 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.org-member-chip.unassigned:hover {
+  background: #fef3c7;
+  transform: translateY(-1px);
+}
+
+.chip-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.chip-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.chip-avatar.initials {
+  background: #f59e0b;
+  color: #ffffff;
+  font-size: 0.78rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.chip-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.chip-name {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #1e293b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.chip-meta {
+  font-size: 0.73rem;
+  color: #64748b;
+}
+
+.chip-assign-cta {
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: #b45309;
+  background: #fef3c7;
+  padding: 0.22rem 0.55rem;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+
+/* =============================================================== */
+/* ÁRBOL VISUAL DE ORGANIGRAMA CON CONECTORES Y FOTOS               */
+/* =============================================================== */
+.org-tree-canvas {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1.5rem 0.5rem;
+}
+
+/* Nodo Raíz Principal */
+.tree-root-node {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  background: linear-gradient(145deg, #1e293b 0%, #0f172a 100%);
+  color: #ffffff;
+  padding: 1.25rem 2.25rem;
+  border-radius: 20px;
+  border: 3px solid #189d98;
+  box-shadow: 0 10px 26px rgba(15, 23, 42, 0.18);
+  max-width: 480px;
+  position: relative;
+}
+
+.tree-root-avatar {
+  width: 74px;
+  height: 74px;
+  border-radius: 50%;
+  padding: 3px;
+  background: linear-gradient(135deg, #189d98, #f59e0b);
+  margin-bottom: 0.6rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+.tree-root-avatar img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #ffffff;
+}
+
+.tree-root-tag {
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  color: #5eead4;
+  text-transform: uppercase;
+}
+
+.tree-root-info h2 {
+  margin: 0.2rem 0;
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.tree-root-info p {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #cbd5e1;
+}
+
+/* Escalón de cada Rango */
+.tree-rank-level {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Líneas del tronco central */
+.tree-trunk-line {
+  width: 3px;
+  height: 28px;
+  background: #189d98;
+}
+
+.tree-trunk-line.short {
+  height: 18px;
+}
+
+.tree-next-rank-connector {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.tree-down-chevron {
+  color: #189d98;
+  font-size: 0.85rem;
+  line-height: 1;
+  margin-top: -2px;
+}
+
+/* Nodo central de cabecera del Rango */
+.tree-rank-badge-node {
+  background: #ffffff;
+  border: 2px solid #189d98;
+  border-radius: 16px;
+  padding: 0.85rem 1.75rem;
+  text-align: center;
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.07);
+  min-width: 280px;
+  max-width: 520px;
+  position: relative;
+}
+
+.tree-rank-order-pill {
+  display: inline-block;
+  color: #ffffff;
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 0.18rem 0.65rem;
+  border-radius: 999px;
+  margin-bottom: 0.35rem;
+}
+
+.tree-rank-title-line {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+}
+
+.tree-rank-emoji {
+  font-size: 1.45rem;
+  line-height: 1;
+}
+
+.tree-rank-title-line h3 {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: #1e293b;
+}
+
+.tree-rank-counter {
+  font-size: 0.76rem;
+  font-weight: 800;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  border: 1px solid;
+}
+
+.tree-rank-desc {
+  margin: 0.25rem 0 0 0;
+  font-size: 0.78rem;
+  color: #64748b;
+}
+
+/* Tallos y ramas de niveles dentro del Rango */
+.tree-stem-down {
+  width: 3px;
+  height: 20px;
+  background: #189d98;
+}
+
+.tree-stem-small {
+  width: 2px;
+  height: 14px;
+  background: #94a3b8;
+}
+
+.tree-levels-container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.tree-level-branch {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.tree-level-header-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.28rem 0.9rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: #ffffff;
+  background: #64748b;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.12);
+}
+
+.tree-level-header-pill.level-1,
+.leaf-level-badge.level-1 {
+  background: #16a34a;
+}
+
+.tree-level-header-pill.level-2,
+.leaf-level-badge.level-2 {
+  background: #0d9488;
+}
+
+.tree-level-header-pill.level-3,
+.leaf-level-badge.level-3 {
+  background: #2563eb;
+}
+
+.tree-level-header-pill.level-4,
+.leaf-level-badge.level-4 {
+  background: #7c3aed;
+}
+
+.tree-level-header-pill.level-5,
+.leaf-level-badge.level-5 {
+  background: #d97706;
+}
+
+.tree-level-header-pill.level-6,
+.leaf-level-badge.level-6 {
+  background: #dc2626;
+}
+
+/* Rama horizontal de nodos con conectores estilo árbol */
+.tree-nodes-branch-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1rem;
+  position: relative;
+  padding-top: 2px;
+  max-width: 100%;
+}
+
+/* Barra horizontal superior que une las hojas cuando hay más de 1 integrante */
+.tree-nodes-branch-row:not(.single-node)::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 90px;
+  right: 90px;
+  height: 2px;
+  background: #94a3b8;
+}
+
+.tree-person-leaf {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 176px;
+}
+
+.leaf-connector-up {
+  width: 2px;
+  height: 16px;
+  background: #94a3b8;
+}
+
+/* Tarjeta Vertical del Integrante en el Árbol (con Foto Circular Grande) */
+.tree-person-card {
+  width: 100%;
+  box-sizing: border-box;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-top: 4px solid #189d98;
+  border-radius: 16px;
+  padding: 0.95rem 0.75rem 0.85rem 0.75rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  position: relative;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.06);
+  transition: all 0.2s ease;
+}
+
+.tree-person-card.admin-clickable {
+  cursor: pointer;
+}
+
+.tree-person-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(24, 157, 152, 0.16);
+  border-color: #189d98;
+}
+
+.tree-person-card.is-me {
+  background: #f0fdfa;
+  border: 2px solid #189d98;
+  border-top-width: 4px;
+}
+
+.leaf-edit-btn {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  font-size: 0.68rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.leaf-edit-btn:hover {
+  background: #189d98;
+  border-color: #189d98;
+}
+
+.leaf-me-badge {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  background: #189d98;
+  color: #ffffff;
+  font-size: 0.62rem;
+  font-weight: 800;
+  padding: 0.1rem 0.42rem;
+  border-radius: 999px;
+}
+
+/* Foto Circular del Integrante */
+.leaf-photo-wrapper {
+  position: relative;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  border: 3px solid #189d98;
+  padding: 2px;
+  background: #ffffff;
+  margin-bottom: 0.65rem;
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.1);
+}
+
+.leaf-photo-img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+}
+
+.leaf-photo-initials {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  color: #ffffff;
+  font-size: 1.25rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.leaf-level-badge {
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #64748b;
+  color: #ffffff;
+  font-size: 0.62rem;
+  font-weight: 800;
+  padding: 0.12rem 0.5rem;
+  border-radius: 999px;
+  border: 2px solid #ffffff;
+  white-space: nowrap;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+.leaf-name {
+  margin: 0.15rem 0 0.1rem 0;
+  font-size: 0.86rem;
+  font-weight: 700;
+  color: #1e293b;
+  width: 100%;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  line-height: 1.25;
+}
+
+.leaf-nickname {
+  font-size: 0.74rem;
+  color: #0f6b68;
+  font-style: italic;
+  margin-bottom: 0.2rem;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.leaf-instrument {
+  font-size: 0.73rem;
+  font-weight: 600;
+  color: #64748b;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  padding: 0.18rem 0.55rem;
+  border-radius: 999px;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tree-empty-branch {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.tree-empty-pill {
+  background: #ffffff;
+  border: 1px dashed #cbd5e1;
+  color: #94a3b8;
+  font-size: 0.78rem;
+  font-style: italic;
+  padding: 0.45rem 1rem;
+  border-radius: 999px;
+}
+
+@media (max-width: 768px) {
+  .org-header-inner {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .org-pdf-btn {
+    width: 100%;
+    text-align: center;
+  }
+
+  .org-main {
+    padding: 0 0.75rem;
+  }
+
+  .tree-nodes-branch-row:not(.single-node)::before {
+    left: 45px;
+    right: 45px;
+  }
+
+  .tree-person-leaf {
+    width: 148px;
+  }
+
+  .leaf-photo-wrapper {
+    width: 60px;
+    height: 60px;
+  }
+}

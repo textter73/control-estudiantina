@@ -12,6 +12,7 @@ import { Insumo } from '../../models/insumo.model';
 import Swal from 'sweetalert2';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
+import { ESTUDIANTINA_RANKS, RankConfig } from '../organigrama/organigrama.component';
 
 // Declaración de módulo para qrcode
 declare const require: any;
@@ -56,6 +57,7 @@ export class DashboardComponent implements OnInit {
   showEvaluationDetailModal = false;
 
   // Indicadores y Ranking de Letras Aprendidas
+  readonly organigramaRanks: RankConfig[] = ESTUDIANTINA_RANKS;
   songs: any[] = [];
   countableSongs: any[] = [];
   activeMembersForSongs: any[] = [];
@@ -2175,6 +2177,25 @@ export class DashboardComponent implements OnInit {
         text: 'No se pudo generar el reporte PDF.'
       });
     }
+  }
+
+  getUserRankConfig(): RankConfig | null {
+    const rankKey = this.userProfile?.rank;
+    if (!rankKey) return null;
+    return this.organigramaRanks.find(r => r.key === rankKey) || null;
+  }
+
+  getOrganigramaRankSummary(): { rank: RankConfig; members: any[] }[] {
+    return this.organigramaRanks.map(rank => {
+      const members = (this.activeMembersForSongs || [])
+        .filter(u => u.rank === rank.key)
+        .sort((a, b) => (Number(a.evaluationLevel) || 99) - (Number(b.evaluationLevel) || 99) || (a.name || '').localeCompare(b.name || ''));
+      return { rank, members };
+    });
+  }
+
+  goToOrganigrama() {
+    this.router.navigate(['/organigrama']);
   }
 
   // ==========================================

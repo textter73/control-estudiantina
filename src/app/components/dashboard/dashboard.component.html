@@ -18,7 +18,12 @@
           <span class="user-instrument" *ngIf="userProfile?.instrument">
             🎸 {{ userProfile.instrument }}
           </span>
-          <!-- Información del nivel e impuesto -->
+          <!-- Información del rango, nivel e impuesto -->
+          <div class="user-level-info" *ngIf="getUserRankConfig() as myRank" style="margin-bottom: 4px;">
+            <span class="level-badge" [style.background]="myRank.accentColor" style="color: #fff;">
+              {{ myRank.icon }} {{ myRank.title }}
+            </span>
+          </div>
           <div class="user-level-info" *ngIf="userLevel">
             <span class="level-badge" [class]="getLevelBadgeClass(userLevel.level)">
               🏆 Nivel {{ userLevel.level }}
@@ -100,6 +105,11 @@
       <button class="action" routerLink="/attendance-tracking">
         <span class="action-icon">📊</span>
         <span class="action-text">Mi asistencia</span>
+      </button>
+
+      <button class="action" routerLink="/organigrama">
+        <span class="action-icon">🏛️</span>
+        <span class="action-text">Organigrama</span>
       </button>
 
       <button class="action" routerLink="/admin" *ngIf="isAdmin">
@@ -1220,6 +1230,87 @@
 
                                                               </div>
                                                             </div>
+
+    <!-- =============================================================== -->
+    <!-- ORGANIGRAMA POR RANGOS Y NIVELES (ÁRBOL EN DASHBOARD)           -->
+    <!-- =============================================================== -->
+    <div class="song-learning-dashboard-section organigrama-dashboard-section">
+      <div class="song-learning-card">
+        <div class="song-learning-header">
+          <div class="song-learning-title-wrap">
+            <span class="song-learning-main-icon">🏛️</span>
+            <div>
+              <h3>Organigrama de la Agrupación</h3>
+              <p>Árbol jerárquico por Rangos y Niveles · Estudiantina Tonantzin Guadalupe</p>
+            </div>
+          </div>
+          <button class="songbook-quick-link" (click)="goToOrganigrama()">
+            🏛️ Ver y Gestionar Árbol Completo →
+          </button>
+        </div>
+
+        <div class="dash-org-tree">
+          <!-- Nodo Raíz del Árbol -->
+          <div class="dash-tree-root" (click)="goToOrganigrama()">
+            <img src="assets/estonantzin.jpeg" alt="Estudiantina Tonantzin Guadalupe" class="dash-tree-root-logo">
+            <div class="dash-tree-root-text">
+              <span class="dash-tree-root-tag">ESTRUCTURA OFICIAL</span>
+              <h4>Estudiantina Tonantzin Guadalupe</h4>
+            </div>
+          </div>
+
+          <!-- Niveles del Árbol (1. Jefe de Tuna -> 6. Aspirante) -->
+          <div class="dash-tree-level" *ngFor="let item of getOrganigramaRankSummary(); let isLast = last">
+            <div class="dash-tree-trunk"></div>
+
+            <!-- Cabecera del Rango -->
+            <div class="dash-tree-rank-node" [style.borderColor]="item.rank.accentColor" (click)="goToOrganigrama()">
+              <span class="dash-tree-rank-order" [style.background]="item.rank.accentColor">
+                Rango {{ item.rank.order }}
+              </span>
+              <span class="dash-tree-rank-icon">{{ item.rank.icon }}</span>
+              <span class="dash-tree-rank-title">{{ item.rank.title }}</span>
+              <span class="dash-tree-rank-badge" [style.color]="item.rank.accentColor"
+                [style.background]="item.rank.bgLight" [style.borderColor]="item.rank.borderColor">
+                {{ item.members.length }}
+              </span>
+            </div>
+
+            <!-- Ramas de Integrantes con su Foto Cargada -->
+            <ng-container *ngIf="item.members.length > 0">
+              <div class="dash-tree-stem" [style.background]="item.rank.accentColor"></div>
+              <div class="dash-tree-leaves-row" [class.single-leaf]="item.members.length === 1">
+                <div class="dash-tree-leaf" *ngFor="let m of item.members" (click)="goToOrganigrama()">
+                  <div class="dash-leaf-line-up"></div>
+                  <div class="dash-leaf-card" [class.is-me]="m.uid === user?.uid"
+                    [style.borderTopColor]="item.rank.accentColor">
+                    <div class="dash-leaf-photo-wrap" [style.borderColor]="item.rank.accentColor">
+                      <img *ngIf="m.profileImage" [src]="m.profileImage" [alt]="m.name" class="dash-leaf-photo">
+                      <div *ngIf="!m.profileImage" class="dash-leaf-initials"
+                        [style.background]="item.rank.accentColor">
+                        {{ getMemberInitials(m.name) }}
+                      </div>
+                      <span class="dash-leaf-level-pill" *ngIf="m.evaluationLevel"
+                        [ngClass]="getLevelBadgeClass(m.evaluationLevel)">
+                        N{{ m.evaluationLevel }}
+                      </span>
+                    </div>
+                    <span class="dash-leaf-name" [title]="m.name">{{ m.nickname || m.name }}</span>
+                    <span class="dash-leaf-inst">🎸 {{ m.instrument || 'Integrante' }}</span>
+                  </div>
+                </div>
+              </div>
+            </ng-container>
+
+            <div class="dash-tree-empty-note" *ngIf="item.members.length === 0">
+              <span>Sin integrantes asignados en este rango</span>
+            </div>
+
+            <div class="dash-tree-arrow" *ngIf="!isLast">▼</div>
+          </div>
+        </div>
+      </div>
+    </div>
   </main>
 
   <!-- Modal de Mapa de Asientos -->

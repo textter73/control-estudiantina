@@ -31,11 +31,13 @@ import { ContractDistributionComponent } from './components/contract-distributio
 import { PayrollHistoryComponent } from './components/payroll-history/payroll-history.component';
 import { CalendarViewComponent } from './components/calendar-view/calendar-view.component';
 import { InstrumentMaintenanceComponent } from './components/instrument-maintenance/instrument-maintenance.component';
+import { OrganigramaComponent } from './components/organigrama/organigrama.component';
 
 const routes: Routes = [
   { path: '', component: LoginComponent },
   { path: 'register', component: RegisterComponent },
   { path: 'dashboard', component: DashboardComponent, canActivate: [AuthGuard] },
+  { path: 'organigrama', component: OrganigramaComponent, canActivate: [AuthGuard] },
   { path: 'admin', component: AdminComponent, canActivate: [AdminGuard] },
   { path: 'attendance', component: AttendanceComponent, canActivate: [AttendanceGuard] },
   { path: 'attendance-tracking', component: AttendanceTrackingComponent, canActivate: [AuthGuard] },

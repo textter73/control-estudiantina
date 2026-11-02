@@ -22,6 +22,15 @@ export class AdminComponent implements OnInit {
     'permiso': '📋 Permiso Personal / Estudios'
   };
 
+  readonly rankLabels: { [key: string]: string } = {
+    'jefe-de-tuna': '👑 Jefe de Tuna',
+    'tuno': '🎖️ Tuno',
+    'capa': '🧥 Capa',
+    'pardillo-discipulo': '🎓 Pardillo Discípulo',
+    'pardillo-aprendiz': '🌱 Pardillo Aprendiz',
+    'aspirante': '✨ Aspirante'
+  };
+
   availableProfiles = ['administrador', 'finanzas', 'asistencia', 'agenda', 'transporte', 'editor-canciones', 'documentador', 'insumos'];
   profileDescriptions: { [key: string]: string } = {};
 
@@ -65,6 +74,49 @@ export class AdminComponent implements OnInit {
   getLeaveReasonLabel(reason?: string): string {
     if (!reason) return '⏸️ En Permiso / Descanso';
     return this.leaveReasons[reason] || reason;
+  }
+
+  getRankLabel(rank?: string): string {
+    if (!rank) return 'Sin rango asignado';
+    return this.rankLabels[rank] || rank;
+  }
+
+  async assignRank(userId: string, userName: string, currentRank?: string) {
+    const { value: selectedRank } = await Swal.fire({
+      title: `Asignar Rango a ${userName}`,
+      input: 'select',
+      inputOptions: {
+        '': '-- Sin rango --',
+        ...this.rankLabels
+      },
+      inputValue: currentRank || '',
+      showCancelButton: true,
+      confirmButtonText: 'Guardar Rango',
+      cancelButtonText: 'Cancelar',
+      confirmButtonColor: '#189d98'
+    });
+
+    if (selectedRank !== undefined) {
+      try {
+        await this.firestore.collection('users').doc(userId).update({
+          rank: selectedRank || null,
+          rankUpdatedAt: new Date()
+        });
+        Swal.fire({
+          icon: 'success',
+          title: 'Rango actualizado',
+          text: `${userName}: ${this.getRankLabel(selectedRank)}`,
+          timer: 2000,
+          showConfirmButton: false
+        });
+      } catch (error) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'No se pudo actualizar el rango'
+        });
+      }
+    }
   }
 
   async setUserOnLeave(userId: string, userName: string) {

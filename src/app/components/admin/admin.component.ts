@@ -26,6 +26,7 @@ export class AdminComponent implements OnInit {
     'jefe-de-tuna': '👑 Jefe de Tuna',
     'tuno': '🎖️ Tuno',
     'capa': '🧥 Capa',
+    'jefe-aspirantes-pardillos': '🛡️ Jefe de Aspirantes y Pardillos',
     'pardillo-discipulo': '🎓 Pardillo Discípulo',
     'pardillo-aprendiz': '🌱 Pardillo Aprendiz',
     'aspirante': '✨ Aspirante'

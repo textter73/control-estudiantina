@@ -1289,7 +1289,8 @@
               <div class="dash-tree-stem" [style.background]="item.rank.accentColor"></div>
               <div class="dash-tree-leaves-row" [class.single-leaf]="item.members.length === 1">
                 <div class="dash-tree-leaf" *ngFor="let m of item.members"
-                  [style.cursor]="isAdmin ? 'pointer' : 'default'" (click)="isAdmin && goToOrganigrama()">
+                  (click)="openOrganigramaMemberModal(m, item.rank, $event)"
+                  title="Haz clic para ver el perfil completo de {{ m.name }}">
                   <div class="dash-leaf-line-up"></div>
                   <div class="dash-leaf-card" [class.is-me]="m.uid === user?.uid"
                     [style.borderTopColor]="item.rank.accentColor">
@@ -2204,6 +2205,93 @@
         </button>
         <button class="close-btn-footer" style="margin-left: auto;"
           (click)="closeEvaluationDetailModal()">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Información Completa de Perfil (desde el Organigrama) -->
+  <div class="song-ranking-modal" *ngIf="selectedOrganigramaMember" (click)="closeOrganigramaMemberModal()">
+    <div class="modal-content org-member-profile-modal" (click)="$event.stopPropagation()">
+      <div class="org-profile-modal-banner"
+        [style.background]="selectedOrganigramaMemberRank?.accentColor || '#189d98'">
+        <button class="close-btn org-profile-close" (click)="closeOrganigramaMemberModal()">✕</button>
+
+        <div class="org-profile-avatar-frame">
+          <img *ngIf="selectedOrganigramaMember.profileImage" [src]="selectedOrganigramaMember.profileImage"
+            [alt]="selectedOrganigramaMember.name" class="org-profile-avatar-img">
+          <div *ngIf="!selectedOrganigramaMember.profileImage" class="org-profile-avatar-initials"
+            [style.background]="selectedOrganigramaMemberRank?.accentColor || '#189d98'">
+            {{ getMemberInitials(selectedOrganigramaMember.name) }}
+          </div>
+        </div>
+
+        <h3 class="org-profile-full-name">{{ selectedOrganigramaMember.name }}</h3>
+        <span class="org-profile-nickname" *ngIf="selectedOrganigramaMember.nickname">
+          "{{ selectedOrganigramaMember.nickname }}"
+        </span>
+
+        <div class="org-profile-badges-row">
+          <span class="org-profile-rank-pill" *ngIf="selectedOrganigramaMemberRank">
+            {{ selectedOrganigramaMemberRank.icon }} {{ selectedOrganigramaMemberRank.title }} (Rango {{
+            selectedOrganigramaMemberRank.order }})
+          </span>
+          <span class="org-profile-level-pill"
+            *ngIf="isAdmin && selectedOrganigramaMember.resolvedLevel"
+            [ngClass]="getLevelBadgeClass(selectedOrganigramaMember.resolvedLevel)">
+            🏆 Nivel {{ selectedOrganigramaMember.resolvedLevel }}
+          </span>
+        </div>
+      </div>
+
+      <div class="modal-body org-profile-modal-body">
+        <div class="org-profile-info-grid">
+          <div class="org-profile-info-item">
+            <span class="org-info-label">🎸 Instrumento Principal</span>
+            <span class="org-info-value">{{ selectedOrganigramaMember.instrument || 'No especificado' }}</span>
+          </div>
+
+          <div class="org-profile-info-item">
+            <span class="org-info-label">🎂 Fecha de Cumpleaños</span>
+            <span class="org-info-value">{{ formatMemberBirthday(selectedOrganigramaMember) }}</span>
+          </div>
+
+          <div class="org-profile-info-item">
+            <span class="org-info-label">🏷️ Mote / Apodo</span>
+            <span class="org-info-value">{{ selectedOrganigramaMember.nickname || 'Sin mote registrado' }}</span>
+          </div>
+
+          <div class="org-profile-info-item">
+            <span class="org-info-label">✉️ Correo Electrónico</span>
+            <span class="org-info-value">{{ selectedOrganigramaMember.email || 'No disponible' }}</span>
+          </div>
+
+          <div class="org-profile-info-item full-span" *ngIf="selectedOrganigramaMemberRank">
+            <span class="org-info-label">🏛️ Descripción del Rango</span>
+            <span class="org-info-value">{{ selectedOrganigramaMemberRank.subtitle }}</span>
+            <span class="org-info-subnote" *ngIf="selectedOrganigramaMemberRank.supervisesLabel">
+              🛡️ {{ selectedOrganigramaMemberRank.supervisesLabel }}
+            </span>
+            <span class="org-info-subnote" *ngIf="selectedOrganigramaMemberRank.supervisedBy">
+              ↳ Bajo responsabilidad de: <b>{{ selectedOrganigramaMemberRank.supervisedBy }}</b>
+            </span>
+          </div>
+
+          <div class="org-profile-info-item full-span">
+            <span class="org-info-label">🛡️ Roles / Comisiones en la Agrupación</span>
+            <div class="org-profile-roles-wrap">
+              <span class="org-role-chip" *ngFor="let role of getMemberProfileRolesLabel(selectedOrganigramaMember)">
+                {{ role }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer org-profile-modal-footer">
+        <button *ngIf="isAdmin" type="button" class="btn-goto-songbook" (click)="closeOrganigramaMemberModal(); goToOrganigrama()">
+          ⚙️ Gestionar en Organigrama
+        </button>
+        <button type="button" class="close-btn-footer" (click)="closeOrganigramaMemberModal()">Cerrar</button>
       </div>
     </div>
   </div>

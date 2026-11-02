@@ -9318,6 +9318,198 @@
   background: #be123c;
 }
 
+/* Modal de Información Completa de Perfil (Organigrama) */
+.org-member-profile-modal {
+  max-width: 520px;
+  width: 94%;
+  border-radius: 20px;
+  overflow: hidden;
+  padding: 0;
+  background: #ffffff;
+}
+
+.org-profile-modal-banner {
+  position: relative;
+  padding: 1.75rem 1.5rem 1.35rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  color: #ffffff;
+}
+
+.org-profile-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  background: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  border: none;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.org-profile-close:hover {
+  background: rgba(255, 255, 255, 0.35);
+}
+
+.org-profile-avatar-frame {
+  width: 112px;
+  height: 112px;
+  border-radius: 50%;
+  border: 4px solid #ffffff;
+  background: #ffffff;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.22);
+  overflow: hidden;
+  margin-bottom: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.org-profile-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.org-profile-avatar-initials {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.1rem;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.org-profile-full-name {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.org-profile-nickname {
+  margin-top: 0.2rem;
+  font-size: 0.92rem;
+  font-style: italic;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.org-profile-badges-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.45rem;
+  margin-top: 0.75rem;
+}
+
+.org-profile-rank-pill {
+  background: rgba(255, 255, 255, 0.22);
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  color: #ffffff;
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+}
+
+.org-profile-level-pill {
+  font-size: 0.78rem;
+  font-weight: 800;
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  border: 1.5px solid #ffffff;
+  color: #ffffff;
+}
+
+.org-profile-modal-body {
+  padding: 1.35rem 1.5rem;
+}
+
+.org-profile-info-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.85rem;
+}
+
+.org-profile-info-item {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 0.75rem 0.9rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.org-profile-info-item.full-span {
+  grid-column: 1 / -1;
+}
+
+.org-info-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #64748b;
+}
+
+.org-info-value {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: #1e293b;
+  word-break: break-word;
+}
+
+.org-info-subnote {
+  margin-top: 0.25rem;
+  font-size: 0.78rem;
+  color: #be123c;
+  font-weight: 600;
+}
+
+.org-profile-roles-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.2rem;
+}
+
+.org-role-chip {
+  background: #f0fdfa;
+  color: #0f6b68;
+  border: 1px solid #99f6e4;
+  font-size: 0.76rem;
+  font-weight: 600;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+}
+
+.org-profile-modal-footer {
+  padding: 0.9rem 1.5rem;
+  background: #f8fafc;
+  border-top: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.65rem;
+}
+
+@media (max-width: 600px) {
+  .org-profile-info-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (max-width: 768px) {
   .dash-tree-leaves-row:not(.single-leaf)::before {
     left: 42px;

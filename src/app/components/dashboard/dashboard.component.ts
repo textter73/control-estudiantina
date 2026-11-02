@@ -2203,11 +2203,65 @@ export class DashboardComponent implements OnInit {
   }
 
   organigramaEvaluationsMap = new Map<string, number>();
+  selectedOrganigramaMember: any = null;
+  selectedOrganigramaMemberRank: RankConfig | null = null;
 
   getUserRankConfig(): RankConfig | null {
     const rankKey = this.userProfile?.rank;
     if (!rankKey) return null;
     return this.organigramaRanks.find(r => r.key === rankKey) || null;
+  }
+
+  openOrganigramaMemberModal(member: any, rank: RankConfig, event?: Event) {
+    if (event) event.stopPropagation();
+    this.selectedOrganigramaMember = {
+      ...member,
+      resolvedLevel: this.getMemberOrganigramaLevel(member)
+    };
+    this.selectedOrganigramaMemberRank = rank;
+  }
+
+  closeOrganigramaMemberModal() {
+    this.selectedOrganigramaMember = null;
+    this.selectedOrganigramaMemberRank = null;
+  }
+
+  formatMemberBirthday(member: any): string {
+    if (!member) return 'No registrado';
+    if (member.birthDay && member.birthMonth) {
+      const mObj = this.months.find(m => m.value === String(member.birthMonth).padStart(2, '0'));
+      const mName = mObj ? mObj.name : member.birthMonth;
+      return `${parseInt(member.birthDay, 10)} de ${mName}`;
+    }
+    if (member.birthday) {
+      const parts = String(member.birthday).split('-');
+      if (parts.length >= 2) {
+        const monthVal = parts.length === 3 ? parts[1] : parts[0];
+        const dayVal = parts.length === 3 ? parts[2] : parts[1];
+        const mObj = this.months.find(m => m.value === String(monthVal).padStart(2, '0'));
+        if (mObj) return `${parseInt(dayVal, 10)} de ${mObj.name}`;
+      }
+      return String(member.birthday);
+    }
+    return 'No registrado';
+  }
+
+  getMemberProfileRolesLabel(member: any): string[] {
+    const roleNames: { [key: string]: string } = {
+      'integrante': '🎵 Integrante',
+      'administrador': '⚙️ Administrador',
+      'finanzas': '🏦 Finanzas',
+      'asistencia': '📋 Asistencia',
+      'agenda': '📅 Agenda de Eventos',
+      'transporte': '🚌 Transporte',
+      'editor-canciones': '📖 Editor de Cancionero',
+      'documentador': '📄 Control de Documentos',
+      'insumos': '📦 Gestión de Almacén'
+    };
+    const profiles: string[] = Array.isArray(member?.profiles) && member.profiles.length > 0
+      ? member.profiles
+      : ['integrante'];
+    return profiles.map(p => roleNames[p] || p);
   }
 
   getMemberOrganigramaLevel(member: any): number | null {

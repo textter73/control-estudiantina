@@ -144,7 +144,9 @@
                   <div class="leaf-connector-up"></div>
 
                   <div class="tree-person-card admin-clickable" [class.is-me]="member.uid === currentUser?.uid"
-                    [style.borderTopColor]="group.rank.accentColor" (click)="openAssignRankModal(member, $event)">
+                    [style.borderTopColor]="group.rank.accentColor"
+                    (click)="openMemberProfileModal(member, group.rank, $event)"
+                    title="Haz clic para ver el perfil completo de {{ member.name }}">
 
                     <button type="button" class="leaf-edit-btn" (click)="openAssignRankModal(member, $event)"
                       title="Cambiar rango o nivel">
@@ -181,8 +183,10 @@
                 <div class="tree-person-leaf" *ngFor="let member of group.members">
                   <div class="leaf-connector-up"></div>
 
-                  <div class="tree-person-card" [class.is-me]="member.uid === currentUser?.uid"
-                    [style.borderTopColor]="group.rank.accentColor">
+                  <div class="tree-person-card admin-clickable" [class.is-me]="member.uid === currentUser?.uid"
+                    [style.borderTopColor]="group.rank.accentColor"
+                    (click)="openMemberProfileModal(member, group.rank, $event)"
+                    title="Haz clic para ver el perfil completo de {{ member.name }}">
 
                     <span class="leaf-me-badge" *ngIf="member.uid === currentUser?.uid">Tú</span>
 
@@ -221,4 +225,89 @@
       </div>
     </div>
   </main>
+
+  <!-- Modal de Información Completa del Perfil -->
+  <div class="org-profile-backdrop" *ngIf="selectedProfileMember" (click)="closeMemberProfileModal()">
+    <div class="org-profile-modal-card" (click)="$event.stopPropagation()">
+      <div class="org-profile-banner" [style.background]="selectedProfileRank?.accentColor || '#189d98'">
+        <button type="button" class="org-profile-close-btn" (click)="closeMemberProfileModal()">✕</button>
+
+        <div class="org-profile-avatar-box">
+          <img *ngIf="selectedProfileMember.profileImage" [src]="selectedProfileMember.profileImage"
+            [alt]="selectedProfileMember.name" class="org-profile-avatar-img">
+          <div *ngIf="!selectedProfileMember.profileImage" class="org-profile-avatar-initials"
+            [style.background]="selectedProfileRank?.accentColor || '#189d98'">
+            {{ getInitials(selectedProfileMember.name) }}
+          </div>
+        </div>
+
+        <h3 class="org-profile-name">{{ selectedProfileMember.name }}</h3>
+        <span class="org-profile-nick" *ngIf="selectedProfileMember.nickname">
+          "{{ selectedProfileMember.nickname }}"
+        </span>
+
+        <div class="org-profile-badges">
+          <span class="org-profile-rank-tag" *ngIf="selectedProfileRank">
+            {{ selectedProfileRank.icon }} {{ selectedProfileRank.title }} (Rango {{ selectedProfileRank.order }})
+          </span>
+          <span class="org-profile-level-tag" *ngIf="isAdmin && selectedProfileMember.resolvedLevel"
+            [ngClass]="getLevelBadgeClass(selectedProfileMember.resolvedLevel)">
+            🏆 Nivel {{ selectedProfileMember.resolvedLevel }}
+          </span>
+        </div>
+      </div>
+
+      <div class="org-profile-body">
+        <div class="org-profile-grid">
+          <div class="org-profile-field">
+            <span class="org-field-label">🎸 Instrumento Principal</span>
+            <span class="org-field-value">{{ selectedProfileMember.instrument || 'No especificado' }}</span>
+          </div>
+
+          <div class="org-profile-field">
+            <span class="org-field-label">🎂 Fecha de Cumpleaños</span>
+            <span class="org-field-value">{{ formatMemberBirthday(selectedProfileMember) }}</span>
+          </div>
+
+          <div class="org-profile-field">
+            <span class="org-field-label">🏷️ Mote / Apodo</span>
+            <span class="org-field-value">{{ selectedProfileMember.nickname || 'Sin mote registrado' }}</span>
+          </div>
+
+          <div class="org-profile-field">
+            <span class="org-field-label">✉️ Correo Electrónico</span>
+            <span class="org-field-value">{{ selectedProfileMember.email || 'No disponible' }}</span>
+          </div>
+
+          <div class="org-profile-field full-width" *ngIf="selectedProfileRank">
+            <span class="org-field-label">🏛️ Descripción del Rango</span>
+            <span class="org-field-value">{{ selectedProfileRank.subtitle }}</span>
+            <span class="org-field-note" *ngIf="selectedProfileRank.supervisesLabel">
+              🛡️ {{ selectedProfileRank.supervisesLabel }}
+            </span>
+            <span class="org-field-note" *ngIf="selectedProfileRank.supervisedBy">
+              ↳ Bajo responsabilidad de: <b>{{ selectedProfileRank.supervisedBy }}</b>
+            </span>
+          </div>
+
+          <div class="org-profile-field full-width">
+            <span class="org-field-label">🛡️ Roles / Comisiones en la Agrupación</span>
+            <div class="org-profile-roles">
+              <span class="org-role-pill" *ngFor="let role of getMemberProfileRolesLabel(selectedProfileMember)">
+                {{ role }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="org-profile-footer">
+        <button *ngIf="isAdmin" type="button" class="org-profile-edit-rank-btn"
+          (click)="openAssignRankModal(selectedProfileMember); closeMemberProfileModal()">
+          ✏️ Cambiar Rango / Nivel
+        </button>
+        <button type="button" class="org-profile-close-footer-btn" (click)="closeMemberProfileModal()">Cerrar</button>
+      </div>
+    </div>
+  </div>
 </div>

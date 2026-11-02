@@ -119,6 +119,24 @@ export class OrganigramaComponent implements OnInit {
   selectedRankFilter: string = 'all';
   showUnassignedPanel = true;
 
+  selectedProfileMember: any = null;
+  selectedProfileRank: RankConfig | null = null;
+
+  readonly months = [
+    { value: '01', name: 'Enero' },
+    { value: '02', name: 'Febrero' },
+    { value: '03', name: 'Marzo' },
+    { value: '04', name: 'Abril' },
+    { value: '05', name: 'Mayo' },
+    { value: '06', name: 'Junio' },
+    { value: '07', name: 'Julio' },
+    { value: '08', name: 'Agosto' },
+    { value: '09', name: 'Septiembre' },
+    { value: '10', name: 'Octubre' },
+    { value: '11', name: 'Noviembre' },
+    { value: '12', name: 'Diciembre' }
+  ];
+
   constructor(
     private firestore: AngularFirestore,
     private afAuth: AngularFireAuth,
@@ -280,6 +298,59 @@ export class OrganigramaComponent implements OnInit {
   getLevelBadgeClass(level: number | null): string {
     if (!level) return 'level-none';
     return `level-${level}`;
+  }
+
+  openMemberProfileModal(member: any, rank?: RankConfig, event?: Event) {
+    if (event) event.stopPropagation();
+    const resolvedRank = rank || this.ranks.find(r => r.key === member?.rank) || null;
+    this.selectedProfileMember = {
+      ...member,
+      resolvedLevel: this.getMemberLevel(member)
+    };
+    this.selectedProfileRank = resolvedRank;
+  }
+
+  closeMemberProfileModal() {
+    this.selectedProfileMember = null;
+    this.selectedProfileRank = null;
+  }
+
+  formatMemberBirthday(member: any): string {
+    if (!member) return 'No registrado';
+    if (member.birthDay && member.birthMonth) {
+      const mObj = this.months.find(m => m.value === String(member.birthMonth).padStart(2, '0'));
+      const mName = mObj ? mObj.name : member.birthMonth;
+      return `${parseInt(member.birthDay, 10)} de ${mName}`;
+    }
+    if (member.birthday) {
+      const parts = String(member.birthday).split('-');
+      if (parts.length >= 2) {
+        const monthVal = parts.length === 3 ? parts[1] : parts[0];
+        const dayVal = parts.length === 3 ? parts[2] : parts[1];
+        const mObj = this.months.find(m => m.value === String(monthVal).padStart(2, '0'));
+        if (mObj) return `${parseInt(dayVal, 10)} de ${mObj.name}`;
+      }
+      return String(member.birthday);
+    }
+    return 'No registrado';
+  }
+
+  getMemberProfileRolesLabel(member: any): string[] {
+    const roleNames: { [key: string]: string } = {
+      'integrante': '🎵 Integrante',
+      'administrador': '⚙️ Administrador',
+      'finanzas': '🏦 Finanzas',
+      'asistencia': '📋 Asistencia',
+      'agenda': '📅 Agenda de Eventos',
+      'transporte': '🚌 Transporte',
+      'editor-canciones': '📖 Editor de Cancionero',
+      'documentador': '📄 Control de Documentos',
+      'insumos': '📦 Gestión de Almacén'
+    };
+    const profiles: string[] = Array.isArray(member?.profiles) && member.profiles.length > 0
+      ? member.profiles
+      : ['integrante'];
+    return profiles.map(p => roleNames[p] || p);
   }
 
   /**

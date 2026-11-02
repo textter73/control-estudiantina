@@ -11,7 +11,7 @@ import { InstrumentMaintenance } from '../../models/maintenance.model';
 import { Insumo } from '../../models/insumo.model';
 import Swal from 'sweetalert2';
 import jsPDF from 'jspdf';
-import { ESTUDIANTINA_RANKS, RankConfig } from '../organigrama/organigrama.component';
+import { ESTUDIANTINA_RANKS, RankConfig, DEFAULT_MESA_DIRECTIVA, MesaDirectivaArea } from '../organigrama/organigrama.component';
 
 // Declaración de módulo para qrcode
 declare const require: any;
@@ -2203,8 +2203,11 @@ export class DashboardComponent implements OnInit {
   }
 
   organigramaEvaluationsMap = new Map<string, number>();
+  activeOrgDashboardTab: 'mesa' | 'organigrama' = 'mesa';
+  mesaDirectivaAreas: MesaDirectivaArea[] = [];
   selectedOrganigramaMember: any = null;
   selectedOrganigramaMemberRank: RankConfig | null = null;
+  selectedOrganigramaCustomRole: string | null = null;
 
   getUserRankConfig(): RankConfig | null {
     const rankKey = this.userProfile?.rank;
@@ -2212,18 +2215,32 @@ export class DashboardComponent implements OnInit {
     return this.organigramaRanks.find(r => r.key === rankKey) || null;
   }
 
-  openOrganigramaMemberModal(member: any, rank: RankConfig, event?: Event) {
+  getDashboardMemberById(uid: string): any | null {
+    if (!uid) return null;
+    const found = (this.activeMembersForSongs || []).find(m => m.uid === uid);
+    if (!found) return null;
+    return {
+      ...found,
+      resolvedLevel: this.getMemberOrganigramaLevel(found)
+    };
+  }
+
+  openOrganigramaMemberModal(member: any, rank?: RankConfig, event?: Event, customRole?: string) {
     if (event) event.stopPropagation();
+    if (!member) return;
+    const resolvedRank = rank || this.organigramaRanks.find(r => r.key === member?.rank) || null;
     this.selectedOrganigramaMember = {
       ...member,
       resolvedLevel: this.getMemberOrganigramaLevel(member)
     };
-    this.selectedOrganigramaMemberRank = rank;
+    this.selectedOrganigramaMemberRank = resolvedRank;
+    this.selectedOrganigramaCustomRole = customRole || null;
   }
 
   closeOrganigramaMemberModal() {
     this.selectedOrganigramaMember = null;
     this.selectedOrganigramaMemberRank = null;
+    this.selectedOrganigramaCustomRole = null;
   }
 
   formatMemberBirthday(member: any): string {
@@ -2303,6 +2320,29 @@ export class DashboardComponent implements OnInit {
   // ==========================================
 
   loadSongLearningData() {
+    this.firestore.collection('mesa-directiva').valueChanges({ idField: 'id' }).subscribe((docs: any[]) => {
+      if (docs && docs.length > 0) {
+        this.mesaDirectivaAreas = [...docs]
+          .map(d => ({
+            id: d.id,
+            order: Number(d.order) || 1,
+            title: d.title || 'Área',
+            subtitle: d.subtitle || '',
+            icon: d.icon || '🏛️',
+            accentColor: d.accentColor || '#0f6b68',
+            headRoleTitle: d.headRoleTitle || 'Director / Encargado',
+            headUserId: d.headUserId || '',
+            subordinates: Array.isArray(d.subordinates) ? d.subordinates : []
+          }))
+          .sort((a, b) => a.order - b.order);
+      } else {
+        this.mesaDirectivaAreas = DEFAULT_MESA_DIRECTIVA.map(a => ({
+          ...a,
+          subordinates: [...a.subordinates]
+        }));
+      }
+    });
+
     this.firestore.collection('user-evaluations').valueChanges().subscribe((evals: any[]) => {
       this.organigramaEvaluationsMap.clear();
       const sorted = [...(evals || [])].sort((a, b) => {

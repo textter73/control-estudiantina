@@ -9318,6 +9318,243 @@
   background: #be123c;
 }
 
+/* Selector de Vista en Dashboard: Mesa Directiva | Organigrama por Rangos */
+.dash-org-switcher {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.85rem;
+  background: #f8fafc;
+  padding: 0.5rem;
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+  margin-bottom: 1.35rem;
+}
+
+.dash-org-switch-card {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.85rem 1.1rem;
+  border-radius: 12px;
+  border: 1.5px solid transparent;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+  min-width: 0;
+}
+
+.dash-org-switch-card:hover:not(.active) {
+  background: #ffffff;
+  border-color: #cbd5e1;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
+}
+
+.dash-org-switch-card.active {
+  background: linear-gradient(135deg, #189d98 0%, #0f6b68 100%);
+  border-color: #0f6b68;
+  color: #ffffff;
+  box-shadow: 0 8px 20px rgba(24, 157, 152, 0.28);
+}
+
+.switch-card-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.35rem;
+  flex-shrink: 0;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.05);
+  transition: all 0.2s ease;
+}
+
+.dash-org-switch-card.active .switch-card-icon {
+  background: rgba(255, 255, 255, 0.18);
+  border-color: rgba(255, 255, 255, 0.32);
+  box-shadow: none;
+}
+
+.switch-card-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.switch-card-title {
+  font-size: 0.96rem;
+  font-weight: 800;
+  color: #1e293b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dash-org-switch-card.active .switch-card-title {
+  color: #ffffff;
+}
+
+.switch-card-sub {
+  font-size: 0.76rem;
+  font-weight: 500;
+  color: #64748b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dash-org-switch-card.active .switch-card-sub {
+  color: rgba(255, 255, 255, 0.86);
+}
+
+.switch-card-badge {
+  background: #e2e8f0;
+  color: #334155;
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.dash-org-switch-card.active .switch-card-badge {
+  background: rgba(255, 255, 255, 0.22);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+}
+
+@media (max-width: 768px) {
+  .dash-org-switcher {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+}
+
+.dash-mesa-directiva-wrap {
+  padding: 0.25rem 0;
+}
+
+.dash-mesa-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+  gap: 1.1rem;
+}
+
+.dash-mesa-area-card {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-top: 4px solid #189d98;
+  border-radius: 16px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.dash-mesa-area-head {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 0.65rem;
+}
+
+.dash-mesa-area-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.dash-mesa-area-titles h4 {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #1e293b;
+}
+
+.dash-mesa-area-titles p {
+  margin: 0.1rem 0 0;
+  font-size: 0.73rem;
+  color: #64748b;
+}
+
+.dash-mesa-tree {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.dash-mesa-head-node {
+  width: 175px;
+  cursor: pointer;
+}
+
+.dash-mesa-role-tag {
+  display: inline-block;
+  font-size: 0.63rem;
+  font-weight: 800;
+  padding: 0.16rem 0.55rem;
+  border-radius: 999px;
+  margin-bottom: 0.35rem;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dash-mesa-role-tag.head {
+  color: #ffffff;
+}
+
+.dash-mesa-role-tag.sub {
+  background: #f1f5f9;
+  color: #334155;
+  border: 1px solid #cbd5e1;
+}
+
+.dash-mesa-role-tag.empty {
+  background: #e2e8f0;
+  color: #475569;
+}
+
+.dash-mesa-unassigned {
+  background: #ffffff;
+  border: 1.5px dashed #cbd5e1;
+  border-radius: 12px;
+  padding: 0.75rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.75rem;
+  color: #64748b;
+  width: 185px;
+}
+
+.dash-mesa-sub-caption {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #475569;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  padding: 0.12rem 0.6rem;
+  border-radius: 999px;
+  margin-bottom: 0.2rem;
+}
+
 /* Modal de Información Completa de Perfil (Organigrama) */
 .org-member-profile-modal {
   max-width: 520px;

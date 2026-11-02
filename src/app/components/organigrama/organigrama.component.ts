@@ -17,6 +17,92 @@ export interface RankConfig {
   supervisesLabel?: string;
 }
 
+export interface MesaSubordinate {
+  userId: string;
+  roleTitle: string;
+}
+
+export interface MesaDirectivaArea {
+  id: string;
+  order: number;
+  title: string;
+  subtitle: string;
+  icon: string;
+  accentColor: string;
+  headRoleTitle: string;
+  headUserId: string;
+  subordinates: MesaSubordinate[];
+}
+
+export const DEFAULT_MESA_DIRECTIVA: MesaDirectivaArea[] = [
+  {
+    id: 'direccion-musical',
+    order: 1,
+    title: 'Dirección Musical',
+    subtitle: 'Dirección artística, repertorio, ensayos y formación musical',
+    icon: '🎼',
+    accentColor: '#b45309',
+    headRoleTitle: 'Director Musical',
+    headUserId: '',
+    subordinates: []
+  },
+  {
+    id: 'secretaria-general',
+    order: 2,
+    title: 'Secretaría General',
+    subtitle: 'Organización interna, actas, comunicación oficial y seguimiento',
+    icon: '📋',
+    accentColor: '#0f6b68',
+    headRoleTitle: 'Secretario General',
+    headUserId: '',
+    subordinates: []
+  },
+  {
+    id: 'direccion-finanzas',
+    order: 3,
+    title: 'Dirección de Finanzas',
+    subtitle: 'Administración financiera, estados de cuenta, cuotas y pagos',
+    icon: '🏦',
+    accentColor: '#1d4ed8',
+    headRoleTitle: 'Director de Finanzas',
+    headUserId: '',
+    subordinates: []
+  },
+  {
+    id: 'direccion-redes-sociales',
+    order: 4,
+    title: 'Dirección de Redes Sociales',
+    subtitle: 'Difusión digital, contenido multimedia e imagen institucional',
+    icon: '📱',
+    accentColor: '#6d28d9',
+    headRoleTitle: 'Director de Redes Sociales',
+    headUserId: '',
+    subordinates: []
+  },
+  {
+    id: 'direccion-eventos',
+    order: 5,
+    title: 'Dirección de Eventos',
+    subtitle: 'Coordinación de presentaciones, contratos, agenda y logística',
+    icon: '🎉',
+    accentColor: '#be123c',
+    headRoleTitle: 'Director de Eventos',
+    headUserId: '',
+    subordinates: []
+  },
+  {
+    id: 'gestion-insumos',
+    order: 6,
+    title: 'Gestión de Insumos',
+    subtitle: 'Control de almacén, inventario, préstamos y materiales',
+    icon: '📦',
+    accentColor: '#047857',
+    headRoleTitle: 'Encargado de Insumos',
+    headUserId: '',
+    subordinates: []
+  }
+];
+
 export const ESTUDIANTINA_RANKS: RankConfig[] = [
   {
     key: 'jefe-de-tuna',
@@ -119,8 +205,32 @@ export class OrganigramaComponent implements OnInit {
   selectedRankFilter: string = 'all';
   showUnassignedPanel = true;
 
+  // Pestaña activa: por defecto 'mesa' (Mesa Directiva) y en segundo lugar 'organigrama'
+  activeTab: 'mesa' | 'organigrama' = 'mesa';
+
+  // Configuración de Mesa Directiva
+  mesaDirectivaAreas: MesaDirectivaArea[] = [];
+  mesaHasFirestoreDocs = false;
+  showMesaConfigModal = false;
+  isNewMesaArea = false;
+  editingMesaArea: MesaDirectivaArea | null = null;
+  newSubordinateUserId = '';
+  newSubordinateRoleTitle = '';
+
+  readonly areaIcons = ['🎼', '📋', '🏦', '📱', '🎉', '📦', '🏛️', '🎭', '🚌', '🎤', '🎸', '📢', '🤝', '⭐'];
+  readonly areaColors = [
+    { label: 'Turquesa Tonantzin', value: '#0f6b68' },
+    { label: 'Ámbar Dirección', value: '#b45309' },
+    { label: 'Azul Institucional', value: '#1d4ed8' },
+    { label: 'Violeta', value: '#6d28d9' },
+    { label: 'Carmesí Eventos', value: '#be123c' },
+    { label: 'Esmeralda', value: '#047857' },
+    { label: 'Pizarra', value: '#334155' }
+  ];
+
   selectedProfileMember: any = null;
   selectedProfileRank: RankConfig | null = null;
+  selectedProfileCustomRole: string | null = null;
 
   readonly months = [
     { value: '01', name: 'Enero' },
@@ -154,6 +264,11 @@ export class OrganigramaComponent implements OnInit {
       this.currentUserProfile = userDoc?.data() as any;
       this.isAdmin = !!this.currentUserProfile?.profiles?.includes('administrador');
 
+      if (!this.isAdmin) {
+        this.router.navigate(['/dashboard']);
+        return;
+      }
+
       this.loadEvaluationsAndMembers();
     });
   }
@@ -169,6 +284,32 @@ export class OrganigramaComponent implements OnInit {
   }
 
   loadEvaluationsAndMembers() {
+    // Escuchar configuración de la Mesa Directiva
+    this.firestore.collection('mesa-directiva').valueChanges({ idField: 'id' }).subscribe((docs: any[]) => {
+      if (docs && docs.length > 0) {
+        this.mesaHasFirestoreDocs = true;
+        this.mesaDirectivaAreas = [...docs]
+          .map(d => ({
+            id: d.id,
+            order: Number(d.order) || 1,
+            title: d.title || 'Área',
+            subtitle: d.subtitle || '',
+            icon: d.icon || '🏛️',
+            accentColor: d.accentColor || '#0f6b68',
+            headRoleTitle: d.headRoleTitle || 'Director / Encargado',
+            headUserId: d.headUserId || '',
+            subordinates: Array.isArray(d.subordinates) ? d.subordinates : []
+          }))
+          .sort((a, b) => a.order - b.order);
+      } else {
+        this.mesaHasFirestoreDocs = false;
+        this.mesaDirectivaAreas = DEFAULT_MESA_DIRECTIVA.map(a => ({
+          ...a,
+          subordinates: [...a.subordinates]
+        }));
+      }
+    });
+
     // Escuchar evaluaciones para respaldar el nivel del integrante si no está en su documento
     this.firestore.collection('user-evaluations').valueChanges().subscribe((evals: any[]) => {
       this.evaluationsMap.clear();
@@ -300,19 +441,205 @@ export class OrganigramaComponent implements OnInit {
     return `level-${level}`;
   }
 
-  openMemberProfileModal(member: any, rank?: RankConfig, event?: Event) {
+  openMemberProfileModal(member: any, rank?: RankConfig, event?: Event, customRole?: string) {
     if (event) event.stopPropagation();
+    if (!member) return;
     const resolvedRank = rank || this.ranks.find(r => r.key === member?.rank) || null;
     this.selectedProfileMember = {
       ...member,
       resolvedLevel: this.getMemberLevel(member)
     };
     this.selectedProfileRank = resolvedRank;
+    this.selectedProfileCustomRole = customRole || null;
   }
 
   closeMemberProfileModal() {
     this.selectedProfileMember = null;
     this.selectedProfileRank = null;
+    this.selectedProfileCustomRole = null;
+  }
+
+  getMemberById(uid: string): any | null {
+    if (!uid) return null;
+    const found = this.allActiveMembers.find(m => m.uid === uid);
+    if (!found) return null;
+    return {
+      ...found,
+      resolvedLevel: this.getMemberLevel(found)
+    };
+  }
+
+  // =========================================================
+  // CONFIGURACIÓN DE MESA DIRECTIVA (SOLO ADMINISTRADOR)
+  // =========================================================
+
+  private async ensureDefaultMesaSeeded() {
+    if (this.mesaHasFirestoreDocs) return;
+    for (const def of DEFAULT_MESA_DIRECTIVA) {
+      await this.firestore.collection('mesa-directiva').doc(def.id).set({
+        order: def.order,
+        title: def.title,
+        subtitle: def.subtitle,
+        icon: def.icon,
+        accentColor: def.accentColor,
+        headRoleTitle: def.headRoleTitle,
+        headUserId: def.headUserId || '',
+        subordinates: def.subordinates || []
+      });
+    }
+    this.mesaHasFirestoreDocs = true;
+  }
+
+  openCreateMesaAreaModal() {
+    if (!this.isAdmin) return;
+    this.isNewMesaArea = true;
+    const nextOrder = this.mesaDirectivaAreas.length > 0
+      ? Math.max(...this.mesaDirectivaAreas.map(a => a.order)) + 1
+      : 1;
+    this.editingMesaArea = {
+      id: `area-${Date.now()}`,
+      order: nextOrder,
+      title: '',
+      subtitle: '',
+      icon: '🏛️',
+      accentColor: '#0f6b68',
+      headRoleTitle: '',
+      headUserId: '',
+      subordinates: []
+    };
+    this.newSubordinateUserId = '';
+    this.newSubordinateRoleTitle = '';
+    this.showMesaConfigModal = true;
+  }
+
+  openEditMesaAreaModal(area: MesaDirectivaArea, event?: Event) {
+    if (event) event.stopPropagation();
+    if (!this.isAdmin) return;
+    this.isNewMesaArea = false;
+    this.editingMesaArea = {
+      ...area,
+      subordinates: (area.subordinates || []).map(s => ({ ...s }))
+    };
+    this.newSubordinateUserId = '';
+    this.newSubordinateRoleTitle = '';
+    this.showMesaConfigModal = true;
+  }
+
+  closeMesaAreaModal() {
+    this.showMesaConfigModal = false;
+    this.editingMesaArea = null;
+    this.newSubordinateUserId = '';
+    this.newSubordinateRoleTitle = '';
+  }
+
+  addSubordinateToForm() {
+    if (!this.editingMesaArea || !this.newSubordinateUserId) return;
+    const roleLabel = this.newSubordinateRoleTitle.trim() || 'Auxiliar / Coordinador';
+    this.editingMesaArea.subordinates.push({
+      userId: this.newSubordinateUserId,
+      roleTitle: roleLabel
+    });
+    this.newSubordinateUserId = '';
+    this.newSubordinateRoleTitle = '';
+  }
+
+  removeSubordinateFromForm(index: number) {
+    if (!this.editingMesaArea) return;
+    this.editingMesaArea.subordinates.splice(index, 1);
+  }
+
+  async saveMesaArea() {
+    if (!this.isAdmin || !this.editingMesaArea) return;
+    const area = this.editingMesaArea;
+    if (!area.title.trim()) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Nombre requerido',
+        text: 'Escribe el nombre del área o dirección (ej. Dirección de Eventos).',
+        confirmButtonColor: '#189d98'
+      });
+      return;
+    }
+
+    try {
+      await this.ensureDefaultMesaSeeded();
+      await this.firestore.collection('mesa-directiva').doc(area.id).set({
+        order: Number(area.order) || 1,
+        title: area.title.trim(),
+        subtitle: (area.subtitle || '').trim(),
+        icon: area.icon || '🏛️',
+        accentColor: area.accentColor || '#0f6b68',
+        headRoleTitle: (area.headRoleTitle || '').trim() || area.title.trim(),
+        headUserId: area.headUserId || '',
+        subordinates: area.subordinates || [],
+        updatedAt: new Date()
+      });
+
+      this.closeMesaAreaModal();
+      Swal.fire({
+        icon: 'success',
+        title: 'Mesa Directiva actualizada',
+        text: `Se guardó la configuración de "${area.title}".`,
+        timer: 2000,
+        showConfirmButton: false
+      });
+    } catch (err) {
+      console.error('Error guardando área de Mesa Directiva:', err);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'No se pudo guardar el área de la Mesa Directiva.'
+      });
+    }
+  }
+
+  async deleteMesaArea(area: MesaDirectivaArea, event?: Event) {
+    if (event) event.stopPropagation();
+    if (!this.isAdmin) return;
+
+    const confirm = await Swal.fire({
+      icon: 'warning',
+      title: `¿Eliminar "${area.title}"?`,
+      text: 'Se quitará esta dirección/cargo de la Mesa Directiva.',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar',
+      confirmButtonColor: '#dc2626'
+    });
+
+    if (confirm.isConfirmed) {
+      try {
+        await this.ensureDefaultMesaSeeded();
+        await this.firestore.collection('mesa-directiva').doc(area.id).delete();
+        Swal.fire({
+          icon: 'success',
+          title: 'Área eliminada',
+          timer: 1600,
+          showConfirmButton: false
+        });
+      } catch (err) {
+        console.error('Error eliminando área:', err);
+      }
+    }
+  }
+
+  async moveMesaAreaOrder(area: MesaDirectivaArea, direction: 'up' | 'down', event?: Event) {
+    if (event) event.stopPropagation();
+    if (!this.isAdmin) return;
+    await this.ensureDefaultMesaSeeded();
+
+    const idx = this.mesaDirectivaAreas.findIndex(a => a.id === area.id);
+    if (idx === -1) return;
+    const swapIdx = direction === 'up' ? idx - 1 : idx + 1;
+    if (swapIdx < 0 || swapIdx >= this.mesaDirectivaAreas.length) return;
+
+    const current = this.mesaDirectivaAreas[idx];
+    const target = this.mesaDirectivaAreas[swapIdx];
+
+    await Promise.all([
+      this.firestore.collection('mesa-directiva').doc(current.id).update({ order: swapIdx + 1 }),
+      this.firestore.collection('mesa-directiva').doc(target.id).update({ order: idx + 1 })
+    ]);
   }
 
   formatMemberBirthday(member: any): string {

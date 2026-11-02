@@ -374,32 +374,29 @@
             [class.out-month]="!cell.inMonth" [class.is-today]="cell.isToday"
             [class.has-events]="calendarViewFilter !== 'attendance' && cell.events.length > 0"
             [class.has-attendance]="calendarViewFilter !== 'events' && cell.attendances.length > 0"
-            [class.selected]="cell.key === selectedCalendarKey"
-            [ngClass]="[
+            [class.selected]="cell.key === selectedCalendarKey" [ngClass]="[
               getDayStatus(cell) ? 'status-' + getDayStatus(cell) : '',
               getDayAttendanceStatus(cell) ? 'att-day-' + getDayAttendanceStatus(cell) : ''
-            ]"
-            [attr.title]="getCalendarDayTooltip(cell)"
-            (click)="selectCalendarDay(cell)">
+            ]" [attr.title]="getCalendarDayTooltip(cell)" (click)="selectCalendarDay(cell)">
             <span class="agenda-cal-num">{{ cell.day }}</span>
             <div class="agenda-cal-indicators">
               <span class="agenda-cal-status" *ngIf="calendarViewFilter !== 'attendance' && cell.events.length > 0"
                 title="Evento programado">{{ getDayStatusIcon(cell) }}</span>
-              <span class="agenda-cal-att-pill"
-                *ngIf="calendarViewFilter !== 'events' && cell.attendances.length > 0"
-                [ngClass]="'att-pill-' + getDayAttendanceStatus(cell)"
-                title="Registro de asistencia">
+              <span class="agenda-cal-att-pill" *ngIf="calendarViewFilter !== 'events' && cell.attendances.length > 0"
+                [ngClass]="'att-pill-' + getDayAttendanceStatus(cell)" title="Registro de asistencia">
                 {{ getDayAttendanceIcon(cell) }}
               </span>
             </div>
             <span class="agenda-cal-count"
               *ngIf="(calendarViewFilter !== 'attendance' ? cell.events.length : 0) + (calendarViewFilter !== 'events' ? cell.attendances.length : 0) > 1">
-              {{ (calendarViewFilter !== 'attendance' ? cell.events.length : 0) + (calendarViewFilter !== 'events' ? cell.attendances.length : 0) }}
+              {{ (calendarViewFilter !== 'attendance' ? cell.events.length : 0) + (calendarViewFilter !== 'events' ?
+              cell.attendances.length : 0) }}
             </span>
           </button>
         </div>
 
-        <div class="agenda-pending-alert" *ngIf="calendarViewFilter !== 'attendance' && pendingConfirmationsThisMonth > 0">
+        <div class="agenda-pending-alert"
+          *ngIf="calendarViewFilter !== 'attendance' && pendingConfirmationsThisMonth > 0">
           ⚠️ Tienes <b>{{ pendingConfirmationsThisMonth }}</b> evento{{ pendingConfirmationsThisMonth > 1 ? 's' : '' }}
           sin confirmar este mes
         </div>
@@ -527,8 +524,7 @@
 
       <!-- Lista de Registros de Mi Asistencia -->
       <div class="agenda-attendance-list" *ngIf="agendaAttendances.length > 0">
-        <div class="agenda-attendance-item" *ngFor="let att of agendaAttendances"
-          [ngClass]="'att-card-' + att.status">
+        <div class="agenda-attendance-item" *ngFor="let att of agendaAttendances" [ngClass]="'att-card-' + att.status">
           <div class="agenda-date-block attendance-date-block" [ngClass]="'att-block-' + att.status">
             <span class="agenda-date-month">{{ getEventShortMonth(att) }}</span>
             <span class="agenda-date-day">{{ getEventDayNumber(att) }}</span>
@@ -560,10 +556,10 @@
         </div>
       </div>
 
-      <div class="no-events agenda-empty"
-        *ngIf="filteredAgendaEvents.length === 0 && agendaAttendances.length === 0">
+      <div class="no-events agenda-empty" *ngIf="filteredAgendaEvents.length === 0 && agendaAttendances.length === 0">
         <span class="agenda-empty-icon">📅</span>
-        <p>{{ selectedCalendarKey ? 'No hay eventos ni registros de asistencia este día' : 'No hay eventos ni registros de asistencia en este mes' }}</p>
+        <p>{{ selectedCalendarKey ? 'No hay eventos ni registros de asistencia este día' : 'No hay eventos ni registros
+          de asistencia en este mes' }}</p>
       </div>
     </div>
 
@@ -578,7 +574,8 @@
             <div>
               <h3>Mi Última Evaluación</h3>
               <p>
-                Nivel {{ lastUserEvaluation.nivel }} • Impuesto {{ lastUserEvaluation.impuestoPorcentaje }}%<span *ngIf="getEvaluationDate()"> • {{ getEvaluationDate() | date:'dd/MM/yyyy' }}</span>
+                Nivel {{ lastUserEvaluation.nivel }} • Impuesto {{ lastUserEvaluation.impuestoPorcentaje }}%<span
+                  *ngIf="getEvaluationDate()"> • {{ getEvaluationDate() | date:'dd/MM/yyyy' }}</span>
               </p>
             </div>
           </div>
@@ -599,15 +596,10 @@
             <div class="radial-wrap">
               <svg width="120" height="120" viewBox="0 0 120 120">
                 <circle cx="60" cy="60" r="48" fill="none" stroke="#e2e8f0" stroke-width="10"></circle>
-                <circle 
-                  cx="60" cy="60" r="48" 
-                  fill="none" 
-                  stroke="#189d98" 
-                  stroke-width="10"
+                <circle cx="60" cy="60" r="48" fill="none" stroke="#189d98" stroke-width="10"
                   [attr.stroke-dasharray]="301.59"
                   [attr.stroke-dashoffset]="301.59 - (getEvaluationTotalPercentage() * 301.59) / 100"
-                  transform="rotate(-90 60 60)"
-                  stroke-linecap="round">
+                  transform="rotate(-90 60 60)" stroke-linecap="round">
                 </circle>
               </svg>
               <div class="radial-center">
@@ -622,7 +614,8 @@
           </div>
 
           <!-- Canto -->
-          <div class="learning-metric-card personal-card activity-metric-card eval-canto-metric" (click)="openEvaluationDetailModal()">
+          <div class="learning-metric-card personal-card activity-metric-card eval-canto-metric"
+            (click)="openEvaluationDetailModal()">
             <div class="metric-top-row">
               <span class="metric-badge-icon">🎤</span>
               <span class="metric-pill" [ngClass]="getAttendancePillClass(getCantoPercentage())">
@@ -642,7 +635,8 @@
           </div>
 
           <!-- Instrumento -->
-          <div class="learning-metric-card personal-card activity-metric-card eval-inst-metric" (click)="openEvaluationDetailModal()">
+          <div class="learning-metric-card personal-card activity-metric-card eval-inst-metric"
+            (click)="openEvaluationDetailModal()">
             <div class="metric-top-row">
               <span class="metric-badge-icon">🎸</span>
               <span class="metric-pill" [ngClass]="getAttendancePillClass(getInstrumentoPercentage())">
@@ -662,7 +656,8 @@
           </div>
 
           <!-- Compromiso -->
-          <div class="learning-metric-card personal-card activity-metric-card eval-comp-metric" (click)="openEvaluationDetailModal()">
+          <div class="learning-metric-card personal-card activity-metric-card eval-comp-metric"
+            (click)="openEvaluationDetailModal()">
             <div class="metric-top-row">
               <span class="metric-badge-icon">💪</span>
               <span class="metric-pill" [ngClass]="getAttendancePillClass(getCompromisoPercentage())">
@@ -683,7 +678,8 @@
         </div>
 
         <!-- Subsección integrada: Comentarios y Metadatos del Evaluador -->
-        <div class="eval-comments-subsection" *ngIf="lastUserEvaluation.comentarios || lastUserEvaluation.evaluatedBy || lastUserEvaluation.evaluationPeriod">
+        <div class="eval-comments-subsection"
+          *ngIf="lastUserEvaluation.comentarios || lastUserEvaluation.evaluatedBy || lastUserEvaluation.evaluationPeriod">
           <div class="eval-comments-text" *ngIf="lastUserEvaluation.comentarios">
             <span class="eval-comments-label">📝 Comentarios del Evaluador:</span>
             <p>{{ lastUserEvaluation.comentarios }}</p>
@@ -727,512 +723,457 @@
         </div>
       </div>
     </div>
-                                                            <!-- =============================================================== -->
-                                                            <!-- INDICADORES DE ASISTENCIA POR ACTIVIDAD -->
-                                                            <!-- =============================================================== -->
-                                                            <div
-                                                              class="song-learning-dashboard-section attendance-dashboard-section">
-                                                              <div class="song-learning-card">
-                                                                <div class="song-learning-header">
-                                                                  <div class="song-learning-title-wrap">
-                                                                    <span class="song-learning-main-icon">📊</span>
-                                                                    <div>
-                                                                      <h3>Mi Asistencia por Actividad</h3>
-                                                                      <p>Resumen de tu participación en eventos, ensayos
-                                                                        y misas</p>
-                                                                    </div>
-                                                                  </div>
-                                                                  <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
-                                                                    <button class="songbook-quick-link"
-                                                                      *ngIf="isAdmin || canManageAttendance"
-                                                                      (click)="downloadGeneralAttendancePDF()"
-                                                                      style="background: #189d98; color: #ffffff;">
-                                                                      📄 Descargar Reporte PDF
-                                                                    </button>
-                                                                    <button class="songbook-quick-link"
-                                                                      (click)="goToTracking()">
-                                                                      📋 Ver Mi Historial →
-                                                                    </button>
-                                                                  </div>
-                                                                </div>
+    <!-- =============================================================== -->
+    <!-- INDICADORES DE ASISTENCIA POR ACTIVIDAD -->
+    <!-- =============================================================== -->
+    <div class="song-learning-dashboard-section attendance-dashboard-section">
+      <div class="song-learning-card">
+        <div class="song-learning-header">
+          <div class="song-learning-title-wrap">
+            <span class="song-learning-main-icon">📊</span>
+            <div>
+              <h3>Mi Asistencia por Actividad</h3>
+              <p>Resumen de tu participación en eventos, ensayos
+                y misas</p>
+            </div>
+          </div>
+          <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+            <button class="songbook-quick-link" *ngIf="isAdmin || canManageAttendance"
+              (click)="downloadGeneralAttendancePDF()" style="background: #189d98; color: #ffffff;">
+              📄 Descargar Reporte PDF
+            </button>
+            <button class="songbook-quick-link" (click)="goToTracking()">
+              📋 Ver Mi Historial →
+            </button>
+          </div>
+        </div>
 
-                                                                <!-- Métricas Rápidas en Grid -->
-                                                                <div class="song-learning-metrics-grid">
-                                                                  <!-- Radial General -->
-                                                                  <div class="learning-metric-card radial-card"
-                                                                    (click)="goToTracking()">
-                                                                    <div class="radial-wrap">
-                                                                      <svg width="120" height="120"
-                                                                        viewBox="0 0 120 120">
-                                                                        <circle cx="60" cy="60" r="48" fill="none"
-                                                                          stroke="#e2e8f0" stroke-width="10"></circle>
-                                                                        <circle cx="60" cy="60" r="48" fill="none"
-                                                                          stroke="#189d98" stroke-width="10"
-                                                                          [attr.stroke-dasharray]="301.59"
-                                                                          [attr.stroke-dashoffset]="301.59 - (globalAttendanceStats.percentage * 301.59) / 100"
-                                                                          transform="rotate(-90 60 60)"
-                                                                          stroke-linecap="round">
-                                                                        </circle>
-                                                                      </svg>
-                                                                      <div class="radial-center">
-                                                                        <span class="radial-percent">{{
-                                                                          globalAttendanceStats.percentage }}%</span>
-                                                                        <span class="radial-label">General</span>
-                                                                      </div>
-                                                                    </div>
-                                                                    <div class="metric-caption">
-                                                                      <span class="metric-val">{{
-                                                                        globalAttendanceStats.attended }} de {{
-                                                                        globalAttendanceStats.total }}</span>
-                                                                      <span class="metric-sub">actividades
-                                                                        asistidas</span>
-                                                                    </div>
-                                                                  </div>
+        <!-- Métricas Rápidas en Grid -->
+        <div class="song-learning-metrics-grid">
+          <!-- Radial General -->
+          <div class="learning-metric-card radial-card" (click)="goToTracking()">
+            <div class="radial-wrap">
+              <svg width="120" height="120" viewBox="0 0 120 120">
+                <circle cx="60" cy="60" r="48" fill="none" stroke="#e2e8f0" stroke-width="10"></circle>
+                <circle cx="60" cy="60" r="48" fill="none" stroke="#189d98" stroke-width="10"
+                  [attr.stroke-dasharray]="301.59"
+                  [attr.stroke-dashoffset]="301.59 - (globalAttendanceStats.percentage * 301.59) / 100"
+                  transform="rotate(-90 60 60)" stroke-linecap="round">
+                </circle>
+              </svg>
+              <div class="radial-center">
+                <span class="radial-percent">{{
+                  globalAttendanceStats.percentage }}%</span>
+                <span class="radial-label">General</span>
+              </div>
+            </div>
+            <div class="metric-caption">
+              <span class="metric-val">{{
+                globalAttendanceStats.attended }} de {{
+                globalAttendanceStats.total }}</span>
+              <span class="metric-sub">actividades
+                asistidas</span>
+            </div>
+          </div>
 
-                                                                  <!-- Eventos -->
-                                                                  <div
-                                                                    class="learning-metric-card personal-card activity-metric-card events-metric"
-                                                                    (click)="goToTracking()">
-                                                                    <div class="metric-top-row">
-                                                                      <span class="metric-badge-icon">🎉</span>
-                                                                      <span class="metric-pill"
-                                                                        [ngClass]="getAttendancePillClass(eventAttendanceStats.percentage)">
-                                                                        {{ eventAttendanceStats.percentage }}%
-                                                                      </span>
-                                                                    </div>
-                                                                    <div class="metric-main-info">
-                                                                      <span class="metric-label">Eventos</span>
-                                                                      <div class="metric-number-row">
-                                                                        <span class="metric-large-num">{{
-                                                                          eventAttendanceStats.attended }}</span>
-                                                                        <span class="metric-total-sub">/ {{
-                                                                          eventAttendanceStats.total }}
-                                                                          participaciones</span>
-                                                                      </div>
-                                                                      <div class="metric-mini-bar">
-                                                                        <div class="mini-bar-fill events-bar"
-                                                                          [style.width.%]="eventAttendanceStats.percentage">
-                                                                        </div>
-                                                                      </div>
-                                                                    </div>
-                                                                  </div>
+          <!-- Eventos -->
+          <div class="learning-metric-card personal-card activity-metric-card events-metric" (click)="goToTracking()">
+            <div class="metric-top-row">
+              <span class="metric-badge-icon">🎉</span>
+              <span class="metric-pill" [ngClass]="getAttendancePillClass(eventAttendanceStats.percentage)">
+                {{ eventAttendanceStats.percentage }}%
+              </span>
+            </div>
+            <div class="metric-main-info">
+              <span class="metric-label">Eventos</span>
+              <div class="metric-number-row">
+                <span class="metric-large-num">{{
+                  eventAttendanceStats.attended }}</span>
+                <span class="metric-total-sub">/ {{
+                  eventAttendanceStats.total }}
+                  participaciones</span>
+              </div>
+              <div class="metric-mini-bar">
+                <div class="mini-bar-fill events-bar" [style.width.%]="eventAttendanceStats.percentage">
+                </div>
+              </div>
+            </div>
+          </div>
 
-                                                                  <!-- Ensayos -->
-                                                                  <div
-                                                                    class="learning-metric-card personal-card activity-metric-card rehearsals-metric"
-                                                                    (click)="goToTracking()">
-                                                                    <div class="metric-top-row">
-                                                                      <span class="metric-badge-icon">🎵</span>
-                                                                      <span class="metric-pill"
-                                                                        [ngClass]="getAttendancePillClass(rehearsalAttendanceStats.percentage)">
-                                                                        {{ rehearsalAttendanceStats.percentage }}%
-                                                                      </span>
-                                                                    </div>
-                                                                    <div class="metric-main-info">
-                                                                      <span class="metric-label">Ensayos</span>
-                                                                      <div class="metric-number-row">
-                                                                        <span class="metric-large-num">{{
-                                                                          rehearsalAttendanceStats.attended }}</span>
-                                                                        <span class="metric-total-sub">/ {{
-                                                                          rehearsalAttendanceStats.total }}
-                                                                          asistencias</span>
-                                                                      </div>
-                                                                      <div class="metric-mini-bar">
-                                                                        <div class="mini-bar-fill rehearsals-bar"
-                                                                          [style.width.%]="rehearsalAttendanceStats.percentage">
-                                                                        </div>
-                                                                      </div>
-                                                                    </div>
-                                                                  </div>
+          <!-- Ensayos -->
+          <div class="learning-metric-card personal-card activity-metric-card rehearsals-metric"
+            (click)="goToTracking()">
+            <div class="metric-top-row">
+              <span class="metric-badge-icon">🎵</span>
+              <span class="metric-pill" [ngClass]="getAttendancePillClass(rehearsalAttendanceStats.percentage)">
+                {{ rehearsalAttendanceStats.percentage }}%
+              </span>
+            </div>
+            <div class="metric-main-info">
+              <span class="metric-label">Ensayos</span>
+              <div class="metric-number-row">
+                <span class="metric-large-num">{{
+                  rehearsalAttendanceStats.attended }}</span>
+                <span class="metric-total-sub">/ {{
+                  rehearsalAttendanceStats.total }}
+                  asistencias</span>
+              </div>
+              <div class="metric-mini-bar">
+                <div class="mini-bar-fill rehearsals-bar" [style.width.%]="rehearsalAttendanceStats.percentage">
+                </div>
+              </div>
+            </div>
+          </div>
 
-                                                                  <!-- Misa Dominical -->
-                                                                  <div
-                                                                    class="learning-metric-card personal-card activity-metric-card mass-metric"
-                                                                    (click)="goToTracking()">
-                                                                    <div class="metric-top-row">
-                                                                      <span class="metric-badge-icon">⛪</span>
-                                                                      <span class="metric-pill"
-                                                                        [ngClass]="getAttendancePillClass(massAttendanceStats.percentage)">
-                                                                        {{ massAttendanceStats.percentage }}%
-                                                                      </span>
-                                                                    </div>
-                                                                    <div class="metric-main-info">
-                                                                      <span class="metric-label">Misa Dominical</span>
-                                                                      <div class="metric-number-row">
-                                                                        <span class="metric-large-num">{{
-                                                                          massAttendanceStats.attended }}</span>
-                                                                        <span class="metric-total-sub">/ {{
-                                                                          massAttendanceStats.total }}
-                                                                          asistencias</span>
-                                                                      </div>
-                                                                      <div class="metric-mini-bar">
-                                                                        <div class="mini-bar-fill mass-bar"
-                                                                          [style.width.%]="massAttendanceStats.percentage">
-                                                                        </div>
-                                                                      </div>
-                                                                    </div>
-                                                                  </div>
-                                                                </div>
+          <!-- Misa Dominical -->
+          <div class="learning-metric-card personal-card activity-metric-card mass-metric" (click)="goToTracking()">
+            <div class="metric-top-row">
+              <span class="metric-badge-icon">⛪</span>
+              <span class="metric-pill" [ngClass]="getAttendancePillClass(massAttendanceStats.percentage)">
+                {{ massAttendanceStats.percentage }}%
+              </span>
+            </div>
+            <div class="metric-main-info">
+              <span class="metric-label">Misa Dominical</span>
+              <div class="metric-number-row">
+                <span class="metric-large-num">{{
+                  massAttendanceStats.attended }}</span>
+                <span class="metric-total-sub">/ {{
+                  massAttendanceStats.total }}
+                  asistencias</span>
+              </div>
+              <div class="metric-mini-bar">
+                <div class="mini-bar-fill mass-bar" [style.width.%]="massAttendanceStats.percentage">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
 
-                                                                <!-- Subsección: Integrantes con 3+ Faltas Consecutivas -->
-                                                                <div class="attendance-absences-subsection"
-                                                                  *ngIf="usersWithConsecutiveAbsences.length > 0">
-                                                                  <div class="absences-sub-header">
-                                                                    <div class="absences-sub-title-wrap">
-                                                                      <span class="absences-sub-icon">⚠️</span>
-                                                                      <div class="absences-sub-text">
-                                                                        <h4>Integrantes con 3+ Faltas Consecutivas</h4>
-                                                                        <p>{{ usersWithConsecutiveAbsences.length }}
-                                                                          integrante{{
-                                                                          usersWithConsecutiveAbsences.length > 1 ? 's'
-                                                                          : '' }} con ausencias recientes</p>
-                                                                      </div>
-                                                                    </div>
-                                                                    <button type="button" class="absences-summary-link"
-                                                                      routerLink="/attendance-summary">
-                                                                      📊 Ver Resumen →
-                                                                    </button>
-                                                                  </div>
+        <!-- Subsección: Integrantes con 3+ Faltas Consecutivas -->
+        <div class="attendance-absences-subsection" *ngIf="usersWithConsecutiveAbsences.length > 0">
+          <div class="absences-sub-header">
+            <div class="absences-sub-title-wrap">
+              <span class="absences-sub-icon">⚠️</span>
+              <div class="absences-sub-text">
+                <h4>Integrantes con 3+ Faltas Consecutivas</h4>
+                <p>{{ usersWithConsecutiveAbsences.length }}
+                  integrante{{
+                  usersWithConsecutiveAbsences.length > 1 ? 's'
+                  : '' }} con ausencias recientes</p>
+              </div>
+            </div>
+            <button type="button" class="absences-summary-link" routerLink="/attendance-summary">
+              📊 Ver Resumen →
+            </button>
+          </div>
 
-                                                                  <div class="absences-chips-grid">
-                                                                    <div class="absence-member-chip"
-                                                                      *ngFor="let member of usersWithConsecutiveAbsences.slice(0, 6)">
-                                                                      <span class="absence-chip-name">{{ member.name
-                                                                        }}</span>
-                                                                      <span class="absence-chip-badge"
-                                                                        [class.critical]="member.consecutiveAbsences >= 5">
-                                                                        {{ member.consecutiveAbsences }} falta{{
-                                                                        member.consecutiveAbsences > 1 ? 's' : '' }}
-                                                                      </span>
-                                                                    </div>
-                                                                    <button type="button" class="absence-more-chip"
-                                                                      *ngIf="usersWithConsecutiveAbsences.length > 6"
-                                                                      routerLink="/attendance-summary">
-                                                                      +{{ usersWithConsecutiveAbsences.length - 6 }}
-                                                                      integrante{{ usersWithConsecutiveAbsences.length -
-                                                                      6 > 1 ?
-                                                                      's' : '' }} más
-                                                                    </button>
-                                                                  </div>
-                                                                </div>
+          <div class="absences-chips-grid">
+            <div class="absence-member-chip" *ngFor="let member of usersWithConsecutiveAbsences.slice(0, 6)">
+              <span class="absence-chip-name">{{ member.name
+                }}</span>
+              <span class="absence-chip-badge" [class.critical]="member.consecutiveAbsences >= 5">
+                {{ member.consecutiveAbsences }} falta{{
+                member.consecutiveAbsences > 1 ? 's' : '' }}
+              </span>
+            </div>
+            <button type="button" class="absence-more-chip" *ngIf="usersWithConsecutiveAbsences.length > 6"
+              routerLink="/attendance-summary">
+              +{{ usersWithConsecutiveAbsences.length - 6 }}
+              integrante{{ usersWithConsecutiveAbsences.length -
+              6 > 1 ?
+              's' : '' }} más
+            </button>
+          </div>
+        </div>
 
-                                                                <!-- Botón Clic Destacado para ver el Ranking de Asistencia -->
-                                                                <div class="song-ranking-cta-wrap"
-                                                                  *ngIf="membersAttendanceList.length > 0">
-                                                                  <button class="song-ranking-cta-btn"
-                                                                    (click)="openRankingModal()">
-                                                                    <div class="cta-left-content">
-                                                                      <span class="cta-trophy-icon">🏆</span>
-                                                                      <div class="cta-text-box">
-                                                                        <h4>Ranking de Asistencia</h4>
-                                                                        <p>Ver posiciones de todos los integrantes</p>
-                                                                      </div>
-                                                                    </div>
-                                                                    <div class="cta-right-action">
-                                                                      <span class="cta-members-count">{{
-                                                                        membersAttendanceList.length }}
-                                                                        integrantes</span>
-                                                                      <span class="cta-arrow">→</span>
-                                                                    </div>
-                                                                  </button>
-                                                                </div>
-                                                              </div>
-                                                            </div>
-
-                                                            <!-- =============================================================== -->
-                                                            <!-- INDICADORES DE LETRAS APRENDIDAS (CANCIONERO) -->
-                                                            <!-- =============================================================== -->
-                                                            <div class="song-learning-dashboard-section"
-                                                              *ngIf="songLearningStats.totalCountable > 0">
-                                                              <div class="song-learning-card">
-                                                                <div class="song-learning-header">
-                                                                  <div class="song-learning-title-wrap">
-                                                                    <span class="song-learning-main-icon">🎵</span>
-                                                                    <div>
-                                                                      <h3>Repertorio: Letras Aprendidas</h3>
-                                                                      <p>Avance del grupo y seguimiento por integrante
-                                                                      </p>
-                                                                    </div>
-                                                                  </div>
-                                                                  <button class="songbook-quick-link"
-                                                                    routerLink="/songbook-list">
-                                                                    📖 Ir al Cancionero →
-                                                                  </button>
-                                                                </div>
-
-                                                                <!-- Métricas Rápidas en Grid -->
-                                                                <div class="song-learning-metrics-grid">
-                                                                  <!-- Radial Grupal -->
-                                                                  <div class="learning-metric-card radial-card"
-                                                                    (click)="openSongLearningModal()">
-                                                                    <div class="radial-wrap">
-                                                                      <svg width="120" height="120"
-                                                                        viewBox="0 0 120 120">
-                                                                        <circle cx="60" cy="60" r="48" fill="none"
-                                                                          stroke="#e2e8f0" stroke-width="10"></circle>
-                                                                        <circle cx="60" cy="60" r="48" fill="none"
-                                                                          stroke="#189d98" stroke-width="10"
-                                                                          [attr.stroke-dasharray]="301.59"
-                                                                          [attr.stroke-dashoffset]="301.59 - (songLearningStats.groupAveragePercentage * 301.59) / 100"
-                                                                          transform="rotate(-90 60 60)"
-                                                                          stroke-linecap="round">
-                                                                        </circle>
-                                                                      </svg>
-                                                                      <div class="radial-center">
-                                                                        <span class="radial-percent">{{
-                                                                          songLearningStats.groupAveragePercentage
-                                                                          }}%</span>
-                                                                        <span class="radial-label">Grupo</span>
-                                                                      </div>
-                                                                    </div>
-                                                                    <div class="metric-caption">
-                                                                      <span class="metric-val">{{
-                                                                        songLearningStats.totalCountable }}
-                                                                        canciones</span>
-                                                                      <span class="metric-sub">en repertorio
-                                                                        activo</span>
-                                                                    </div>
-                                                                  </div>
-
-                                                                  <!-- Mi Progreso Personal -->
-                                                                  <div class="learning-metric-card personal-card"
-                                                                    (click)="openSongLearningModal()">
-                                                                    <div class="metric-top-row">
-                                                                      <span class="metric-badge-icon">🎓</span>
-                                                                      <span class="metric-pill"
-                                                                        [class.complete]="songLearningStats.myPercentage === 100">
-                                                                        {{ songLearningStats.myPercentage }}%
-                                                                      </span>
-                                                                    </div>
-                                                                    <div class="metric-main-info">
-                                                                      <span class="metric-label">Mi Progreso</span>
-                                                                      <div class="metric-number-row">
-                                                                        <span class="metric-large-num">{{
-                                                                          songLearningStats.myLearnedCount }}</span>
-                                                                        <span class="metric-total-sub">/ {{
-                                                                          songLearningStats.totalCountable }}
-                                                                          canciones</span>
-                                                                      </div>
-                                                                      <div class="metric-mini-bar">
-                                                                        <div class="mini-bar-fill"
-                                                                          [style.width.%]="songLearningStats.myPercentage">
-                                                                        </div>
-                                                                      </div>
-                                                                    </div>
-                                                                  </div>
-
-                                                                  <!-- Al día (100%) -->
-                                                                  <div
-                                                                    class="learning-metric-card stat-pill-card complete-stat"
-                                                                    (click)="openSongLearningModal()">
-                                                                    <div class="metric-top-row">
-                                                                      <span class="metric-badge-icon">🏆</span>
-                                                                      <span class="metric-status-tag complete">100%
-                                                                        aprendido</span>
-                                                                    </div>
-                                                                    <div class="metric-main-info">
-                                                                      <span class="metric-large-num">{{
-                                                                        songLearningStats.membersWithCompleteLyrics
-                                                                        }}</span>
-                                                                      <span class="metric-sub-text">integrantes con
-                                                                        todas las letras</span>
-                                                                    </div>
-                                                                  </div>
-
-                                                                  <!-- Por atender (<50%) -->
-                                                                  <div
-                                                                    class="learning-metric-card stat-pill-card warning-stat"
-                                                                    (click)="openSongLearningModal()">
-                                                                    <div class="metric-top-row">
-                                                                      <span class="metric-badge-icon">⏳</span>
-                                                                      <span class="metric-status-tag warning">Por
-                                                                        atender</span>
-                                                                    </div>
-                                                                    <div class="metric-main-info">
-                                                                      <span class="metric-large-num">{{
-                                                                        songLearningStats.membersNeedingPractice
-                                                                        }}</span>
-                                                                      <span class="metric-sub-text">integrantes con
-                                                                        menos del 50%</span>
-                                                                    </div>
-                                                                  </div>
-                                                                </div>
-
-                                                                <!-- Botón Clic Destacado para ver el Listado y Ranking -->
-                                                                <div class="song-ranking-cta-wrap">
-                                                                  <button class="song-ranking-cta-btn"
-                                                                    (click)="openSongLearningModal()">
-                                                                    <div class="cta-left-content">
-                                                                      <span class="cta-trophy-icon">📊</span>
-                                                                      <div class="cta-text-box">
-                                                                        <h4>Top de Integrantes</h4>
-                                                                      </div>
-                                                                    </div>
-                                                                    <div class="cta-right-action">
-                                                                      <span class="cta-members-count">{{
-                                                                        membersSongLearningList.length }}
-                                                                        integrantes</span>
-                                                                      <span class="cta-arrow">→</span>
-                                                                    </div>
-                                                                  </button>
-                                                                </div>
-                                                              </div>
-                                                            </div>
-
-                                                            <!-- Indicador de Insumos -->
-                                                            <div class="inventory-summary">
-                                                              <div class="summary-card">
-                                                                <div class="summary-header">
-                                                                  <div class="summary-icon">📦</div>
-                                                                  <div class="summary-title">
-                                                                    <h3>Inventario Disponible</h3>
-                                                                    <p>Insumos con stock disponible ({{
-                                                                      totalInsumosConStock }} artículos)</p>
-                                                                  </div>
-                                                                </div>
-
-                                                                <div class="btn-container" *ngIf="canRequestSupplies">
-                                                                  <button class="btn-solicitar-insumos"
-                                                                    routerLink="/supply-request">
-                                                                    <span class="btn-icon">🛒</span>
-                                                                    Solicitar Insumos
-                                                                  </button>
-                                                                </div>
-
-                                                                <!-- Lista de todos los insumos con stock -->
-                                                                <div class="inventory-list"
-                                                                  *ngIf="insumosAgrupadosPorCategoria.length > 0">
-                                                                  <div class="categoria-group"
-                                                                    *ngFor="let grupo of insumosAgrupadosPorCategoria">
-                                                                    <div class="categoria-header"
-                                                                      (click)="toggleCategoria(grupo)">
-                                                                      <div class="categoria-info">
-                                                                        <span class="categoria-icon">{{ grupo.expanded ?
-                                                                          '📂' : '📁' }}</span>
-                                                                        <span class="categoria-nombre">{{
-                                                                          grupo.categoria }}</span>
-                                                                        <span class="categoria-count">{{ grupo.count }}
-                                                                          {{ grupo.count === 1 ? 'artículo' :
-                                                                          'artículos'
-                                                                          }}</span>
-                                                                      </div>
-                                                                      <span class="categoria-toggle">{{ grupo.expanded ?
-                                                                        '▼' : '▶' }}</span>
-                                                                    </div>
-
-                                                                    <div class="categoria-items" *ngIf="grupo.expanded">
-                                                                      <div class="inventory-item"
-                                                                        *ngFor="let insumo of grupo.insumos"
-                                                                        [class.low-stock]="insumo.cantidadDisponible <= insumo.cantidadMinima">
-                                                                        <div class="item-info">
-                                                                          <span class="item-name">{{ insumo.nombre
-                                                                            }}</span>
-                                                                        </div>
-                                                                        <div class="item-stock">
-                                                                          <span class="stock-number">{{
-                                                                            insumo.cantidadDisponible }}</span>
-                                                                          <span class="stock-label">disponibles</span>
-                                                                          <span class="warning-icon"
-                                                                            *ngIf="insumo.cantidadDisponible <= insumo.cantidadMinima">⚠️</span>
-                                                                        </div>
-                                                                      </div>
-                                                                    </div>
-                                                                  </div>
-                                                                </div>
-
-                                                                <!-- Mensaje cuando no hay insumos -->
-                                                                <div class="no-inventory"
-                                                                  *ngIf="insumosConStock.length === 0">
-                                                                  <div class="no-inventory-icon">📭</div>
-                                                                  <div class="no-inventory-text">
-                                                                    <h4>No hay insumos disponibles</h4>
-                                                                    <p>Actualmente no hay insumos con stock en el
-                                                                      inventario</p>
-                                                                  </div>
-                                                                </div>
-                                                              </div>
-                                                            </div>
-
-                                                            <!-- Mantenimiento de Instrumento -->
-                                                            <div class="user-card" *ngIf="maintenanceLoaded"
-                                                              style="margin-top: 2rem;">
-                                                              <div class="card-header">
-                                                                <h3>🛠️ Mantenimiento de Instrumento</h3>
-                                                              </div>
-                                                              <div class="card-body">
-
-                                                                <!-- Estado 1: Sin instrumento -->
-                                                                <div class="maintenance-state no-instrument"
-                                                                  *ngIf="!userProfile?.instrument">
-                                                                  <div class="state-icon">⚠️</div>
-                                                                  <p>Debes capturar tu instrumento principal en tu
-                                                                    perfil para ser considerado para mantenimiento.</p>
-                                                                  <button class="action-btn"
-                                                                    (click)="openProfileModal()"
-                                                                    style="margin-top: 10px;">Capturar
-                                                                    Instrumento</button>
-                                                                </div>
-
-                                                                <!-- Estado 2: Con instrumento pero sin mantenimiento -->
-                                                                <div class="maintenance-state no-maintenance"
-                                                                  *ngIf="userProfile?.instrument && !latestMaintenance">
-                                                                  <div class="state-icon">🎸</div>
-                                                                  <p>No se cuenta con ningún mantenimiento registrado
-                                                                    para tu <strong>{{ userProfile.instrument
-                                                                      }}</strong>.</p>
-                                                                </div>
-
-                                                                <!-- Estado 3: Con mantenimiento -->
-                                                                <div class="maintenance-state has-maintenance"
-                                                                  *ngIf="latestMaintenance">
-                                                                  <div class="maintenance-info-grid">
-                                                                    <div class="info-item">
-                                                                      <span class="info-label">Instrumento:</span>
-                                                                      <span class="info-value">🎸 {{
-                                                                        latestMaintenance.instrument }}</span>
-                                                                    </div>
-                                                                    <div class="info-item">
-                                                                      <span class="info-label">Último
-                                                                        Mantenimiento:</span>
-                                                                      <span class="info-value">{{
-                                                                        latestMaintenance.maintenanceDate?.toDate ?
-                                                                        (latestMaintenance.maintenanceDate.toDate() |
-                                                                        date:'mediumDate') :
-                                                                        (latestMaintenance.maintenanceDate |
-                                                                        date:'mediumDate') }}</span>
-                                                                    </div>
-                                                                    <div class="info-item next-date"
-                                                                      [ngClass]="{'expired': isMaintenanceExpired(latestMaintenance.nextMaintenanceDate)}">
-                                                                      <span class="info-label">Próximo
-                                                                        Mantenimiento:</span>
-                                                                      <div class="status-container">
-                                                                        <span class="info-value highlight">{{
-                                                                          latestMaintenance.nextMaintenanceDate?.toDate
-                                                                          ?
-                                                                          (latestMaintenance.nextMaintenanceDate.toDate()
-                                                                          | date:'mediumDate') :
-                                                                          (latestMaintenance.nextMaintenanceDate |
-                                                                          date:'mediumDate') }}</span>
-                                                                        <span class="status-badge on-time"
-                                                                          *ngIf="!isMaintenanceExpired(latestMaintenance.nextMaintenanceDate)">✅
-                                                                          A tiempo</span>
-                                                                        <span class="status-badge expired"
-                                                                          *ngIf="isMaintenanceExpired(latestMaintenance.nextMaintenanceDate)">⚠️
-                                                                          Vencido</span>
-                                                                      </div>
-                                                                    </div>
-                                                                  </div>
-                                                                  <div class="maintenance-description">
-                                                                    <span class="info-label">Observaciones:</span>
-                                                                    <p>{{ latestMaintenance.description }}</p>
-                                                                  </div>
-                                                                </div>
-
-                                                              </div>
-                                                            </div>
+        <!-- Botón Clic Destacado para ver el Ranking de Asistencia -->
+        <div class="song-ranking-cta-wrap" *ngIf="membersAttendanceList.length > 0">
+          <button class="song-ranking-cta-btn" (click)="openRankingModal()">
+            <div class="cta-left-content">
+              <span class="cta-trophy-icon">🏆</span>
+              <div class="cta-text-box">
+                <h4>Ranking de Asistencia</h4>
+                <p>Ver posiciones de todos los integrantes</p>
+              </div>
+            </div>
+            <div class="cta-right-action">
+              <span class="cta-members-count">{{
+                membersAttendanceList.length }}
+                integrantes</span>
+              <span class="cta-arrow">→</span>
+            </div>
+          </button>
+        </div>
+      </div>
+    </div>
 
     <!-- =============================================================== -->
-    <!-- ORGANIGRAMA POR RANGOS Y NIVELES (ÁRBOL EN DASHBOARD)           -->
+    <!-- INDICADORES DE LETRAS APRENDIDAS (CANCIONERO) -->
+    <!-- =============================================================== -->
+    <div class="song-learning-dashboard-section" *ngIf="songLearningStats.totalCountable > 0">
+      <div class="song-learning-card">
+        <div class="song-learning-header">
+          <div class="song-learning-title-wrap">
+            <span class="song-learning-main-icon">🎵</span>
+            <div>
+              <h3>Repertorio: Letras Aprendidas</h3>
+              <p>Avance del grupo y seguimiento por integrante
+              </p>
+            </div>
+          </div>
+          <button class="songbook-quick-link" routerLink="/songbook-list">
+            📖 Ir al Cancionero →
+          </button>
+        </div>
+
+        <!-- Métricas Rápidas en Grid -->
+        <div class="song-learning-metrics-grid">
+          <!-- Radial Grupal -->
+          <div class="learning-metric-card radial-card" (click)="openSongLearningModal()">
+            <div class="radial-wrap">
+              <svg width="120" height="120" viewBox="0 0 120 120">
+                <circle cx="60" cy="60" r="48" fill="none" stroke="#e2e8f0" stroke-width="10"></circle>
+                <circle cx="60" cy="60" r="48" fill="none" stroke="#189d98" stroke-width="10"
+                  [attr.stroke-dasharray]="301.59"
+                  [attr.stroke-dashoffset]="301.59 - (songLearningStats.groupAveragePercentage * 301.59) / 100"
+                  transform="rotate(-90 60 60)" stroke-linecap="round">
+                </circle>
+              </svg>
+              <div class="radial-center">
+                <span class="radial-percent">{{
+                  songLearningStats.groupAveragePercentage
+                  }}%</span>
+                <span class="radial-label">Grupo</span>
+              </div>
+            </div>
+            <div class="metric-caption">
+              <span class="metric-val">{{
+                songLearningStats.totalCountable }}
+                canciones</span>
+              <span class="metric-sub">en repertorio
+                activo</span>
+            </div>
+          </div>
+
+          <!-- Mi Progreso Personal -->
+          <div class="learning-metric-card personal-card" (click)="openSongLearningModal()">
+            <div class="metric-top-row">
+              <span class="metric-badge-icon">🎓</span>
+              <span class="metric-pill" [class.complete]="songLearningStats.myPercentage === 100">
+                {{ songLearningStats.myPercentage }}%
+              </span>
+            </div>
+            <div class="metric-main-info">
+              <span class="metric-label">Mi Progreso</span>
+              <div class="metric-number-row">
+                <span class="metric-large-num">{{
+                  songLearningStats.myLearnedCount }}</span>
+                <span class="metric-total-sub">/ {{
+                  songLearningStats.totalCountable }}
+                  canciones</span>
+              </div>
+              <div class="metric-mini-bar">
+                <div class="mini-bar-fill" [style.width.%]="songLearningStats.myPercentage">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Al día (100%) -->
+          <div class="learning-metric-card stat-pill-card complete-stat" (click)="openSongLearningModal()">
+            <div class="metric-top-row">
+              <span class="metric-badge-icon">🏆</span>
+              <span class="metric-status-tag complete">100%
+                aprendido</span>
+            </div>
+            <div class="metric-main-info">
+              <span class="metric-large-num">{{
+                songLearningStats.membersWithCompleteLyrics
+                }}</span>
+              <span class="metric-sub-text">integrantes con
+                todas las letras</span>
+            </div>
+          </div>
+
+          <!-- Por atender (<50%) -->
+          <div class="learning-metric-card stat-pill-card warning-stat" (click)="openSongLearningModal()">
+            <div class="metric-top-row">
+              <span class="metric-badge-icon">⏳</span>
+              <span class="metric-status-tag warning">Por
+                atender</span>
+            </div>
+            <div class="metric-main-info">
+              <span class="metric-large-num">{{
+                songLearningStats.membersNeedingPractice
+                }}</span>
+              <span class="metric-sub-text">integrantes con
+                menos del 50%</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Botón Clic Destacado para ver el Listado y Ranking -->
+        <div class="song-ranking-cta-wrap">
+          <button class="song-ranking-cta-btn" (click)="openSongLearningModal()">
+            <div class="cta-left-content">
+              <span class="cta-trophy-icon">📊</span>
+              <div class="cta-text-box">
+                <h4>Top de Integrantes</h4>
+              </div>
+            </div>
+            <div class="cta-right-action">
+              <span class="cta-members-count">{{
+                membersSongLearningList.length }}
+                integrantes</span>
+              <span class="cta-arrow">→</span>
+            </div>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Indicador de Insumos -->
+    <div class="inventory-summary">
+      <div class="summary-card">
+        <div class="summary-header">
+          <div class="summary-icon">📦</div>
+          <div class="summary-title">
+            <h3>Inventario Disponible</h3>
+            <p>Insumos con stock disponible ({{
+              totalInsumosConStock }} artículos)</p>
+          </div>
+        </div>
+
+        <div class="btn-container" *ngIf="canRequestSupplies">
+          <button class="btn-solicitar-insumos" routerLink="/supply-request">
+            <span class="btn-icon">🛒</span>
+            Solicitar Insumos
+          </button>
+        </div>
+
+        <!-- Lista de todos los insumos con stock -->
+        <div class="inventory-list" *ngIf="insumosAgrupadosPorCategoria.length > 0">
+          <div class="categoria-group" *ngFor="let grupo of insumosAgrupadosPorCategoria">
+            <div class="categoria-header" (click)="toggleCategoria(grupo)">
+              <div class="categoria-info">
+                <span class="categoria-icon">{{ grupo.expanded ?
+                  '📂' : '📁' }}</span>
+                <span class="categoria-nombre">{{
+                  grupo.categoria }}</span>
+                <span class="categoria-count">{{ grupo.count }}
+                  {{ grupo.count === 1 ? 'artículo' :
+                  'artículos'
+                  }}</span>
+              </div>
+              <span class="categoria-toggle">{{ grupo.expanded ?
+                '▼' : '▶' }}</span>
+            </div>
+
+            <div class="categoria-items" *ngIf="grupo.expanded">
+              <div class="inventory-item" *ngFor="let insumo of grupo.insumos"
+                [class.low-stock]="insumo.cantidadDisponible <= insumo.cantidadMinima">
+                <div class="item-info">
+                  <span class="item-name">{{ insumo.nombre
+                    }}</span>
+                </div>
+                <div class="item-stock">
+                  <span class="stock-number">{{
+                    insumo.cantidadDisponible }}</span>
+                  <span class="stock-label">disponibles</span>
+                  <span class="warning-icon" *ngIf="insumo.cantidadDisponible <= insumo.cantidadMinima">⚠️</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mensaje cuando no hay insumos -->
+        <div class="no-inventory" *ngIf="insumosConStock.length === 0">
+          <div class="no-inventory-icon">📭</div>
+          <div class="no-inventory-text">
+            <h4>No hay insumos disponibles</h4>
+            <p>Actualmente no hay insumos con stock en el
+              inventario</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mantenimiento de Instrumento -->
+    <div class="user-card" *ngIf="maintenanceLoaded" style="margin-top: 2rem;">
+      <div class="card-header">
+        <h3>🛠️ Mantenimiento de Instrumento</h3>
+      </div>
+      <div class="card-body">
+
+        <!-- Estado 1: Sin instrumento -->
+        <div class="maintenance-state no-instrument" *ngIf="!userProfile?.instrument">
+          <div class="state-icon">⚠️</div>
+          <p>Debes capturar tu instrumento principal en tu
+            perfil para ser considerado para mantenimiento.</p>
+          <button class="action-btn" (click)="openProfileModal()" style="margin-top: 10px;">Capturar
+            Instrumento</button>
+        </div>
+
+        <!-- Estado 2: Con instrumento pero sin mantenimiento -->
+        <div class="maintenance-state no-maintenance" *ngIf="userProfile?.instrument && !latestMaintenance">
+          <div class="state-icon">🎸</div>
+          <p>No se cuenta con ningún mantenimiento registrado
+            para tu <strong>{{ userProfile.instrument
+              }}</strong>.</p>
+        </div>
+
+        <!-- Estado 3: Con mantenimiento -->
+        <div class="maintenance-state has-maintenance" *ngIf="latestMaintenance">
+          <div class="maintenance-info-grid">
+            <div class="info-item">
+              <span class="info-label">Instrumento:</span>
+              <span class="info-value">🎸 {{
+                latestMaintenance.instrument }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Último
+                Mantenimiento:</span>
+              <span class="info-value">{{
+                latestMaintenance.maintenanceDate?.toDate ?
+                (latestMaintenance.maintenanceDate.toDate() |
+                date:'mediumDate') :
+                (latestMaintenance.maintenanceDate |
+                date:'mediumDate') }}</span>
+            </div>
+            <div class="info-item next-date"
+              [ngClass]="{'expired': isMaintenanceExpired(latestMaintenance.nextMaintenanceDate)}">
+              <span class="info-label">Próximo
+                Mantenimiento:</span>
+              <div class="status-container">
+                <span class="info-value highlight">{{
+                  latestMaintenance.nextMaintenanceDate?.toDate
+                  ?
+                  (latestMaintenance.nextMaintenanceDate.toDate()
+                  | date:'mediumDate') :
+                  (latestMaintenance.nextMaintenanceDate |
+                  date:'mediumDate') }}</span>
+                <span class="status-badge on-time"
+                  *ngIf="!isMaintenanceExpired(latestMaintenance.nextMaintenanceDate)">✅
+                  A tiempo</span>
+                <span class="status-badge expired"
+                  *ngIf="isMaintenanceExpired(latestMaintenance.nextMaintenanceDate)">⚠️
+                  Vencido</span>
+              </div>
+            </div>
+          </div>
+          <div class="maintenance-description">
+            <span class="info-label">Observaciones:</span>
+            <p>{{ latestMaintenance.description }}</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- =============================================================== -->
+    <!-- MESA DIRECTIVA Y ORGANIGRAMA POR RANGOS (EN DASHBOARD)          -->
     <!-- =============================================================== -->
     <div class="song-learning-dashboard-section organigrama-dashboard-section">
       <div class="song-learning-card">
@@ -1240,8 +1181,11 @@
           <div class="song-learning-title-wrap">
             <span class="song-learning-main-icon">🏛️</span>
             <div>
-              <h3>Organigrama de la Agrupación</h3>
-              <p>{{ isAdmin ? 'Árbol jerárquico por Rangos y Niveles · Estudiantina Tonantzin Guadalupe' : 'Árbol jerárquico por Rangos · Estudiantina Tonantzin Guadalupe' }}</p>
+              <h3>Estructura y Organigrama de la Agrupación</h3>
+              <p>{{ activeOrgDashboardTab === 'mesa'
+                ? 'Mesa Directiva y Coordinaciones'
+                : (isAdmin ? 'Árbol jerárquico por Rangos y Niveles' : 'Árbol jerárquico por Rangos · Estudiantina
+                Tonantzin Guadalupe') }}</p>
             </div>
           </div>
           <button class="songbook-quick-link" *ngIf="isAdmin" (click)="goToOrganigrama()">
@@ -1249,78 +1193,193 @@
           </button>
         </div>
 
-        <div class="dash-org-tree">
-          <!-- Nodo Raíz del Árbol -->
-          <div class="dash-tree-root" [style.cursor]="isAdmin ? 'pointer' : 'default'" (click)="isAdmin && goToOrganigrama()">
+        <!-- Selector de Vista: 1. Mesa Directiva (Por defecto) | 2. Organigrama por Rangos -->
+        <div class="dash-org-switcher" role="tablist" aria-label="Cambiar entre Mesa Directiva y Organigrama">
+          <button type="button" class="dash-org-switch-card" [class.active]="activeOrgDashboardTab === 'mesa'"
+            (click)="activeOrgDashboardTab = 'mesa'">
+            <div class="switch-card-icon">🏛️</div>
+            <div class="switch-card-info">
+              <span class="switch-card-title">Mesa Directiva</span>
+              <span class="switch-card-sub">Direcciones, titulares y equipo</span>
+            </div>
+            <span class="switch-card-badge">{{ mesaDirectivaAreas.length }} áreas</span>
+          </button>
+
+          <button type="button" class="dash-org-switch-card" [class.active]="activeOrgDashboardTab === 'organigrama'"
+            (click)="activeOrgDashboardTab = 'organigrama'">
+            <div class="switch-card-icon">🌳</div>
+            <div class="switch-card-info">
+              <span class="switch-card-title">Organigrama por Rangos</span>
+              <span class="switch-card-sub">Jefe de Tuna, Tunos, Capas, Pardillos y Aspirantes</span>
+            </div>
+            <span class="switch-card-badge">{{ organigramaRanks.length }} rangos</span>
+          </button>
+        </div>
+
+        <!-- TAB 1 (POR DEFECTO): MESA DIRECTIVA (ÁRBOL POR JERARQUÍAS) -->
+        <div class="dash-org-tree" *ngIf="activeOrgDashboardTab === 'mesa'">
+          <!-- Nodo Raíz de la Mesa Directiva -->
+          <div class="dash-tree-root">
             <img src="assets/estonantzin.jpeg" alt="Estudiantina Tonantzin Guadalupe" class="dash-tree-root-logo">
             <div class="dash-tree-root-text">
-              <span class="dash-tree-root-tag">ESTRUCTURA OFICIAL</span>
+              <span class="dash-tree-root-tag">MESA DIRECTIVA OFICIAL</span>
               <h4>Estudiantina Tonantzin Guadalupe</h4>
             </div>
           </div>
 
-          <!-- Niveles del Árbol (1. Jefe de Tuna -> 7. Aspirante) -->
-          <div class="dash-tree-level" *ngFor="let item of getOrganigramaRankSummary(); let isLast = last"
-            [class.dash-supervised-level]="!!item.rank.supervisedBy">
-            <div class="dash-tree-trunk" [class.dash-supervised-trunk]="!!item.rank.supervisedBy"></div>
+          <!-- Niveles Jerárquicos de la Mesa Directiva -->
+          <div class="dash-tree-level" *ngFor="let area of mesaDirectivaAreas; let isLast = last">
+            <div class="dash-tree-trunk"></div>
 
-            <!-- Cabecera del Rango -->
-            <div class="dash-tree-rank-node" [style.borderColor]="item.rank.accentColor"
-              [style.cursor]="isAdmin ? 'pointer' : 'default'" (click)="isAdmin && goToOrganigrama()">
-              <span class="dash-tree-rank-order" [style.background]="item.rank.accentColor">
-                Rango {{ item.rank.order }}
+            <!-- Cabecera de la Dirección / Área -->
+            <div class="dash-tree-rank-node" [style.borderColor]="area.accentColor">
+              <span class="dash-tree-rank-order" [style.background]="area.accentColor">
+                {{ area.title }}
               </span>
-              <span class="dash-tree-rank-icon">{{ item.rank.icon }}</span>
-              <span class="dash-tree-rank-title">{{ item.rank.title }}</span>
-              <span class="dash-tree-rank-badge" [style.color]="item.rank.accentColor"
-                [style.background]="item.rank.bgLight" [style.borderColor]="item.rank.borderColor">
-                {{ item.members.length }}
-              </span>
-            </div>
-            <div class="dash-tree-supervision-tag supervises" *ngIf="item.rank.supervisesLabel">
-              🛡️ {{ item.rank.supervisesLabel }}
-            </div>
-            <div class="dash-tree-supervision-tag supervised-by" *ngIf="item.rank.supervisedBy">
-              ↳ A cargo de: <b>{{ item.rank.supervisedBy }}</b>
+              <span class="dash-tree-rank-icon">{{ area.icon }}</span>
+              <span class="dash-tree-rank-title">{{ area.headRoleTitle || area.title }}</span>
             </div>
 
-            <!-- Ramas de Integrantes con su Foto Cargada -->
-            <ng-container *ngIf="item.members.length > 0">
-              <div class="dash-tree-stem" [style.background]="item.rank.accentColor"></div>
-              <div class="dash-tree-leaves-row" [class.single-leaf]="item.members.length === 1">
-                <div class="dash-tree-leaf" *ngFor="let m of item.members"
-                  (click)="openOrganigramaMemberModal(m, item.rank, $event)"
-                  title="Haz clic para ver el perfil completo de {{ m.name }}">
-                  <div class="dash-leaf-line-up"></div>
-                  <div class="dash-leaf-card" [class.is-me]="m.uid === user?.uid"
-                    [style.borderTopColor]="item.rank.accentColor">
-                    <div class="dash-leaf-photo-wrap" [style.borderColor]="item.rank.accentColor">
-                      <img *ngIf="m.profileImage" [src]="m.profileImage" [alt]="m.name" class="dash-leaf-photo">
-                      <div *ngIf="!m.profileImage" class="dash-leaf-initials"
-                        [style.background]="item.rank.accentColor">
-                        {{ getMemberInitials(m.name) }}
+            <!-- Tallo hacia el Jefe / Titular del Área -->
+            <ng-container *ngIf="getDashboardMemberById(area.headUserId) as headMember; else dashEmptyHeadTpl">
+              <div class="dash-tree-stem" [style.background]="area.accentColor"></div>
+              <div class="dash-tree-leaves-row single-leaf">
+                <div class="dash-tree-leaf"
+                  (click)="openOrganigramaMemberModal(headMember, undefined, $event, area.headRoleTitle)"
+                  title="Haz clic para ver el perfil completo de {{ headMember.name }}">
+                  <div class="dash-leaf-card" [class.is-me]="headMember.uid === user?.uid"
+                    [style.borderTopColor]="area.accentColor">
+                    <span class="dash-mesa-role-tag head" [style.background]="area.accentColor">
+                      👑 {{ area.headRoleTitle || 'Titular' }}
+                    </span>
+                    <div class="dash-leaf-photo-wrap" [style.borderColor]="area.accentColor">
+                      <img *ngIf="headMember.profileImage" [src]="headMember.profileImage" [alt]="headMember.name"
+                        class="dash-leaf-photo">
+                      <div *ngIf="!headMember.profileImage" class="dash-leaf-initials"
+                        [style.background]="area.accentColor">
+                        {{ getMemberInitials(headMember.name) }}
                       </div>
-                      <span class="dash-leaf-level-pill" *ngIf="isAdmin && m.resolvedLevel"
-                        [ngClass]="getLevelBadgeClass(m.resolvedLevel)">
-                        N{{ m.resolvedLevel }}
-                      </span>
                     </div>
-                    <span class="dash-leaf-name" [title]="m.name">{{ m.nickname || m.name }}</span>
-                    <span class="dash-leaf-inst">🎸 {{ m.instrument || 'Integrante' }}</span>
+                    <span class="dash-leaf-name" [title]="headMember.name">{{ headMember.nickname || headMember.name }}</span>
+                    <span class="dash-leaf-inst">🎸 {{ headMember.instrument || 'Integrante' }}</span>
                   </div>
                 </div>
               </div>
             </ng-container>
 
-            <div class="dash-tree-empty-note" *ngIf="item.members.length === 0">
-              <span>Sin integrantes asignados en este rango</span>
-            </div>
+            <ng-template #dashEmptyHeadTpl>
+              <div class="dash-tree-empty-note" *ngIf="!area.subordinates || area.subordinates.length === 0">
+                <span>Por asignar titular en {{ area.title }}</span>
+              </div>
+            </ng-template>
+
+            <!-- Ramas de Subordinados que cuelgan debajo del Jefe / Titular -->
+            <ng-container *ngIf="area.subordinates && area.subordinates.length > 0">
+              <div class="dash-tree-stem" [style.background]="area.accentColor"></div>
+              <span class="dash-mesa-sub-caption">↳ Subordinados / Equipo ({{ area.subordinates.length }})</span>
+              <div class="dash-tree-leaves-row" [class.single-leaf]="area.subordinates.length === 1">
+                <ng-container *ngFor="let sub of area.subordinates">
+                  <div class="dash-tree-leaf" *ngIf="getDashboardMemberById(sub.userId) as subMember"
+                    (click)="openOrganigramaMemberModal(subMember, undefined, $event, sub.roleTitle)"
+                    title="Haz clic para ver el perfil completo de {{ subMember.name }}">
+                    <div class="dash-leaf-line-up"></div>
+                    <div class="dash-leaf-card" [class.is-me]="subMember.uid === user?.uid"
+                      [style.borderTopColor]="area.accentColor">
+                      <span class="dash-mesa-role-tag sub">{{ sub.roleTitle || 'Auxiliar' }}</span>
+                      <div class="dash-leaf-photo-wrap" [style.borderColor]="area.accentColor">
+                        <img *ngIf="subMember.profileImage" [src]="subMember.profileImage" [alt]="subMember.name"
+                          class="dash-leaf-photo">
+                        <div *ngIf="!subMember.profileImage" class="dash-leaf-initials"
+                          [style.background]="area.accentColor">
+                          {{ getMemberInitials(subMember.name) }}
+                        </div>
+                      </div>
+                      <span class="dash-leaf-name" [title]="subMember.name">{{ subMember.nickname || subMember.name }}</span>
+                      <span class="dash-leaf-inst">🎸 {{ subMember.instrument || 'Integrante' }}</span>
+                    </div>
+                  </div>
+                </ng-container>
+              </div>
+            </ng-container>
 
             <div class="dash-tree-arrow" *ngIf="!isLast">▼</div>
           </div>
         </div>
-      </div>
-    </div>
+
+            <!-- TAB 2: ORGANIGRAMA POR RANGOS -->
+            <div class="dash-org-tree" *ngIf="activeOrgDashboardTab === 'organigrama'">
+              <!-- Nodo Raíz del Árbol -->
+              <div class="dash-tree-root" [style.cursor]="isAdmin ? 'pointer' : 'default'"
+                (click)="isAdmin && goToOrganigrama()">
+                <img src="assets/estonantzin.jpeg" alt="Estudiantina Tonantzin Guadalupe" class="dash-tree-root-logo">
+                <div class="dash-tree-root-text">
+                  <span class="dash-tree-root-tag">ESTRUCTURA OFICIAL</span>
+                  <h4>Estudiantina Tonantzin Guadalupe</h4>
+                </div>
+              </div>
+
+              <!-- Niveles del Árbol (1. Jefe de Tuna -> 7. Aspirante) -->
+              <div class="dash-tree-level" *ngFor="let item of getOrganigramaRankSummary(); let isLast = last"
+                [class.dash-supervised-level]="!!item.rank.supervisedBy">
+                <div class="dash-tree-trunk" [class.dash-supervised-trunk]="!!item.rank.supervisedBy"></div>
+
+                <!-- Cabecera del Rango -->
+                <div class="dash-tree-rank-node" [style.borderColor]="item.rank.accentColor"
+                  [style.cursor]="isAdmin ? 'pointer' : 'default'" (click)="isAdmin && goToOrganigrama()">
+                  <span class="dash-tree-rank-order" [style.background]="item.rank.accentColor">
+                    Rango {{ item.rank.order }}
+                  </span>
+                  <span class="dash-tree-rank-icon">{{ item.rank.icon }}</span>
+                  <span class="dash-tree-rank-title">{{ item.rank.title }}</span>
+                  <span class="dash-tree-rank-badge" [style.color]="item.rank.accentColor"
+                    [style.background]="item.rank.bgLight" [style.borderColor]="item.rank.borderColor">
+                    {{ item.members.length }}
+                  </span>
+                </div>
+                <div class="dash-tree-supervision-tag supervises" *ngIf="item.rank.supervisesLabel">
+                  🛡️ {{ item.rank.supervisesLabel }}
+                </div>
+                <div class="dash-tree-supervision-tag supervised-by" *ngIf="item.rank.supervisedBy">
+                  ↳ A cargo de: <b>{{ item.rank.supervisedBy }}</b>
+                </div>
+
+                <!-- Ramas de Integrantes con su Foto Cargada -->
+                <ng-container *ngIf="item.members.length > 0">
+                  <div class="dash-tree-stem" [style.background]="item.rank.accentColor"></div>
+                  <div class="dash-tree-leaves-row" [class.single-leaf]="item.members.length === 1">
+                    <div class="dash-tree-leaf" *ngFor="let m of item.members"
+                      (click)="openOrganigramaMemberModal(m, item.rank, $event)"
+                      title="Haz clic para ver el perfil completo de {{ m.name }}">
+                      <div class="dash-leaf-line-up"></div>
+                      <div class="dash-leaf-card" [class.is-me]="m.uid === user?.uid"
+                        [style.borderTopColor]="item.rank.accentColor">
+                        <div class="dash-leaf-photo-wrap" [style.borderColor]="item.rank.accentColor">
+                          <img *ngIf="m.profileImage" [src]="m.profileImage" [alt]="m.name" class="dash-leaf-photo">
+                          <div *ngIf="!m.profileImage" class="dash-leaf-initials"
+                            [style.background]="item.rank.accentColor">
+                            {{ getMemberInitials(m.name) }}
+                          </div>
+                          <span class="dash-leaf-level-pill" *ngIf="isAdmin && m.resolvedLevel"
+                            [ngClass]="getLevelBadgeClass(m.resolvedLevel)">
+                            N{{ m.resolvedLevel }}
+                          </span>
+                        </div>
+                        <span class="dash-leaf-name" [title]="m.name">{{ m.nickname || m.name }}</span>
+                        <span class="dash-leaf-inst">🎸 {{ m.instrument || 'Integrante' }}</span>
+                      </div>
+                    </div>
+                  </div>
+                </ng-container>
+
+                <div class="dash-tree-empty-note" *ngIf="item.members.length === 0">
+                  <span>Sin integrantes asignados en este rango</span>
+                </div>
+
+                <div class="dash-tree-arrow" *ngIf="!isLast">▼</div>
+              </div>
+            </div>
+          </div>
+        </div>
   </main>
 
   <!-- Modal de Mapa de Asientos -->
@@ -1729,8 +1788,7 @@
 
       <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 0.75rem; flex-wrap: wrap;">
         <button class="songbook-quick-link" *ngIf="isAdmin || canManageAttendance"
-          (click)="downloadGeneralAttendancePDF()"
-          style="background: #189d98; color: #ffffff; border: none;">
+          (click)="downloadGeneralAttendancePDF()" style="background: #189d98; color: #ffffff; border: none;">
           📄 Descargar Reporte General PDF
         </button>
         <button class="close-btn-footer" (click)="closeRankingModal()">Cerrar</button>
@@ -2231,12 +2289,14 @@
         </span>
 
         <div class="org-profile-badges-row">
+          <span class="org-profile-rank-pill" *ngIf="selectedOrganigramaCustomRole">
+            🏛️ {{ selectedOrganigramaCustomRole }}
+          </span>
           <span class="org-profile-rank-pill" *ngIf="selectedOrganigramaMemberRank">
             {{ selectedOrganigramaMemberRank.icon }} {{ selectedOrganigramaMemberRank.title }} (Rango {{
             selectedOrganigramaMemberRank.order }})
           </span>
-          <span class="org-profile-level-pill"
-            *ngIf="isAdmin && selectedOrganigramaMember.resolvedLevel"
+          <span class="org-profile-level-pill" *ngIf="isAdmin && selectedOrganigramaMember.resolvedLevel"
             [ngClass]="getLevelBadgeClass(selectedOrganigramaMember.resolvedLevel)">
             🏆 Nivel {{ selectedOrganigramaMember.resolvedLevel }}
           </span>
@@ -2288,7 +2348,8 @@
       </div>
 
       <div class="modal-footer org-profile-modal-footer">
-        <button *ngIf="isAdmin" type="button" class="btn-goto-songbook" (click)="closeOrganigramaMemberModal(); goToOrganigrama()">
+        <button *ngIf="isAdmin" type="button" class="btn-goto-songbook"
+          (click)="closeOrganigramaMemberModal(); goToOrganigrama()">
           ⚙️ Gestionar en Organigrama
         </button>
         <button type="button" class="close-btn-footer" (click)="closeOrganigramaMemberModal()">Cerrar</button>

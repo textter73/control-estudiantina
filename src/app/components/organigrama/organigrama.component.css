@@ -795,6 +795,483 @@
   font-weight: 700;
 }
 
+/* Selector Principal de Vista: Mesa Directiva | Organigrama por Rangos */
+.org-main-tabs-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.org-view-switcher {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.85rem;
+  background: #ffffff;
+  padding: 0.5rem;
+  border-radius: 18px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.05);
+}
+
+.org-switch-card {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.9rem 1.15rem;
+  border-radius: 13px;
+  border: 1.5px solid transparent;
+  background: #f8fafc;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+  min-width: 0;
+}
+
+.org-switch-card:hover:not(.active) {
+  background: #ffffff;
+  border-color: #cbd5e1;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+}
+
+.org-switch-card.active {
+  background: linear-gradient(135deg, #189d98 0%, #0f6b68 100%);
+  border-color: #0f6b68;
+  color: #ffffff;
+  box-shadow: 0 8px 20px rgba(24, 157, 152, 0.28);
+}
+
+.org-switch-icon {
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  flex-shrink: 0;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.05);
+}
+
+.org-switch-card.active .org-switch-icon {
+  background: rgba(255, 255, 255, 0.18);
+  border-color: rgba(255, 255, 255, 0.32);
+  box-shadow: none;
+}
+
+.org-switch-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.org-switch-title {
+  font-size: 0.98rem;
+  font-weight: 800;
+  color: #1e293b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.org-switch-card.active .org-switch-title {
+  color: #ffffff;
+}
+
+.org-switch-sub {
+  font-size: 0.77rem;
+  font-weight: 500;
+  color: #64748b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.org-switch-card.active .org-switch-sub {
+  color: rgba(255, 255, 255, 0.86);
+}
+
+.org-switch-badge {
+  background: #e2e8f0;
+  color: #334155;
+  font-size: 0.73rem;
+  font-weight: 800;
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.org-switch-card.active .org-switch-badge {
+  background: rgba(255, 255, 255, 0.22);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+}
+
+@media (max-width: 768px) {
+  .org-view-switcher {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+}
+
+.org-add-area-btn {
+  align-self: flex-end;
+  background: #189d98;
+  color: #ffffff;
+  border: none;
+  border-radius: 12px;
+  padding: 0.65rem 1.2rem;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(24, 157, 152, 0.22);
+  transition: all 0.2s ease;
+}
+
+.org-add-area-btn:hover {
+  background: #0f6b68;
+  transform: translateY(-1px);
+}
+
+/* Lienzo de Mesa Directiva */
+.mesa-directiva-canvas {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  background: #ffffff;
+  border-radius: 20px;
+  border: 1px solid #e2e8f0;
+  padding: 2rem 1.5rem;
+  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.05);
+}
+
+.mesa-areas-grid {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: 1.35rem;
+}
+
+.mesa-area-card {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-top: 5px solid #189d98;
+  border-radius: 18px;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.04);
+}
+
+.mesa-area-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 0.85rem;
+}
+
+.mesa-area-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.mesa-area-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  flex-shrink: 0;
+}
+
+.mesa-area-title-wrap h3 {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #1e293b;
+}
+
+.mesa-area-title-wrap p {
+  margin: 0.15rem 0 0;
+  font-size: 0.78rem;
+  color: #64748b;
+}
+
+.mesa-area-admin-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  flex-wrap: wrap;
+}
+
+.mesa-icon-btn {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  width: 30px;
+  height: 30px;
+  cursor: pointer;
+  font-size: 0.78rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.mesa-icon-btn:hover {
+  background: #f1f5f9;
+}
+
+.mesa-icon-btn.danger:hover {
+  background: #fef2f2;
+  border-color: #fca5a5;
+}
+
+.mesa-config-btn {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  color: #1e293b;
+  border-radius: 8px;
+  padding: 0.3rem 0.65rem;
+  font-size: 0.76rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.mesa-config-btn:hover {
+  background: #189d98;
+  color: #ffffff;
+  border-color: #189d98;
+}
+
+.mesa-area-tree-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0.25rem 0;
+}
+
+.mesa-head-card {
+  width: 210px;
+  border-width: 2px;
+}
+
+.mesa-role-pill {
+  display: inline-block;
+  font-size: 0.68rem;
+  font-weight: 800;
+  padding: 0.2rem 0.65rem;
+  border-radius: 999px;
+  margin-bottom: 0.45rem;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mesa-role-pill.head-pill {
+  color: #ffffff;
+}
+
+.mesa-role-pill.sub-pill {
+  background: #f1f5f9;
+  color: #334155;
+  border: 1px solid #cbd5e1;
+}
+
+.mesa-role-pill.empty-pill {
+  background: #e2e8f0;
+  color: #475569;
+}
+
+.mesa-empty-head {
+  background: #ffffff;
+  border: 1.5px dashed #cbd5e1;
+  border-radius: 14px;
+  padding: 1rem;
+  text-align: center;
+  width: 220px;
+}
+
+.mesa-empty-head.clickable {
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.mesa-empty-head.clickable:hover {
+  border-color: #189d98;
+  background: #f0fdfa;
+}
+
+.mesa-empty-head p {
+  margin: 0.35rem 0 0;
+  font-size: 0.78rem;
+  color: #64748b;
+}
+
+.mesa-subordinates-label {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  color: #475569;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.2rem 0.75rem;
+  border-radius: 999px;
+}
+
+/* Modal de Configuración de Área de Mesa Directiva */
+.mesa-config-modal-card {
+  max-width: 600px;
+}
+
+.mesa-config-body {
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.mesa-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.9rem;
+}
+
+.mesa-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.mesa-form-group.full-col {
+  grid-column: 1 / -1;
+}
+
+.mesa-form-group label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #334155;
+}
+
+.mesa-input {
+  padding: 0.6rem 0.8rem;
+  border-radius: 10px;
+  border: 1.5px solid #cbd5e1;
+  font-size: 0.88rem;
+  color: #1e293b;
+  background: #ffffff;
+  outline: none;
+}
+
+.mesa-input:focus {
+  border-color: #189d98;
+}
+
+.mesa-subordinates-box {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 0.9rem;
+}
+
+.mesa-add-sub-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+.mesa-add-sub-btn {
+  background: #189d98;
+  color: #ffffff;
+  border: none;
+  border-radius: 10px;
+  padding: 0 0.95rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.mesa-add-sub-btn:disabled {
+  background: #94a3b8;
+  cursor: not-allowed;
+}
+
+.mesa-sub-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  margin-top: 0.75rem;
+}
+
+.mesa-sub-chip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  padding: 0.45rem 0.75rem;
+  font-size: 0.84rem;
+}
+
+.mesa-sub-chip-info b {
+  color: #1e293b;
+}
+
+.mesa-sub-chip-info span {
+  color: #0f6b68;
+  font-weight: 600;
+  margin-left: 0.35rem;
+}
+
+.mesa-sub-remove-btn {
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+  border-radius: 6px;
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  font-size: 0.75rem;
+}
+
+.mesa-sub-empty {
+  margin: 0.6rem 0 0;
+  font-size: 0.78rem;
+  color: #94a3b8;
+  font-style: italic;
+}
+
+@media (max-width: 640px) {
+  .mesa-areas-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .mesa-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .mesa-add-sub-row {
+    grid-template-columns: 1fr;
+  }
+
+  .mesa-add-sub-btn {
+    padding: 0.6rem;
+  }
+}
+
 .tree-trunk-line.supervised-trunk {
   background: #be123c;
 }

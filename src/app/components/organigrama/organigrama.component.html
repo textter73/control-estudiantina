@@ -15,6 +15,184 @@
   </header>
 
   <main class="org-main">
+    <!-- Selector Principal de Vista: 1. Mesa Directiva (Por defecto) | 2. Organigrama por Rangos -->
+    <div class="org-main-tabs-bar">
+      <div class="org-view-switcher" role="tablist" aria-label="Cambiar entre Mesa Directiva y Organigrama">
+        <button type="button" class="org-switch-card" [class.active]="activeTab === 'mesa'"
+          (click)="activeTab = 'mesa'">
+          <div class="org-switch-icon">🏛️</div>
+          <div class="org-switch-info">
+            <span class="org-switch-title">Mesa Directiva</span>
+            <span class="org-switch-sub">Direcciones, titulares y subordinados</span>
+          </div>
+          <span class="org-switch-badge">{{ mesaDirectivaAreas.length }} áreas</span>
+        </button>
+
+        <button type="button" class="org-switch-card" [class.active]="activeTab === 'organigrama'"
+          (click)="activeTab = 'organigrama'">
+          <div class="org-switch-icon">🌳</div>
+          <div class="org-switch-info">
+            <span class="org-switch-title">Organigrama por Rangos</span>
+            <span class="org-switch-sub">Jefe de Tuna, Tunos, Capas, Pardillos y Aspirantes</span>
+          </div>
+          <span class="org-switch-badge">{{ totalAssignedCount }} integrantes</span>
+        </button>
+      </div>
+
+      <button *ngIf="isAdmin && activeTab === 'mesa'" type="button" class="org-add-area-btn"
+        (click)="openCreateMesaAreaModal()">
+        + Nueva Dirección / Área
+      </button>
+    </div>
+
+    <!-- =============================================================== -->
+    <!-- PESTAÑA 1 (POR DEFECTO): MESA DIRECTIVA (ÁRBOL JERÁRQUICO)      -->
+    <!-- =============================================================== -->
+    <ng-container *ngIf="activeTab === 'mesa'">
+      <div class="org-tree-canvas">
+        <div class="tree-root-node">
+          <div class="tree-root-avatar">
+            <img src="assets/estonantzin.jpeg" alt="Estudiantina Tonantzin Guadalupe">
+          </div>
+          <div class="tree-root-info">
+            <span class="tree-root-tag">DIRECCIÓN Y COORDINACIÓN</span>
+            <h2>Mesa Directiva · Estudiantina Tonantzin Guadalupe</h2>
+            <p>Árbol jerárquico de direcciones, titulares y subordinados</p>
+          </div>
+        </div>
+
+        <div class="tree-rank-level"
+          *ngFor="let area of mesaDirectivaAreas; let isFirst = first; let isLastArea = last">
+          <!-- Tronco vertical que baja desde el nivel anterior -->
+          <div class="tree-trunk-line"></div>
+
+          <!-- NODO CABECERA DE LA DIRECCIÓN / ÁREA -->
+          <div class="tree-rank-badge-node" [style.borderColor]="area.accentColor">
+            <span class="tree-rank-order-pill" [style.background]="area.accentColor">
+              {{ area.title }}
+            </span>
+            <div class="tree-rank-title-line">
+              <span class="tree-rank-emoji">{{ area.icon }}</span>
+              <h3>{{ area.headRoleTitle || area.title }}</h3>
+            </div>
+            <p class="tree-rank-desc" *ngIf="area.subtitle">{{ area.subtitle }}</p>
+
+            <!-- Botones de configuración para el Administrador -->
+            <div class="mesa-area-admin-actions" *ngIf="isAdmin"
+              style="justify-content: center; margin-top: 0.6rem;">
+              <button type="button" class="mesa-icon-btn" *ngIf="!isFirst"
+                (click)="moveMesaAreaOrder(area, 'up', $event)" title="Subir en jerarquía">
+                ⬆️
+              </button>
+              <button type="button" class="mesa-icon-btn" *ngIf="!isLastArea"
+                (click)="moveMesaAreaOrder(area, 'down', $event)" title="Bajar en jerarquía">
+                ⬇️
+              </button>
+              <button type="button" class="mesa-config-btn" (click)="openEditMesaAreaModal(area, $event)">
+                ✏️ Configurar Jefe y Subordinados
+              </button>
+              <button type="button" class="mesa-icon-btn danger" (click)="deleteMesaArea(area, $event)"
+                title="Eliminar área">
+                🗑️
+              </button>
+            </div>
+          </div>
+
+          <!-- NODO JEFE / TITULAR DEL ÁREA -->
+          <ng-container *ngIf="getMemberById(area.headUserId) as headMember; else unassignedHeadTpl">
+            <div class="tree-stem-down" [style.background]="area.accentColor"></div>
+            <div class="tree-nodes-branch-row single-node">
+              <div class="tree-person-leaf">
+                <div class="tree-person-card mesa-head-card admin-clickable"
+                  [class.is-me]="headMember.uid === currentUser?.uid"
+                  [style.borderColor]="area.accentColor"
+                  (click)="openMemberProfileModal(headMember, undefined, $event, area.headRoleTitle)"
+                  title="Haz clic para ver el perfil completo de {{ headMember.name }}">
+
+                  <span class="mesa-role-pill head-pill" [style.background]="area.accentColor">
+                    👑 {{ area.headRoleTitle || area.title }}
+                  </span>
+
+                  <div class="leaf-photo-wrapper" [style.borderColor]="area.accentColor">
+                    <img *ngIf="headMember.profileImage" [src]="headMember.profileImage" [alt]="headMember.name"
+                      class="leaf-photo-img">
+                    <div *ngIf="!headMember.profileImage" class="leaf-photo-initials"
+                      [style.background]="area.accentColor">
+                      {{ getInitials(headMember.name) }}
+                    </div>
+                  </div>
+
+                  <h4 class="leaf-name" [title]="headMember.name">{{ headMember.name }}</h4>
+                  <span class="leaf-nickname" *ngIf="headMember.nickname">"{{ headMember.nickname }}"</span>
+                  <span class="leaf-instrument">🎸 {{ headMember.instrument || 'Integrante' }}</span>
+                </div>
+              </div>
+            </div>
+          </ng-container>
+
+          <ng-template #unassignedHeadTpl>
+            <div class="tree-empty-branch">
+              <div class="tree-stem-small"></div>
+              <div class="tree-empty-pill" style="cursor: pointer;" (click)="openEditMesaAreaModal(area, $event)">
+                Sin titular asignado · Haz clic en "✏️ Configurar" para elegir Jefe y Subordinados
+              </div>
+            </div>
+          </ng-template>
+
+          <!-- RAMA DE SUBORDINADOS / AUXILIARES QUE CUELGAN DEBAJO DEL JEFE -->
+          <ng-container *ngIf="area.subordinates && area.subordinates.length > 0">
+            <div class="tree-stem-down" [style.background]="area.accentColor"></div>
+            <div class="mesa-subordinates-label">
+              ↳ Subordinados / Equipo a su cargo ({{ area.subordinates.length }})
+            </div>
+            <div class="tree-stem-small"></div>
+
+            <div class="tree-nodes-branch-row" [class.single-node]="area.subordinates.length === 1">
+              <ng-container *ngFor="let sub of area.subordinates">
+                <div class="tree-person-leaf" *ngIf="getMemberById(sub.userId) as subMember">
+                  <div class="leaf-connector-up"></div>
+
+                  <div class="tree-person-card admin-clickable"
+                    [class.is-me]="subMember.uid === currentUser?.uid"
+                    [style.borderTopColor]="area.accentColor"
+                    (click)="openMemberProfileModal(subMember, undefined, $event, sub.roleTitle)"
+                    title="Haz clic para ver el perfil completo de {{ subMember.name }}">
+
+                    <span class="mesa-role-pill sub-pill">
+                      {{ sub.roleTitle || 'Auxiliar' }}
+                    </span>
+
+                    <div class="leaf-photo-wrapper" [style.borderColor]="area.accentColor">
+                      <img *ngIf="subMember.profileImage" [src]="subMember.profileImage" [alt]="subMember.name"
+                        class="leaf-photo-img">
+                      <div *ngIf="!subMember.profileImage" class="leaf-photo-initials"
+                        [style.background]="area.accentColor">
+                        {{ getInitials(subMember.name) }}
+                      </div>
+                    </div>
+
+                    <h4 class="leaf-name" [title]="subMember.name">{{ subMember.name }}</h4>
+                    <span class="leaf-nickname" *ngIf="subMember.nickname">"{{ subMember.nickname }}"</span>
+                    <span class="leaf-instrument">🎸 {{ subMember.instrument || 'Integrante' }}</span>
+                  </div>
+                </div>
+              </ng-container>
+            </div>
+          </ng-container>
+
+          <!-- Conector hacia la siguiente Dirección inferior -->
+          <div class="tree-next-rank-connector" *ngIf="!isLastArea">
+            <div class="tree-trunk-line short"></div>
+            <span class="tree-down-chevron">▼</span>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- =============================================================== -->
+    <!-- PESTAÑA 2: ORGANIGRAMA POR RANGOS                               -->
+    <!-- =============================================================== -->
+    <ng-container *ngIf="activeTab === 'organigrama'">
     <!-- Barra de Herramientas y Filtro de Rango -->
     <div class="org-toolbar-card">
       <div class="org-rank-pills" role="tablist" aria-label="Filtrar por rango">
@@ -224,7 +402,108 @@
         </div>
       </div>
     </div>
+    </ng-container>
   </main>
+
+  <!-- Modal de Configuración de Área de la Mesa Directiva (Solo Admin) -->
+  <div class="org-profile-backdrop" *ngIf="showMesaConfigModal && editingMesaArea" (click)="closeMesaAreaModal()">
+    <div class="org-profile-modal-card mesa-config-modal-card" (click)="$event.stopPropagation()">
+      <div class="org-profile-banner" [style.background]="editingMesaArea.accentColor || '#189d98'"
+        style="padding: 1.25rem 1.5rem;">
+        <button type="button" class="org-profile-close-btn" (click)="closeMesaAreaModal()">✕</button>
+        <h3 class="org-profile-name">
+          {{ isNewMesaArea ? '➕ Nueva Dirección / Área' : '⚙️ Configurar: ' + editingMesaArea.title }}
+        </h3>
+        <span class="org-profile-nick">Configura el titular (jefe) y los subordinados o auxiliares del área</span>
+      </div>
+
+      <div class="org-profile-body mesa-config-body">
+        <div class="mesa-form-grid">
+          <div class="mesa-form-group">
+            <label>🏛️ Nombre de la Dirección / Área *</label>
+            <input type="text" class="mesa-input" [(ngModel)]="editingMesaArea.title"
+              placeholder="Ej. Dirección de Eventos, Dirección Musical...">
+          </div>
+
+          <div class="mesa-form-group">
+            <label>👑 Título del Cargo Titular (Jefe)</label>
+            <input type="text" class="mesa-input" [(ngModel)]="editingMesaArea.headRoleTitle"
+              placeholder="Ej. Director de Eventos, Secretario General...">
+          </div>
+
+          <div class="mesa-form-group full-col">
+            <label>📝 Descripción o Funciones del Área</label>
+            <input type="text" class="mesa-input" [(ngModel)]="editingMesaArea.subtitle"
+              placeholder="Ej. Logística de presentaciones, contratos y coordinación...">
+          </div>
+
+          <div class="mesa-form-group">
+            <label>✨ Icono</label>
+            <select class="mesa-input" [(ngModel)]="editingMesaArea.icon">
+              <option *ngFor="let ic of areaIcons" [value]="ic">{{ ic }} Icono {{ ic }}</option>
+            </select>
+          </div>
+
+          <div class="mesa-form-group">
+            <label>🎨 Color Distintivo</label>
+            <select class="mesa-input" [(ngModel)]="editingMesaArea.accentColor">
+              <option *ngFor="let c of areaColors" [value]="c.value">{{ c.label }}</option>
+            </select>
+          </div>
+
+          <!-- Selección del Jefe / Titular -->
+          <div class="mesa-form-group full-col">
+            <label>👑 Integrante Titular / Jefe del Área</label>
+            <select class="mesa-input" [(ngModel)]="editingMesaArea.headUserId">
+              <option value="">-- Sin titular asignado --</option>
+              <option *ngFor="let m of allActiveMembers" [value]="m.uid">
+                {{ m.name }}{{ m.nickname ? ' "' + m.nickname + '"' : '' }} ({{ m.instrument || 'Integrante' }})
+              </option>
+            </select>
+          </div>
+
+          <!-- Gestión de Subordinados / Auxiliares -->
+          <div class="mesa-form-group full-col mesa-subordinates-box">
+            <label>👥 Subordinados / Coordinadores / Auxiliares a su cargo</label>
+            <div class="mesa-add-sub-row">
+              <select class="mesa-input" [(ngModel)]="newSubordinateUserId">
+                <option value="">-- Seleccionar integrante --</option>
+                <option *ngFor="let m of allActiveMembers" [value]="m.uid">
+                  {{ m.name }}{{ m.nickname ? ' "' + m.nickname + '"' : '' }}
+                </option>
+              </select>
+              <input type="text" class="mesa-input" [(ngModel)]="newSubordinateRoleTitle"
+                placeholder="Cargo (ej. Coordinador de Redes, Auxiliar de Eventos)">
+              <button type="button" class="mesa-add-sub-btn" (click)="addSubordinateToForm()"
+                [disabled]="!newSubordinateUserId">
+                + Agregar
+              </button>
+            </div>
+
+            <div class="mesa-sub-list" *ngIf="editingMesaArea.subordinates.length > 0">
+              <div class="mesa-sub-chip" *ngFor="let sub of editingMesaArea.subordinates; let sIdx = index">
+                <div class="mesa-sub-chip-info">
+                  <b>{{ getMemberById(sub.userId)?.name || 'Integrante' }}</b>
+                  <span>· {{ sub.roleTitle }}</span>
+                </div>
+                <button type="button" class="mesa-sub-remove-btn" (click)="removeSubordinateFromForm(sIdx)">✕</button>
+              </div>
+            </div>
+            <p class="mesa-sub-empty" *ngIf="editingMesaArea.subordinates.length === 0">
+              No hay subordinados agregados en esta área todavía.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="org-profile-footer">
+        <button type="button" class="org-profile-close-footer-btn" (click)="closeMesaAreaModal()">Cancelar</button>
+        <button type="button" class="org-profile-edit-rank-btn" (click)="saveMesaArea()">
+          💾 Guardar Área
+        </button>
+      </div>
+    </div>
+  </div>
 
   <!-- Modal de Información Completa del Perfil -->
   <div class="org-profile-backdrop" *ngIf="selectedProfileMember" (click)="closeMemberProfileModal()">
@@ -247,6 +526,9 @@
         </span>
 
         <div class="org-profile-badges">
+          <span class="org-profile-rank-tag" *ngIf="selectedProfileCustomRole">
+            🏛️ {{ selectedProfileCustomRole }}
+          </span>
           <span class="org-profile-rank-tag" *ngIf="selectedProfileRank">
             {{ selectedProfileRank.icon }} {{ selectedProfileRank.title }} (Rango {{ selectedProfileRank.order }})
           </span>

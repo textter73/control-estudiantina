@@ -3,7 +3,6 @@ import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
 import { Router } from '@angular/router';
 import Swal from 'sweetalert2';
-import jsPDF from 'jspdf';
 
 export interface RankConfig {
   key: string;
@@ -349,125 +348,6 @@ export class OrganigramaComponent implements OnInit {
           text: 'No se pudo guardar el rango del integrante.'
         });
       }
-    }
-  }
-
-  /**
-   * Descarga el Organigrama Oficial en formato PDF
-   */
-  exportOrganigramaPDF() {
-    try {
-      const doc = new jsPDF('p', 'mm', 'a4');
-      const pageWidth = doc.internal.pageSize.getWidth();
-      const pageHeight = doc.internal.pageSize.getHeight();
-      const nowStr = new Date().toLocaleDateString('es-MX', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-      });
-
-      doc.setFillColor(24, 157, 152);
-      doc.rect(0, 0, pageWidth, 24, 'F');
-
-      doc.setTextColor(255, 255, 255);
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(15);
-      doc.text('ESTUDIANTINA TONANTZIN GUADALUPE', pageWidth / 2, 10, { align: 'center' });
-
-      doc.setFontSize(11);
-      doc.setFont('helvetica', 'normal');
-      doc.text('ORGANIGRAMA OFICIAL POR RANGOS Y NIVELES', pageWidth / 2, 18, { align: 'center' });
-
-      doc.setTextColor(30, 41, 59);
-      doc.setFontSize(9);
-      doc.text(`Fecha: ${nowStr}   |   Total Integrantes Activos: ${this.allActiveMembers.length}`, 14, 31);
-
-      const cols = [
-        { label: 'Rango Jerarquico', x: 14, w: 52, align: 'left' as const },
-        { label: 'Nivel', x: 66, w: 26, align: 'center' as const },
-        { label: 'Integrante', x: 92, w: 68, align: 'left' as const },
-        { label: 'Instrumento', x: 160, w: 36, align: 'left' as const }
-      ];
-      const tableX = 14;
-      const tableW = 182;
-      const rowH = 7.5;
-
-      const drawHeader = (startY: number): number => {
-        doc.setFillColor(24, 157, 152);
-        doc.rect(tableX, startY, tableW, 8, 'F');
-        doc.setTextColor(255, 255, 255);
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(8.5);
-        cols.forEach(col => {
-          const textX = col.align === 'center' ? col.x + col.w / 2 : col.x + 2;
-          doc.text(col.label, textX, startY + 5.4, { align: col.align });
-        });
-        return startY + 8;
-      };
-
-      const rows: { rankTitle: string; levelText: string; memberName: string; instrument: string }[] = [];
-      this.ranks.forEach(rank => {
-        const group = this.allActiveMembers
-          .filter(m => m.rank === rank.key)
-          .map(m => ({ ...m, resolvedLevel: this.getMemberLevel(m) }))
-          .sort((a, b) => (a.resolvedLevel ?? 99) - (b.resolvedLevel ?? 99) || (a.name || '').localeCompare(b.name || ''));
-
-        if (group.length === 0) {
-          rows.push({
-            rankTitle: `${rank.order}. ${rank.title.toUpperCase()}`,
-            levelText: '-',
-            memberName: 'Sin integrantes asignados en este rango',
-            instrument: '-'
-          });
-        } else {
-          group.forEach((m, idx) => {
-            rows.push({
-              rankTitle: idx === 0 ? `${rank.order}. ${rank.title.toUpperCase()} (${group.length})` : '',
-              levelText: m.resolvedLevel ? `Nivel ${m.resolvedLevel}` : 'Sin nivel',
-              memberName: m.name + (m.nickname ? ` "${m.nickname}"` : ''),
-              instrument: m.instrument || 'Sin instrumento'
-            });
-          });
-        }
-      });
-
-      let yPos = drawHeader(36);
-
-      rows.forEach((r, idx) => {
-        if (yPos > pageHeight - 16) {
-          doc.addPage();
-          yPos = drawHeader(15);
-        }
-
-        doc.setFillColor(idx % 2 === 0 ? 248 : 255, idx % 2 === 0 ? 250 : 255, idx % 2 === 0 ? 252 : 255);
-        doc.rect(tableX, yPos, tableW, rowH, 'F');
-        doc.setDrawColor(226, 232, 240);
-        doc.setLineWidth(0.2);
-        doc.rect(tableX, yPos, tableW, rowH, 'S');
-
-        doc.setTextColor(30, 41, 59);
-        doc.setFontSize(8.2);
-
-        doc.setFont('helvetica', 'bold');
-        doc.text(r.rankTitle.substring(0, 28), cols[0].x + 2, yPos + 5);
-        doc.text(r.levelText, cols[1].x + cols[1].w / 2, yPos + 5, { align: 'center' });
-
-        doc.setFont('helvetica', 'normal');
-        doc.text(r.memberName.substring(0, 36), cols[2].x + 2, yPos + 5);
-        doc.text(r.instrument.substring(0, 20), cols[3].x + 2, yPos + 5);
-
-        yPos += rowH;
-      });
-
-      const dateSuffix = new Date().toISOString().split('T')[0];
-      doc.save(`Organigrama_Estudiantina_Tonantzin_${dateSuffix}.pdf`);
-    } catch (error) {
-      console.error('Error generando PDF del organigrama:', error);
-      Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: 'No se pudo generar el PDF del organigrama.'
-      });
     }
   }
 }

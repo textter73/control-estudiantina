@@ -172,17 +172,38 @@
               </div>
 
               <div class="index-admin-actions" *ngIf="isAdmin || canEditSongs">
-                <button class="renumber-btn" (click)="autoAssignOrderNumbers()" title="Asignar números correlativos 1, 2, 3... según el orden actual">
+                <span class="drag-reorder-hint" *ngIf="isAdmin">
+                  <span class="drag-hint-icon">⋮⋮</span>
+                  {{ isReorderingSongs ? 'Guardando orden...' : 'Arrastra para ordenar' }}
+                </span>
+                <button class="renumber-btn" (click)="autoAssignOrderNumbers()" [disabled]="isReorderingSongs" title="Asignar números correlativos 1, 2, 3... según el orden actual">
                   🔢 Renumerar correlativamente
                 </button>
               </div>
             </div>
 
-            <div class="index-list">
+            <div class="index-list" [class.is-reordering]="isReorderingSongs">
               <div 
                 class="index-song-row" 
-                *ngFor="let song of sortedIndexSongs" 
+                *ngFor="let song of sortedIndexSongs; let idx = index" 
+                [attr.draggable]="isAdmin && !isReorderingSongs ? 'true' : null"
+                [class.is-draggable]="isAdmin"
+                [class.is-dragging]="draggedSong?.id === song.id"
+                [class.drag-over-before]="dragOverSongId === song.id && dragDropPosition === 'before'"
+                [class.drag-over-after]="dragOverSongId === song.id && dragDropPosition === 'after'"
+                (dragstart)="onSongDragStart($event, song)"
+                (dragover)="onSongDragOver($event, song)"
+                (dragleave)="onSongDragLeave($event, song)"
+                (drop)="onSongDrop($event, song)"
+                (dragend)="onSongDragEnd()"
                 (click)="openSongDetail(song)">
+                <div 
+                  class="song-drag-handle" 
+                  *ngIf="isAdmin" 
+                  title="Arrastra para mover y actualizar numeración"
+                  (click)="$event.stopPropagation()">
+                  ⋮⋮
+                </div>
                 <div class="index-number-badge" [class.no-number]="!song.orderNumber">
                   {{ song.orderNumber ? '#' + song.orderNumber : 'S/N' }}
                 </div>
@@ -198,6 +219,24 @@
                     <span class="index-meta-item" *ngIf="song.composers">✍️ {{ song.composers }}</span>
                     <span class="index-meta-item spotify-tag" *ngIf="song.youtubeLink">🟢 Spotify</span>
                   </div>
+                </div>
+                <div class="song-step-controls" *ngIf="isAdmin" (click)="$event.stopPropagation()">
+                  <button 
+                    type="button" 
+                    class="song-step-btn" 
+                    [disabled]="idx === 0 || isReorderingSongs"
+                    (click)="moveSongStep($event, song, 'up', sortedIndexSongs)"
+                    title="Subir una posición">
+                    ↑
+                  </button>
+                  <button 
+                    type="button" 
+                    class="song-step-btn" 
+                    [disabled]="idx === sortedIndexSongs.length - 1 || isReorderingSongs"
+                    (click)="moveSongStep($event, song, 'down', sortedIndexSongs)"
+                    title="Bajar una posición">
+                    ↓
+                  </button>
                 </div>
                 <div class="index-action-icon">›</div>
               </div>
@@ -251,8 +290,28 @@
                   <span class="folder-name">{{ category }}</span>
                   <span class="folder-count">{{ songsByCategory[category]?.length || 0 }}</span>
                 </div>
-                <div class="folder-content" *ngIf="selectedCategory === category">
-                  <div class="song-item" *ngFor="let song of songsByCategory[category]" (click)="openSongDetail(song)">
+                <div class="folder-content" *ngIf="selectedCategory === category" (click)="$event.stopPropagation()">
+                  <div 
+                    class="song-item" 
+                    *ngFor="let song of songsByCategory[category]; let idx = index" 
+                    [attr.draggable]="isAdmin && !isReorderingSongs ? 'true' : null"
+                    [class.is-draggable]="isAdmin"
+                    [class.is-dragging]="draggedSong?.id === song.id"
+                    [class.drag-over-before]="dragOverSongId === song.id && dragDropPosition === 'before'"
+                    [class.drag-over-after]="dragOverSongId === song.id && dragDropPosition === 'after'"
+                    (dragstart)="onSongDragStart($event, song)"
+                    (dragover)="onSongDragOver($event, song)"
+                    (dragleave)="onSongDragLeave($event, song)"
+                    (drop)="onSongDrop($event, song)"
+                    (dragend)="onSongDragEnd()"
+                    (click)="openSongDetail(song)">
+                    <div 
+                      class="song-drag-handle" 
+                      *ngIf="isAdmin" 
+                      title="Arrastra para mover y actualizar numeración"
+                      (click)="$event.stopPropagation()">
+                      ⋮⋮
+                    </div>
                     <div class="song-order-tag" [class.no-number]="!song.orderNumber">
                       {{ song.orderNumber ? '#' + song.orderNumber : 'S/N' }}
                     </div>
@@ -260,6 +319,24 @@
                       <span class="song-title">{{ song.title }}</span>
                     </div>
                     <div class="song-right-badges">
+                      <div class="song-step-controls" *ngIf="isAdmin" (click)="$event.stopPropagation()">
+                        <button 
+                          type="button" 
+                          class="song-step-btn" 
+                          [disabled]="idx === 0 || isReorderingSongs"
+                          (click)="moveSongStep($event, song, 'up', songsByCategory[category])"
+                          title="Subir una posición">
+                          ↑
+                        </button>
+                        <button 
+                          type="button" 
+                          class="song-step-btn" 
+                          [disabled]="idx === songsByCategory[category].length - 1 || isReorderingSongs"
+                          (click)="moveSongStep($event, song, 'down', songsByCategory[category])"
+                          title="Bajar una posición">
+                          ↓
+                        </button>
+                      </div>
                       <span 
                         *ngIf="!song.excludeFromLearning"
                         class="learned-icon-badge" 

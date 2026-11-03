@@ -3489,4 +3489,139 @@
   }
 }
 
+/* ===================================================
+   DRAG & DROP Y ORDENAMIENTO DE CANCIONES (ADMIN)
+   =================================================== */
+.index-admin-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+}
+
+.drag-reorder-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #0f6b68;
+  background: #f0fdfa;
+  border: 1px solid #99f6e4;
+  padding: 0.3rem 0.65rem;
+  border-radius: 9999px;
+}
+
+.drag-hint-icon {
+  font-weight: 800;
+  color: #189d98;
+  letter-spacing: -1px;
+}
+
+.index-list.is-reordering {
+  opacity: 0.85;
+}
+
+.song-drag-handle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 36px;
+  border-radius: 6px;
+  color: #94a3b8;
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: -1.5px;
+  cursor: grab;
+  user-select: none;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+
+.song-drag-handle:hover {
+  background: #f0fdfa;
+  color: #189d98;
+}
+
+.song-drag-handle:active {
+  cursor: grabbing;
+}
+
+.index-song-row.is-draggable,
+.song-item.is-draggable {
+  position: relative;
+}
+
+.index-song-row.is-dragging,
+.song-item.is-dragging {
+  opacity: 0.45;
+  background: #f0fdfa !important;
+  border: 1.5px dashed #189d98 !important;
+  transform: scale(0.99);
+}
+
+.index-song-row.drag-over-before,
+.song-item.drag-over-before {
+  box-shadow: inset 0 3px 0 0 #189d98 !important;
+  background: #f0fdfa !important;
+}
+
+.index-song-row.drag-over-after,
+.song-item.drag-over-after {
+  box-shadow: inset 0 -3px 0 0 #189d98 !important;
+  background: #f0fdfa !important;
+}
+
+.song-step-controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  flex-shrink: 0;
+}
+
+.song-step-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: #475569;
+  font-size: 0.82rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 0;
+}
+
+.song-step-btn:hover:not(:disabled) {
+  background: #189d98;
+  border-color: #189d98;
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.song-step-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+  .song-drag-handle {
+    width: 22px;
+    height: 32px;
+    font-size: 0.95rem;
+  }
+
+  .song-step-btn {
+    width: 26px;
+    height: 26px;
+    font-size: 0.78rem;
+  }
+}
+
+
 

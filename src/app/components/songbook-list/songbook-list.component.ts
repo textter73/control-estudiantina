@@ -45,6 +45,12 @@ export class SongbookListComponent implements OnInit, OnDestroy {
   isWatchingVideo = false;
   isVideoFloating = false;
 
+  // Variables para Drag & Drop de ordenamiento (Administrador)
+  draggedSong: any = null;
+  dragOverSongId: string | null = null;
+  dragDropPosition: 'before' | 'after' = 'before';
+  isReorderingSongs = false;
+
   // Variables para zoom de texto
   fontSize = 16; // Tamaño base en píxeles
   minFontSize = 12;
@@ -406,20 +412,175 @@ export class SongbookListComponent implements OnInit, OnDestroy {
 
     try {
       const currentList = this.sortedIndexSongs;
+      const updates: { id: string; orderNumber: number }[] = [];
       for (let i = 0; i < currentList.length; i++) {
         const song = currentList[i];
         const newOrder = i + 1;
-        await this.songbookService.updateSong(song.id, { orderNumber: newOrder });
+        updates.push({ id: song.id, orderNumber: newOrder });
         song.orderNumber = newOrder;
         const mainIndex = this.songs.findIndex(s => s.id === song.id);
         if (mainIndex !== -1) {
           this.songs[mainIndex].orderNumber = newOrder;
         }
       }
+      await this.songbookService.batchUpdateOrderNumbers(updates);
       this.organizeSongsByCategory();
       Swal.fire('¡Listo!', `Se renumeraron ${currentList.length} canciones con éxito.`, 'success');
     } catch (error) {
       Swal.fire('Error', 'No se pudieron renumerar las canciones: ' + error, 'error');
+    }
+  }
+
+  onSongDragStart(event: DragEvent, song: any) {
+    if (!this.isAdmin || this.isReorderingSongs || !song?.id) {
+      event.preventDefault();
+      return;
+    }
+    this.draggedSong = song;
+    if (event.dataTransfer) {
+      event.dataTransfer.effectAllowed = 'move';
+      event.dataTransfer.setData('text/plain', song.id);
+    }
+  }
+
+  onSongDragOver(event: DragEvent, targetSong: any) {
+    if (!this.isAdmin || !this.draggedSong || !targetSong?.id || this.draggedSong.id === targetSong.id) {
+      return;
+    }
+    event.preventDefault();
+    if (event.dataTransfer) {
+      event.dataTransfer.dropEffect = 'move';
+    }
+    const currentTarget = event.currentTarget as HTMLElement;
+    if (currentTarget) {
+      const rect = currentTarget.getBoundingClientRect();
+      const midpoint = rect.top + rect.height / 2;
+      this.dragDropPosition = event.clientY < midpoint ? 'before' : 'after';
+    }
+    this.dragOverSongId = targetSong.id;
+  }
+
+  onSongDragLeave(event: DragEvent, targetSong: any) {
+    if (this.dragOverSongId === targetSong?.id) {
+      const currentTarget = event.currentTarget as HTMLElement;
+      const relatedTarget = event.relatedTarget as Node | null;
+      if (!currentTarget || !relatedTarget || !currentTarget.contains(relatedTarget)) {
+        this.dragOverSongId = null;
+      }
+    }
+  }
+
+  onSongDragEnd() {
+    this.draggedSong = null;
+    this.dragOverSongId = null;
+  }
+
+  async onSongDrop(event: DragEvent, targetSong: any) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    const sourceSong = this.draggedSong;
+    const dropPos = this.dragDropPosition;
+    this.draggedSong = null;
+    this.dragOverSongId = null;
+
+    if (!this.isAdmin || !sourceSong || !targetSong || sourceSong.id === targetSong.id || this.isReorderingSongs) {
+      return;
+    }
+
+    await this.reorderSongRelativeTo(sourceSong, targetSong, dropPos);
+  }
+
+  async moveSongStep(event: Event, song: any, direction: 'up' | 'down', currentList: any[]) {
+    event.stopPropagation();
+    if (!this.isAdmin || this.isReorderingSongs || !song?.id || !currentList?.length) return;
+
+    const currentIndex = currentList.findIndex(s => s.id === song.id);
+    if (currentIndex === -1) return;
+
+    const targetIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
+    if (targetIndex < 0 || targetIndex >= currentList.length) return;
+
+    const targetSong = currentList[targetIndex];
+    await this.reorderSongRelativeTo(song, targetSong, direction === 'up' ? 'before' : 'after');
+  }
+
+  private async reorderSongRelativeTo(sourceSong: any, targetSong: any, position: 'before' | 'after') {
+    if (!this.isAdmin || this.isReorderingSongs) return;
+
+    // Si estamos en el Índice General sin filtros, usamos el orden visual actual como base;
+    // de lo contrario, usamos todas las canciones ordenadas por su numeración actual.
+    const isUnfilteredIndex = this.activeTab === 'index' && !this.searchTerm?.trim() && !this.selectedCategory;
+    const baseList = isUnfilteredIndex
+      ? [...this.sortedIndexSongs]
+      : [...this.songs].sort((a, b) => {
+          const hasA = a.orderNumber != null && !isNaN(Number(a.orderNumber));
+          const hasB = b.orderNumber != null && !isNaN(Number(b.orderNumber));
+          if (hasA && hasB) return Number(a.orderNumber) - Number(b.orderNumber);
+          if (hasA && !hasB) return -1;
+          if (!hasA && hasB) return 1;
+          return (a.title || '').localeCompare(b.title || '');
+        });
+
+    const fromIndex = baseList.findIndex(s => s.id === sourceSong.id);
+    if (fromIndex === -1) return;
+
+    const [movedItem] = baseList.splice(fromIndex, 1);
+    const targetIndex = baseList.findIndex(s => s.id === targetSong.id);
+    if (targetIndex === -1) return;
+
+    const insertIndex = position === 'before' ? targetIndex : targetIndex + 1;
+    baseList.splice(insertIndex, 0, movedItem);
+
+    // Asegurar que la vista se mantenga ordenada por numeración ascendente
+    this.indexSortBy = 'number';
+    this.sortDirection = 'asc';
+
+    const updates: { id: string; orderNumber: number }[] = [];
+    let newMovedOrderNumber = insertIndex + 1;
+
+    for (let i = 0; i < baseList.length; i++) {
+      const item = baseList[i];
+      const newOrder = i + 1;
+      if (item.id === movedItem.id) {
+        newMovedOrderNumber = newOrder;
+      }
+      if (Number(item.orderNumber) !== newOrder) {
+        updates.push({ id: item.id, orderNumber: newOrder });
+      }
+      item.orderNumber = newOrder;
+      const mainIdx = this.songs.findIndex(s => s.id === item.id);
+      if (mainIdx !== -1) {
+        this.songs[mainIdx].orderNumber = newOrder;
+      }
+    }
+
+    this.organizeSongsByCategory();
+
+    if (updates.length === 0) return;
+
+    this.isReorderingSongs = true;
+    try {
+      await this.songbookService.batchUpdateOrderNumbers(updates);
+      Swal.fire({
+        toast: true,
+        position: 'bottom-end',
+        icon: 'success',
+        title: 'Orden actualizado',
+        text: `"${movedItem.title}" ahora es #${newMovedOrderNumber}`,
+        showConfirmButton: false,
+        timer: 2200,
+        timerProgressBar: true
+      });
+    } catch (error) {
+      console.error('Error al actualizar el orden de las canciones:', error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error al guardar el orden',
+        text: 'No se pudo actualizar la numeración: ' + error
+      });
+    } finally {
+      this.isReorderingSongs = false;
     }
   }
 

@@ -20,4 +20,18 @@ export class SongbookService {
   updateSong(id: string, data: any) {
     return this.firestore.collection(this.collectionName).doc(id).update(data);
   }
+
+  async batchUpdateOrderNumbers(updates: { id: string; orderNumber: number }[]): Promise<void> {
+    if (!updates || updates.length === 0) return;
+    const chunkSize = 450;
+    for (let i = 0; i < updates.length; i += chunkSize) {
+      const chunk = updates.slice(i, i + chunkSize);
+      const batch = this.firestore.firestore.batch();
+      for (const item of chunk) {
+        const docRef = this.firestore.collection(this.collectionName).doc(item.id).ref;
+        batch.update(docRef, { orderNumber: item.orderNumber });
+      }
+      await batch.commit();
+    }
+  }
 }

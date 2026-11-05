@@ -21,7 +21,9 @@ export class SongbookService {
     return this.firestore.collection(this.collectionName).doc(id).update(data);
   }
 
-  async batchUpdateOrderNumbers(updates: { id: string; orderNumber: number }[]): Promise<void> {
+  async batchUpdateOrderNumbers(
+    updates: { id: string; orderNumber?: number; generalOrderNumber?: number }[]
+  ): Promise<void> {
     if (!updates || updates.length === 0) return;
     const chunkSize = 450;
     for (let i = 0; i < updates.length; i += chunkSize) {
@@ -29,7 +31,16 @@ export class SongbookService {
       const batch = this.firestore.firestore.batch();
       for (const item of chunk) {
         const docRef = this.firestore.collection(this.collectionName).doc(item.id).ref;
-        batch.update(docRef, { orderNumber: item.orderNumber });
+        const payload: any = {};
+        if (item.orderNumber !== undefined) {
+          payload.orderNumber = item.orderNumber;
+        }
+        if (item.generalOrderNumber !== undefined) {
+          payload.generalOrderNumber = item.generalOrderNumber;
+        }
+        if (Object.keys(payload).length > 0) {
+          batch.update(docRef, payload);
+        }
       }
       await batch.commit();
     }

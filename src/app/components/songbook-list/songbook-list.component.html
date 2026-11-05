@@ -151,7 +151,7 @@
                   class="sort-btn" 
                   [class.active]="indexSortBy === 'number'"
                   (click)="setSort('number')">
-                  🔢 N° {{ indexSortBy === 'number' ? (sortDirection === 'asc' ? '↑' : '↓') : '' }}
+                  🔢 Índice General {{ indexSortBy === 'number' ? (sortDirection === 'asc' ? '↑' : '↓') : '' }}
                 </button>
                 <button 
                   class="sort-btn" 
@@ -174,10 +174,10 @@
               <div class="index-admin-actions" *ngIf="isAdmin || canEditSongs">
                 <span class="drag-reorder-hint" *ngIf="isAdmin">
                   <span class="drag-hint-icon">⋮⋮</span>
-                  {{ isReorderingSongs ? 'Guardando orden...' : 'Arrastra para ordenar' }}
+                  {{ isReorderingSongs ? 'Guardando orden...' : 'Arrastra para ordenar Índice General' }}
                 </span>
-                <button class="renumber-btn" (click)="autoAssignOrderNumbers()" [disabled]="isReorderingSongs" title="Asignar números correlativos 1, 2, 3... según el orden actual">
-                  🔢 Renumerar correlativamente
+                <button class="renumber-btn" (click)="autoAssignOrderNumbers()" [disabled]="isReorderingSongs" title="Asignar numeración correlativa 1, 2, 3... al Índice General">
+                  🔢 Renumerar Índice General
                 </button>
               </div>
             </div>
@@ -191,21 +191,21 @@
                 [class.is-dragging]="draggedSong?.id === song.id"
                 [class.drag-over-before]="dragOverSongId === song.id && dragDropPosition === 'before'"
                 [class.drag-over-after]="dragOverSongId === song.id && dragDropPosition === 'after'"
-                (dragstart)="onSongDragStart($event, song)"
-                (dragover)="onSongDragOver($event, song)"
+                (dragstart)="onSongDragStart($event, song, 'general')"
+                (dragover)="onSongDragOver($event, song, 'general')"
                 (dragleave)="onSongDragLeave($event, song)"
-                (drop)="onSongDrop($event, song)"
+                (drop)="onSongDrop($event, song, 'general')"
                 (dragend)="onSongDragEnd()"
                 (click)="openSongDetail(song)">
                 <div 
                   class="song-drag-handle" 
                   *ngIf="isAdmin" 
-                  title="Arrastra para mover y actualizar numeración"
+                  title="Arrastra para mover y actualizar el Índice General"
                   (click)="$event.stopPropagation()">
                   ⋮⋮
                 </div>
-                <div class="index-number-badge" [class.no-number]="!song.orderNumber">
-                  {{ song.orderNumber ? '#' + song.orderNumber : 'S/N' }}
+                <div class="index-number-badge" [class.no-number]="!song.generalOrderNumber" title="Número en el Índice General">
+                  {{ song.generalOrderNumber ? '#' + song.generalOrderNumber : 'S/N' }}
                 </div>
                 <div class="index-song-info">
                   <div class="index-song-title-row">
@@ -216,6 +216,9 @@
                   </div>
                   <div class="index-song-meta">
                     <span class="index-meta-item">📁 {{ song.category || 'Sin categoría' }}</span>
+                    <span class="index-meta-item folder-index-pill" *ngIf="song.orderNumber" title="Índice interno de la carpeta {{ song.category }}">
+                      📂 Carpeta #{{ song.orderNumber }}
+                    </span>
                     <span class="index-meta-item" *ngIf="song.composers">✍️ {{ song.composers }}</span>
                     <span class="index-meta-item spotify-tag" *ngIf="song.youtubeLink">🟢 Spotify</span>
                   </div>
@@ -225,16 +228,16 @@
                     type="button" 
                     class="song-step-btn" 
                     [disabled]="idx === 0 || isReorderingSongs"
-                    (click)="moveSongStep($event, song, 'up', sortedIndexSongs)"
-                    title="Subir una posición">
+                    (click)="moveSongStep($event, song, 'up', sortedIndexSongs, 'general')"
+                    title="Subir una posición en el Índice General">
                     ↑
                   </button>
                   <button 
                     type="button" 
                     class="song-step-btn" 
                     [disabled]="idx === sortedIndexSongs.length - 1 || isReorderingSongs"
-                    (click)="moveSongStep($event, song, 'down', sortedIndexSongs)"
-                    title="Bajar una posición">
+                    (click)="moveSongStep($event, song, 'down', sortedIndexSongs, 'general')"
+                    title="Bajar una posición en el Índice General">
                     ↓
                   </button>
                 </div>
@@ -257,13 +260,16 @@
               </h3>
               <div class="search-results-list">
                 <div class="song-item" *ngFor="let song of filteredSongs" (click)="openSongDetail(song)">
-                  <div class="song-order-tag" [class.no-number]="!song.orderNumber">
+                  <div class="song-order-tag" [class.no-number]="!song.orderNumber" title="Índice interno de carpeta">
                     {{ song.orderNumber ? '#' + song.orderNumber : 'S/N' }}
                   </div>
                   <div class="song-info">
                     <span class="song-title">{{ song.title }}</span>
                   </div>
                   <div class="song-right-badges">
+                    <span class="general-order-mini-tag" *ngIf="song.generalOrderNumber" title="Posición en el Índice General">
+                      Gral. #{{ song.generalOrderNumber }}
+                    </span>
                     <span 
                       *ngIf="!song.excludeFromLearning"
                       class="learned-icon-badge" 
@@ -291,6 +297,20 @@
                   <span class="folder-count">{{ songsByCategory[category]?.length || 0 }}</span>
                 </div>
                 <div class="folder-content" *ngIf="selectedCategory === category" (click)="$event.stopPropagation()">
+                  <div class="folder-internal-toolbar" *ngIf="isAdmin || canEditSongs">
+                    <span class="folder-internal-hint">
+                      📂 Índice interno de <strong>{{ category }}</strong>
+                      <span *ngIf="isAdmin"> · Arrastra ⋮⋮ para ordenar esta carpeta</span>
+                    </span>
+                    <button 
+                      type="button" 
+                      class="folder-renumber-btn" 
+                      [disabled]="isReorderingSongs"
+                      (click)="autoAssignCategoryOrderNumbers(category, $event)">
+                      🔢 Renumerar carpeta
+                    </button>
+                  </div>
+
                   <div 
                     class="song-item" 
                     *ngFor="let song of songsByCategory[category]; let idx = index" 
@@ -299,41 +319,44 @@
                     [class.is-dragging]="draggedSong?.id === song.id"
                     [class.drag-over-before]="dragOverSongId === song.id && dragDropPosition === 'before'"
                     [class.drag-over-after]="dragOverSongId === song.id && dragDropPosition === 'after'"
-                    (dragstart)="onSongDragStart($event, song)"
-                    (dragover)="onSongDragOver($event, song)"
+                    (dragstart)="onSongDragStart($event, song, 'category', category)"
+                    (dragover)="onSongDragOver($event, song, 'category', category)"
                     (dragleave)="onSongDragLeave($event, song)"
-                    (drop)="onSongDrop($event, song)"
+                    (drop)="onSongDrop($event, song, 'category', category)"
                     (dragend)="onSongDragEnd()"
                     (click)="openSongDetail(song)">
                     <div 
                       class="song-drag-handle" 
                       *ngIf="isAdmin" 
-                      title="Arrastra para mover y actualizar numeración"
+                      title="Arrastra para mover y actualizar el índice interno de esta carpeta"
                       (click)="$event.stopPropagation()">
                       ⋮⋮
                     </div>
-                    <div class="song-order-tag" [class.no-number]="!song.orderNumber">
+                    <div class="song-order-tag" [class.no-number]="!song.orderNumber" title="Número interno en {{ category }}">
                       {{ song.orderNumber ? '#' + song.orderNumber : 'S/N' }}
                     </div>
                     <div class="song-info">
                       <span class="song-title">{{ song.title }}</span>
                     </div>
                     <div class="song-right-badges">
+                      <span class="general-order-mini-tag" *ngIf="song.generalOrderNumber" title="Posición en el Índice General">
+                        Gral. #{{ song.generalOrderNumber }}
+                      </span>
                       <div class="song-step-controls" *ngIf="isAdmin" (click)="$event.stopPropagation()">
                         <button 
                           type="button" 
                           class="song-step-btn" 
                           [disabled]="idx === 0 || isReorderingSongs"
-                          (click)="moveSongStep($event, song, 'up', songsByCategory[category])"
-                          title="Subir una posición">
+                          (click)="moveSongStep($event, song, 'up', songsByCategory[category], 'category', category)"
+                          title="Subir una posición en esta carpeta">
                           ↑
                         </button>
                         <button 
                           type="button" 
                           class="song-step-btn" 
                           [disabled]="idx === songsByCategory[category].length - 1 || isReorderingSongs"
-                          (click)="moveSongStep($event, song, 'down', songsByCategory[category])"
-                          title="Bajar una posición">
+                          (click)="moveSongStep($event, song, 'down', songsByCategory[category], 'category', category)"
+                          title="Bajar una posición en esta carpeta">
                           ↓
                         </button>
                       </div>
@@ -381,8 +404,8 @@
             </div>
             
             <div class="song-page-title-box">
-              <span class="song-page-order-badge" *ngIf="selectedSong.orderNumber && !isEditing">
-                #{{ selectedSong.orderNumber }}
+              <span class="song-page-order-badge" *ngIf="(selectedSong.generalOrderNumber || selectedSong.orderNumber) && !isEditing">
+                #{{ selectedSong.generalOrderNumber || selectedSong.orderNumber }}
               </span>
               <h1 class="song-page-heading" *ngIf="!isEditing" [title]="selectedSong.title">
                 {{ selectedSong.title }}
@@ -422,7 +445,12 @@
           
           <!-- Fila de metadatos e insignias -->
           <div class="song-info-compact song-page-badges-row" *ngIf="!isEditing">
-            <span class="info-badge number-badge" *ngIf="selectedSong.orderNumber">N° {{ selectedSong.orderNumber }}</span>
+            <span class="info-badge number-badge" *ngIf="selectedSong.generalOrderNumber" title="Número en el Índice General">
+              📋 Índice General: #{{ selectedSong.generalOrderNumber }}
+            </span>
+            <span class="info-badge folder-number-badge" *ngIf="selectedSong.orderNumber" title="Número interno en su carpeta">
+              📂 Carpeta: #{{ selectedSong.orderNumber }}
+            </span>
             <span class="info-badge category-badge">{{ selectedSong.category }}</span>
             
             <!-- Estado de aprendizaje para el usuario actual -->
@@ -598,7 +626,16 @@
             <!-- Formulario de edición de información básica -->
             <div class="song-info-edit full-width-card" *ngIf="(isAdmin || canEditSongs) && isEditing">
               <div class="edit-row">
-                <label>🔢 Número de orden (Índice):</label>
+                <label>📋 N° en Índice General:</label>
+                <input 
+                  [(ngModel)]="editedGeneralOrderNumber"
+                  class="edit-input"
+                  placeholder="Ej: 1, 2, 50..."
+                  type="number"
+                  min="1">
+              </div>
+              <div class="edit-row">
+                <label>📂 N° interno en Carpeta ({{ editedCategory || 'Categoría' }}):</label>
                 <input 
                   [(ngModel)]="editedOrderNumber"
                   class="edit-input"

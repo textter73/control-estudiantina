@@ -33,6 +33,7 @@ export class SongbookListComponent implements OnInit, OnDestroy {
   indexSortBy: 'number' | 'title' | 'category' = 'number';
   sortDirection: 'asc' | 'desc' = 'asc';
   editedOrderNumber: number | null = null;
+  editedGeneralOrderNumber: number | null = null;
   editedStructure = '';
   editedInstrumentation = '';
   editedTitle = '';
@@ -49,6 +50,8 @@ export class SongbookListComponent implements OnInit, OnDestroy {
   draggedSong: any = null;
   dragOverSongId: string | null = null;
   dragDropPosition: 'before' | 'after' = 'before';
+  dragContext: 'general' | 'category' = 'general';
+  dragCategoryName: string | null = null;
   isReorderingSongs = false;
 
   // Variables para zoom de texto
@@ -280,11 +283,9 @@ export class SongbookListComponent implements OnInit, OnDestroy {
   get sortedIndexSongs(): any[] {
     let result = [...this.songs];
 
-    // Filtrar por categorías seleccionadas en el índice general (multiselección)
+    // Filtrar únicamente por los chips de categorías seleccionados en el Índice General
     if (this.selectedCategoriesForIndex.length > 0) {
       result = result.filter(s => this.selectedCategoriesForIndex.includes(s.category));
-    } else if (this.selectedCategory) {
-      result = result.filter(s => s.category === this.selectedCategory);
     }
 
     // Filtrar por término de búsqueda si hay uno
@@ -292,6 +293,11 @@ export class SongbookListComponent implements OnInit, OnDestroy {
       const term = this.searchTerm.toLowerCase().trim();
       result = result.filter(song =>
         (song.title && song.title.toLowerCase().includes(term)) ||
+        (song.generalOrderNumber !== undefined && song.generalOrderNumber !== null && (
+          song.generalOrderNumber.toString() === term ||
+          song.generalOrderNumber.toString().includes(term) ||
+          ('#' + song.generalOrderNumber).includes(term)
+        )) ||
         (song.orderNumber !== undefined && song.orderNumber !== null && (
           song.orderNumber.toString() === term ||
           song.orderNumber.toString().includes(term) ||
@@ -304,29 +310,22 @@ export class SongbookListComponent implements OnInit, OnDestroy {
       );
     }
 
-    // Ordenar según criterio
+    // Ordenar según criterio del Índice General
     result.sort((a, b) => {
       let comparison = 0;
       if (this.indexSortBy === 'number') {
-        const hasA = a.orderNumber != null && !isNaN(Number(a.orderNumber));
-        const hasB = b.orderNumber != null && !isNaN(Number(b.orderNumber));
-        if (hasA && hasB) {
-          comparison = Number(a.orderNumber) - Number(b.orderNumber);
-        } else if (hasA && !hasB) {
-          comparison = -1; // Con número va primero
-        } else if (!hasA && hasB) {
-          comparison = 1;
-        } else {
-          comparison = (a.title || '').localeCompare(b.title || '');
-        }
+        comparison = this.compareByGeneralIndex(a, b);
       } else if (this.indexSortBy === 'title') {
         comparison = (a.title || '').localeCompare(b.title || '');
       } else if (this.indexSortBy === 'category') {
         comparison = (a.category || '').localeCompare(b.category || '');
         if (comparison === 0) {
-          const numA = Number(a.orderNumber) || 999999;
-          const numB = Number(b.orderNumber) || 999999;
+          const numA = a.orderNumber != null && !isNaN(Number(a.orderNumber)) ? Number(a.orderNumber) : 999999;
+          const numB = b.orderNumber != null && !isNaN(Number(b.orderNumber)) ? Number(b.orderNumber) : 999999;
           comparison = numA - numB;
+          if (comparison === 0) {
+            comparison = (a.title || '').localeCompare(b.title || '');
+          }
         }
       }
 
@@ -334,6 +333,34 @@ export class SongbookListComponent implements OnInit, OnDestroy {
     });
 
     return result;
+  }
+
+  private compareByGeneralIndex(a: any, b: any): number {
+    const hasGenA = a.generalOrderNumber != null && !isNaN(Number(a.generalOrderNumber));
+    const hasGenB = b.generalOrderNumber != null && !isNaN(Number(b.generalOrderNumber));
+    if (hasGenA && hasGenB) {
+      const diff = Number(a.generalOrderNumber) - Number(b.generalOrderNumber);
+      if (diff !== 0) return diff;
+    } else if (hasGenA && !hasGenB) {
+      return -1;
+    } else if (!hasGenA && hasGenB) {
+      return 1;
+    }
+
+    // Si aún no tienen generalOrderNumber asignado, ordenar de forma estable por categoría -> número de carpeta -> título
+    const catCmp = (a.category || '').localeCompare(b.category || '');
+    if (catCmp !== 0) return catCmp;
+    const hasOrdA = a.orderNumber != null && !isNaN(Number(a.orderNumber));
+    const hasOrdB = b.orderNumber != null && !isNaN(Number(b.orderNumber));
+    if (hasOrdA && hasOrdB) {
+      const ordDiff = Number(a.orderNumber) - Number(b.orderNumber);
+      if (ordDiff !== 0) return ordDiff;
+    } else if (hasOrdA && !hasOrdB) {
+      return -1;
+    } else if (!hasOrdA && hasOrdB) {
+      return 1;
+    }
+    return (a.title || '').localeCompare(b.title || '');
   }
 
   get fullyLearnedSongsCount(): number {
@@ -364,17 +391,11 @@ export class SongbookListComponent implements OnInit, OnDestroy {
       result = result.filter(s =>
         (s.title && s.title.toLowerCase().includes(term)) ||
         (s.category && s.category.toLowerCase().includes(term)) ||
+        (s.generalOrderNumber !== undefined && s.generalOrderNumber !== null && s.generalOrderNumber.toString().includes(term)) ||
         (s.orderNumber !== undefined && s.orderNumber !== null && s.orderNumber.toString().includes(term))
       );
     }
-    result.sort((a, b) => {
-      const hasA = a.orderNumber != null && !isNaN(Number(a.orderNumber));
-      const hasB = b.orderNumber != null && !isNaN(Number(b.orderNumber));
-      if (hasA && hasB) return Number(a.orderNumber) - Number(b.orderNumber);
-      if (hasA && !hasB) return -1;
-      if (!hasA && hasB) return 1;
-      return (a.title || '').localeCompare(b.title || '');
-    });
+    result.sort((a, b) => this.compareByGeneralIndex(a, b));
     return result;
   }
 
@@ -390,31 +411,75 @@ export class SongbookListComponent implements OnInit, OnDestroy {
   async autoAssignOrderNumbers() {
     if (!this.isAdmin && !this.canEditSongs) return;
 
+    const currentList = [...this.sortedIndexSongs];
+    if (currentList.length === 0) return;
+
     const result = await Swal.fire({
-      title: '🔢 Renumerar canciones',
-      text: '¿Deseas asignar números correlativos (1, 2, 3...) a las canciones mostradas?',
+      title: '🔢 Renumerar Índice General',
+      text: `¿Deseas asignar números correlativos (1 al ${currentList.length}) en el Índice General según el orden mostrado? (El índice interno de cada carpeta no se modificará)`,
       icon: 'question',
       showCancelButton: true,
       confirmButtonColor: '#189d98',
       cancelButtonColor: '#6c757d',
-      confirmButtonText: 'Sí, renumerar',
+      confirmButtonText: 'Sí, renumerar Índice General',
       cancelButtonText: 'Cancelar'
     });
 
     if (!result.isConfirmed) return;
 
     Swal.fire({
-      title: 'Renumerando canciones...',
+      title: 'Renumerando Índice General...',
       text: 'Por favor espera',
       allowOutsideClick: false,
       didOpen: () => { Swal.showLoading(); }
     });
 
     try {
-      const currentList = this.sortedIndexSongs;
-      const updates: { id: string; orderNumber: number }[] = [];
+      const updates: { id: string; generalOrderNumber: number }[] = [];
       for (let i = 0; i < currentList.length; i++) {
         const song = currentList[i];
+        const newOrder = i + 1;
+        updates.push({ id: song.id, generalOrderNumber: newOrder });
+        song.generalOrderNumber = newOrder;
+        const mainIndex = this.songs.findIndex(s => s.id === song.id);
+        if (mainIndex !== -1) {
+          this.songs[mainIndex].generalOrderNumber = newOrder;
+        }
+      }
+      this.indexSortBy = 'number';
+      this.sortDirection = 'asc';
+      await this.songbookService.batchUpdateOrderNumbers(updates);
+      Swal.fire('¡Listo!', `Se asignó el Índice General (1 al ${currentList.length}) con éxito.`, 'success');
+    } catch (error) {
+      Swal.fire('Error', 'No se pudo renumerar el Índice General: ' + error, 'error');
+    }
+  }
+
+  async autoAssignCategoryOrderNumbers(category: string, event?: Event) {
+    if (event) event.stopPropagation();
+    if (!this.isAdmin && !this.canEditSongs) return;
+
+    const folderSongs = [...(this.songsByCategory[category] || [])];
+    if (folderSongs.length === 0) return;
+
+    const result = await Swal.fire({
+      title: `📁 Renumerar carpeta "${category}"`,
+      text: `¿Deseas asignar números internos correlativos (1 al ${folderSongs.length}) a las canciones de "${category}"? (El Índice General no se verá afectado)`,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#189d98',
+      cancelButtonColor: '#6c757d',
+      confirmButtonText: 'Sí, renumerar carpeta',
+      cancelButtonText: 'Cancelar'
+    });
+
+    if (!result.isConfirmed) return;
+
+    try {
+      this.isReorderingSongs = true;
+      const updates: { id: string; orderNumber: number }[] = [];
+      for (let i = 0; i < folderSongs.length; i++) {
+        const song = folderSongs[i];
         const newOrder = i + 1;
         updates.push({ id: song.id, orderNumber: newOrder });
         song.orderNumber = newOrder;
@@ -423,30 +488,45 @@ export class SongbookListComponent implements OnInit, OnDestroy {
           this.songs[mainIndex].orderNumber = newOrder;
         }
       }
-      await this.songbookService.batchUpdateOrderNumbers(updates);
       this.organizeSongsByCategory();
-      Swal.fire('¡Listo!', `Se renumeraron ${currentList.length} canciones con éxito.`, 'success');
+      await this.songbookService.batchUpdateOrderNumbers(updates);
+      Swal.fire({
+        toast: true,
+        position: 'bottom-end',
+        icon: 'success',
+        title: `Carpeta "${category}" renumerada`,
+        text: `Numeración interna actualizada del #1 al #${folderSongs.length}`,
+        showConfirmButton: false,
+        timer: 2500
+      });
     } catch (error) {
-      Swal.fire('Error', 'No se pudieron renumerar las canciones: ' + error, 'error');
+      Swal.fire('Error', 'No se pudo renumerar la carpeta: ' + error, 'error');
+    } finally {
+      this.isReorderingSongs = false;
     }
   }
 
-  onSongDragStart(event: DragEvent, song: any) {
+  onSongDragStart(event: DragEvent, song: any, context: 'general' | 'category' = 'general', categoryName?: string) {
     if (!this.isAdmin || this.isReorderingSongs || !song?.id) {
       event.preventDefault();
       return;
     }
     this.draggedSong = song;
+    this.dragContext = context;
+    this.dragCategoryName = categoryName || null;
     if (event.dataTransfer) {
       event.dataTransfer.effectAllowed = 'move';
       event.dataTransfer.setData('text/plain', song.id);
     }
   }
 
-  onSongDragOver(event: DragEvent, targetSong: any) {
+  onSongDragOver(event: DragEvent, targetSong: any, context: 'general' | 'category' = 'general', categoryName?: string) {
     if (!this.isAdmin || !this.draggedSong || !targetSong?.id || this.draggedSong.id === targetSong.id) {
       return;
     }
+    if (this.dragContext !== context) return;
+    if (context === 'category' && this.dragCategoryName !== (categoryName || null)) return;
+
     event.preventDefault();
     if (event.dataTransfer) {
       event.dataTransfer.dropEffect = 'move';
@@ -473,25 +553,43 @@ export class SongbookListComponent implements OnInit, OnDestroy {
   onSongDragEnd() {
     this.draggedSong = null;
     this.dragOverSongId = null;
+    this.dragCategoryName = null;
   }
 
-  async onSongDrop(event: DragEvent, targetSong: any) {
+  async onSongDrop(event: DragEvent, targetSong: any, context: 'general' | 'category' = 'general', categoryName?: string) {
     event.preventDefault();
     event.stopPropagation();
 
     const sourceSong = this.draggedSong;
     const dropPos = this.dragDropPosition;
+    const sourceContext = this.dragContext;
+    const sourceCat = this.dragCategoryName;
     this.draggedSong = null;
     this.dragOverSongId = null;
+    this.dragCategoryName = null;
 
     if (!this.isAdmin || !sourceSong || !targetSong || sourceSong.id === targetSong.id || this.isReorderingSongs) {
       return;
     }
+    if (sourceContext !== context) return;
 
-    await this.reorderSongRelativeTo(sourceSong, targetSong, dropPos);
+    if (context === 'category') {
+      const cat = categoryName || sourceCat || targetSong.category;
+      if (!cat) return;
+      await this.reorderCategoryFolderSong(sourceSong, targetSong, dropPos, cat);
+    } else {
+      await this.reorderGeneralIndexSong(sourceSong, targetSong, dropPos);
+    }
   }
 
-  async moveSongStep(event: Event, song: any, direction: 'up' | 'down', currentList: any[]) {
+  async moveSongStep(
+    event: Event,
+    song: any,
+    direction: 'up' | 'down',
+    currentList: any[],
+    context: 'general' | 'category' = 'general',
+    categoryName?: string
+  ) {
     event.stopPropagation();
     if (!this.isAdmin || this.isReorderingSongs || !song?.id || !currentList?.length) return;
 
@@ -502,25 +600,28 @@ export class SongbookListComponent implements OnInit, OnDestroy {
     if (targetIndex < 0 || targetIndex >= currentList.length) return;
 
     const targetSong = currentList[targetIndex];
-    await this.reorderSongRelativeTo(song, targetSong, direction === 'up' ? 'before' : 'after');
+    const dropPos = direction === 'up' ? 'before' : 'after';
+
+    if (context === 'category') {
+      const cat = categoryName || song.category;
+      if (!cat) return;
+      await this.reorderCategoryFolderSong(song, targetSong, dropPos, cat);
+    } else {
+      await this.reorderGeneralIndexSong(song, targetSong, dropPos);
+    }
   }
 
-  private async reorderSongRelativeTo(sourceSong: any, targetSong: any, position: 'before' | 'after') {
+  /**
+   * Reordena y actualiza exclusivamente el Índice General (generalOrderNumber),
+   * conservando intacto el índice interno (orderNumber) de cada carpeta.
+   */
+  private async reorderGeneralIndexSong(sourceSong: any, targetSong: any, position: 'before' | 'after') {
     if (!this.isAdmin || this.isReorderingSongs) return;
 
-    // Si estamos en el Índice General sin filtros, usamos el orden visual actual como base;
-    // de lo contrario, usamos todas las canciones ordenadas por su numeración actual.
-    const isUnfilteredIndex = this.activeTab === 'index' && !this.searchTerm?.trim() && !this.selectedCategory;
+    const isUnfilteredIndex = !this.searchTerm?.trim() && this.selectedCategoriesForIndex.length === 0;
     const baseList = isUnfilteredIndex
       ? [...this.sortedIndexSongs]
-      : [...this.songs].sort((a, b) => {
-          const hasA = a.orderNumber != null && !isNaN(Number(a.orderNumber));
-          const hasB = b.orderNumber != null && !isNaN(Number(b.orderNumber));
-          if (hasA && hasB) return Number(a.orderNumber) - Number(b.orderNumber);
-          if (hasA && !hasB) return -1;
-          if (!hasA && hasB) return 1;
-          return (a.title || '').localeCompare(b.title || '');
-        });
+      : [...this.songs].sort((a, b) => this.compareByGeneralIndex(a, b));
 
     const fromIndex = baseList.findIndex(s => s.id === sourceSong.id);
     if (fromIndex === -1) return;
@@ -532,18 +633,86 @@ export class SongbookListComponent implements OnInit, OnDestroy {
     const insertIndex = position === 'before' ? targetIndex : targetIndex + 1;
     baseList.splice(insertIndex, 0, movedItem);
 
-    // Asegurar que la vista se mantenga ordenada por numeración ascendente
     this.indexSortBy = 'number';
     this.sortDirection = 'asc';
 
-    const updates: { id: string; orderNumber: number }[] = [];
-    let newMovedOrderNumber = insertIndex + 1;
+    const updates: { id: string; generalOrderNumber: number }[] = [];
+    let newMovedGeneralNumber = insertIndex + 1;
 
     for (let i = 0; i < baseList.length; i++) {
       const item = baseList[i];
       const newOrder = i + 1;
       if (item.id === movedItem.id) {
-        newMovedOrderNumber = newOrder;
+        newMovedGeneralNumber = newOrder;
+      }
+      if (Number(item.generalOrderNumber) !== newOrder) {
+        updates.push({ id: item.id, generalOrderNumber: newOrder });
+      }
+      item.generalOrderNumber = newOrder;
+      const mainIdx = this.songs.findIndex(s => s.id === item.id);
+      if (mainIdx !== -1) {
+        this.songs[mainIdx].generalOrderNumber = newOrder;
+      }
+    }
+
+    if (updates.length === 0) return;
+
+    this.isReorderingSongs = true;
+    try {
+      await this.songbookService.batchUpdateOrderNumbers(updates);
+      Swal.fire({
+        toast: true,
+        position: 'bottom-end',
+        icon: 'success',
+        title: 'Índice General actualizado',
+        text: `"${movedItem.title}" ahora es #${newMovedGeneralNumber} en el Índice General`,
+        showConfirmButton: false,
+        timer: 2200,
+        timerProgressBar: true
+      });
+    } catch (error) {
+      console.error('Error al actualizar el Índice General:', error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error al guardar el Índice General',
+        text: 'No se pudo actualizar la numeración: ' + error
+      });
+    } finally {
+      this.isReorderingSongs = false;
+    }
+  }
+
+  /**
+   * Reordena y actualiza exclusivamente el índice interno (orderNumber) dentro de una carpeta/categoría,
+   * sin afectar el Índice General ni las demás carpetas.
+   */
+  private async reorderCategoryFolderSong(
+    sourceSong: any,
+    targetSong: any,
+    position: 'before' | 'after',
+    category: string
+  ) {
+    if (!this.isAdmin || this.isReorderingSongs || !category) return;
+
+    const folderList = [...(this.songsByCategory[category] || [])];
+    const fromIndex = folderList.findIndex(s => s.id === sourceSong.id);
+    if (fromIndex === -1) return;
+
+    const [movedItem] = folderList.splice(fromIndex, 1);
+    const targetIndex = folderList.findIndex(s => s.id === targetSong.id);
+    if (targetIndex === -1) return;
+
+    const insertIndex = position === 'before' ? targetIndex : targetIndex + 1;
+    folderList.splice(insertIndex, 0, movedItem);
+
+    const updates: { id: string; orderNumber: number }[] = [];
+    let newMovedFolderNumber = insertIndex + 1;
+
+    for (let i = 0; i < folderList.length; i++) {
+      const item = folderList[i];
+      const newOrder = i + 1;
+      if (item.id === movedItem.id) {
+        newMovedFolderNumber = newOrder;
       }
       if (Number(item.orderNumber) !== newOrder) {
         updates.push({ id: item.id, orderNumber: newOrder });
@@ -566,18 +735,18 @@ export class SongbookListComponent implements OnInit, OnDestroy {
         toast: true,
         position: 'bottom-end',
         icon: 'success',
-        title: 'Orden actualizado',
-        text: `"${movedItem.title}" ahora es #${newMovedOrderNumber}`,
+        title: `Orden en "${category}" actualizado`,
+        text: `"${movedItem.title}" ahora es #${newMovedFolderNumber} en su carpeta`,
         showConfirmButton: false,
         timer: 2200,
         timerProgressBar: true
       });
     } catch (error) {
-      console.error('Error al actualizar el orden de las canciones:', error);
+      console.error('Error al actualizar el orden de la carpeta:', error);
       Swal.fire({
         icon: 'error',
-        title: 'Error al guardar el orden',
-        text: 'No se pudo actualizar la numeración: ' + error
+        title: 'Error al guardar orden de carpeta',
+        text: 'No se pudo actualizar la numeración interna: ' + error
       });
     } finally {
       this.isReorderingSongs = false;
@@ -590,6 +759,11 @@ export class SongbookListComponent implements OnInit, OnDestroy {
       // Buscar en todas las canciones sin importar la categoría
       this.filteredSongs = this.songs.filter(song =>
         (song.title && song.title.toLowerCase().includes(term)) ||
+        (song.generalOrderNumber !== undefined && song.generalOrderNumber !== null && (
+          song.generalOrderNumber.toString() === term ||
+          song.generalOrderNumber.toString().includes(term) ||
+          ('#' + song.generalOrderNumber).includes(term)
+        )) ||
         (song.orderNumber !== undefined && song.orderNumber !== null && (
           song.orderNumber.toString() === term ||
           song.orderNumber.toString().includes(term) ||
@@ -615,6 +789,7 @@ export class SongbookListComponent implements OnInit, OnDestroy {
     this.modalActiveTab = tab;
     this.isModalOpen = true;
     this.editedOrderNumber = song.orderNumber != null && !isNaN(Number(song.orderNumber)) ? Number(song.orderNumber) : null;
+    this.editedGeneralOrderNumber = song.generalOrderNumber != null && !isNaN(Number(song.generalOrderNumber)) ? Number(song.generalOrderNumber) : null;
     this.editedStructure = song.structure || '';
     this.editedInstrumentation = song.instrumentation || '';
     this.editedTitle = song.title || '';
@@ -639,6 +814,7 @@ export class SongbookListComponent implements OnInit, OnDestroy {
     this.isModalOpen = false;
     this.isEditing = false;
     this.editedOrderNumber = null;
+    this.editedGeneralOrderNumber = null;
     this.editedStructure = '';
     this.editedInstrumentation = '';
     this.editedTitle = '';
@@ -662,6 +838,7 @@ export class SongbookListComponent implements OnInit, OnDestroy {
   startEditing() {
     this.isEditing = true;
     this.editedOrderNumber = this.selectedSong?.orderNumber != null && !isNaN(Number(this.selectedSong.orderNumber)) ? Number(this.selectedSong.orderNumber) : null;
+    this.editedGeneralOrderNumber = this.selectedSong?.generalOrderNumber != null && !isNaN(Number(this.selectedSong.generalOrderNumber)) ? Number(this.selectedSong.generalOrderNumber) : null;
     this.editedStructure = this.selectedSong.structure || '';
     this.editedInstrumentation = this.selectedSong.instrumentation || '';
     this.editedTitle = this.selectedSong.title || '';
@@ -676,6 +853,7 @@ export class SongbookListComponent implements OnInit, OnDestroy {
     // Verificar si hay cambios sin guardar
     const hasChanges =
       this.editedOrderNumber !== (this.selectedSong.orderNumber ?? null) ||
+      this.editedGeneralOrderNumber !== (this.selectedSong.generalOrderNumber ?? null) ||
       this.editedStructure !== (this.selectedSong.structure || '') ||
       this.editedInstrumentation !== (this.selectedSong.instrumentation || '') ||
       this.editedTitle !== (this.selectedSong.title || '') ||
@@ -702,6 +880,7 @@ export class SongbookListComponent implements OnInit, OnDestroy {
 
     this.isEditing = false;
     this.editedOrderNumber = this.selectedSong?.orderNumber ?? null;
+    this.editedGeneralOrderNumber = this.selectedSong?.generalOrderNumber ?? null;
     this.editedStructure = this.selectedSong.structure || '';
     this.editedInstrumentation = this.selectedSong.instrumentation || '';
     this.editedExcludeFromLearning = !!this.selectedSong?.excludeFromLearning;
@@ -730,10 +909,14 @@ export class SongbookListComponent implements OnInit, OnDestroy {
       const parsedOrder = this.editedOrderNumber !== null && this.editedOrderNumber !== undefined && (this.editedOrderNumber as any) !== ''
         ? Number(this.editedOrderNumber)
         : null;
+      const parsedGeneralOrder = this.editedGeneralOrderNumber !== null && this.editedGeneralOrderNumber !== undefined && (this.editedGeneralOrderNumber as any) !== ''
+        ? Number(this.editedGeneralOrderNumber)
+        : null;
 
       const updatedData: any = {
         title: this.editedTitle,
         orderNumber: parsedOrder,
+        generalOrderNumber: parsedGeneralOrder,
         category: this.editedCategory,
         status: this.editedStatus,
         composers: this.editedComposers,
@@ -748,6 +931,7 @@ export class SongbookListComponent implements OnInit, OnDestroy {
       // Actualizar la canción en la lista local
       this.selectedSong.title = this.editedTitle;
       this.selectedSong.orderNumber = parsedOrder;
+      this.selectedSong.generalOrderNumber = parsedGeneralOrder;
       this.selectedSong.category = this.editedCategory;
       this.selectedSong.status = this.editedStatus;
       this.selectedSong.composers = this.editedComposers;

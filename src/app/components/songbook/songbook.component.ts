@@ -17,7 +17,9 @@ export class SongbookComponent {
   category: string = '';
   youtubeLink: string = '';
   orderNumber: number | null = null;
+  generalOrderNumber: number | null = null;
   status: string = '';
+  allSongs: any[] = [];
 
   categories = [
     'estudiantina',
@@ -37,25 +39,53 @@ export class SongbookComponent {
   constructor(private router: Router, private songbookService: SongbookService) {}
 
   ngOnInit() {
-    // Sugerir el siguiente número de canción
     this.songbookService.getSongs().subscribe((res: any) => {
-      const numbers = res
-        .map((doc: any) => doc.payload.doc.data()?.orderNumber)
-        .filter((num: any) => num !== undefined && num !== null && !isNaN(Number(num)))
-        .map((num: any) => Number(num));
-      
-      if (numbers.length > 0) {
-        this.orderNumber = Math.max(...numbers) + 1;
-      } else {
-        this.orderNumber = res.length + 1;
-      }
+      this.allSongs = res.map((doc: any) => doc.payload.doc.data());
+      this.suggestGeneralOrderNumber();
+      this.suggestCategoryOrderNumber();
     });
+  }
+
+  suggestGeneralOrderNumber() {
+    const genNumbers = this.allSongs
+      .map((s: any) => s?.generalOrderNumber)
+      .filter((num: any) => num !== undefined && num !== null && !isNaN(Number(num)))
+      .map((num: any) => Number(num));
+
+    if (genNumbers.length > 0) {
+      this.generalOrderNumber = Math.max(...genNumbers) + 1;
+    } else {
+      this.generalOrderNumber = this.allSongs.length + 1;
+    }
+  }
+
+  onCategoryChange() {
+    this.suggestCategoryOrderNumber();
+  }
+
+  suggestCategoryOrderNumber() {
+    if (!this.category) {
+      this.orderNumber = 1;
+      return;
+    }
+    const catSongs = this.allSongs.filter((s: any) => s?.category === this.category);
+    const catNumbers = catSongs
+      .map((s: any) => s?.orderNumber)
+      .filter((num: any) => num !== undefined && num !== null && !isNaN(Number(num)))
+      .map((num: any) => Number(num));
+
+    if (catNumbers.length > 0) {
+      this.orderNumber = Math.max(...catNumbers) + 1;
+    } else {
+      this.orderNumber = catSongs.length + 1;
+    }
   }
 
   saveSong() {
     const song: any = {
       title: this.title,
       orderNumber: (this.orderNumber != null && !isNaN(Number(this.orderNumber))) ? Number(this.orderNumber) : null,
+      generalOrderNumber: (this.generalOrderNumber != null && !isNaN(Number(this.generalOrderNumber))) ? Number(this.generalOrderNumber) : null,
       composers: this.composers,
       category: this.category,
       instrumentation: this.instrumentation,
@@ -72,7 +102,6 @@ export class SongbookComponent {
           text: 'La canción se guardó exitosamente.'
         });
         this.title = '';
-        this.orderNumber = (this.orderNumber || 0) + 1;
         this.composers = '';
         this.category = '';
         this.instrumentation = '';

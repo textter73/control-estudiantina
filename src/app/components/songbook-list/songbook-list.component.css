@@ -3623,5 +3623,80 @@
   }
 }
 
+/* Barra interna de carpeta y etiquetas de doble índice */
+.folder-internal-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  padding: 0.6rem 0.85rem;
+  margin-bottom: 0.65rem;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+}
+
+.folder-internal-hint {
+  font-size: 0.82rem;
+  color: #475569;
+}
+
+.folder-internal-hint strong {
+  color: #0f6b68;
+}
+
+.folder-renumber-btn {
+  background: #f0fdfa;
+  border: 1px dashed #189d98;
+  color: #0f6b68;
+  padding: 0.3rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.folder-renumber-btn:hover:not(:disabled) {
+  background: #189d98;
+  color: #ffffff;
+}
+
+.folder-renumber-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.folder-index-pill {
+  background: #f1f5f9;
+  color: #334155;
+  border: 1px solid #cbd5e1;
+  padding: 0.1rem 0.5rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.general-order-mini-tag {
+  background: #f8fafc;
+  color: #64748b;
+  border: 1px solid #e2e8f0;
+  padding: 0.15rem 0.5rem;
+  border-radius: 6px;
+  font-size: 0.74rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.info-badge.folder-number-badge {
+  background: #f0fdfa;
+  color: #0f6b68;
+  border: 1px solid #99f6e4;
+  font-weight: 700;
+}
+
+
 
 

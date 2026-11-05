@@ -34,24 +34,30 @@
             <option value="Aprendida">Aprendida</option>
           </select>
         </div>
+
         <div class="form-field">
-          <label for="orderNumber">🔢 N° en el Cancionero (Índice):</label>
-          <input id="orderNumber" type="number" min="1" [(ngModel)]="orderNumber" placeholder="Ej: 1, 2, 15..." />
+          <label for="category">📂 Categoría (Carpeta):</label>
+          <select id="category" [(ngModel)]="category" (ngModelChange)="onCategoryChange()">
+            <option value="">Seleccionar categoría</option>
+            <option *ngFor="let cat of categories" [value]="cat">{{ cat }}</option>
+          </select>
+        </div>
+
+        <div class="form-field">
+          <label for="generalOrderNumber">📋 N° en el Índice General:</label>
+          <input id="generalOrderNumber" type="number" min="1" [(ngModel)]="generalOrderNumber"
+            placeholder="Ej: 1, 2, 50..." />
+        </div>
+
+        <div class="form-field">
+          <label for="orderNumber">📂 N° interno en la Carpeta ({{ category || 'Categoría' }}):</label>
+          <input id="orderNumber" type="number" min="1" [(ngModel)]="orderNumber" placeholder="Ej: 1, 2, 10..." />
         </div>
 
         <div class="form-field">
           <label for="title">🎼 Título:</label>
           <input id="title" [(ngModel)]="title" placeholder="Título de la canción" />
         </div>
-
-        <div class="form-field">
-          <label for="category">📂 Categoría:</label>
-          <select id="category" [(ngModel)]="category">
-            <option value="">Seleccionar categoría</option>
-            <option *ngFor="let cat of categories" [value]="cat">{{ cat }}</option>
-          </select>
-        </div>
-
 
         <div class="form-field">
           <label for="composers">🖋️ Compositores:</label>
@@ -70,7 +76,8 @@
 
         <div class="form-field">
           <label for="youtubeLink">🎧 Link de Spotify / Audio:</label>
-          <input id="youtubeLink" [(ngModel)]="youtubeLink" placeholder="https://open.spotify.com/... o link de audio" type="url" />
+          <input id="youtubeLink" [(ngModel)]="youtubeLink" placeholder="https://open.spotify.com/... o link de audio"
+            type="url" />
         </div>
 
         <div class="form-field">

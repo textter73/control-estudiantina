@@ -639,12 +639,11 @@ export class DashboardComponent implements OnInit {
     return cell.key;
   }
 
-  /** Estado del día según mis confirmaciones de evento. Prioridad: pendiente > tal vez > asistiré > no asistiré */
-  getDayStatus(cell: { events: any[] }): 'pending' | 'maybe' | 'yes' | 'no' | null {
+  /** Estado del día según mis confirmaciones de evento. Prioridad: pendiente > asistiré > no asistiré */
+  getDayStatus(cell: { events: any[] }): 'pending' | 'yes' | 'no' | null {
     if (this.calendarViewFilter === 'attendance' || !cell.events.length) return null;
     const classes = cell.events.map(e => this.getConfirmationClass(e.userConfirmation));
     if (classes.includes('confirmation-pending')) return 'pending';
-    if (classes.includes('confirmation-maybe')) return 'maybe';
     if (classes.includes('confirmation-yes')) return 'yes';
     return 'no';
   }
@@ -652,7 +651,6 @@ export class DashboardComponent implements OnInit {
   getDayStatusIcon(cell: { events: any[] }): string {
     switch (this.getDayStatus(cell)) {
       case 'pending': return '!';
-      case 'maybe': return '?';
       case 'yes': return '✓';
       case 'no': return '✕';
       default: return '';

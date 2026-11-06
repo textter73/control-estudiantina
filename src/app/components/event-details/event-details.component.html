@@ -100,8 +100,6 @@
       </div>
     </div>
 
-
-
     <!-- Confirmación -->
     <div class="confirmation-card" *ngIf="event.status === 'abierto'">
       <h3>Confirmación de Asistencia</h3>
@@ -128,13 +126,6 @@
             (click)="selectResponse('asistire')"
             [disabled]="isSubmitting">
             ✅ Asistiré
-          </button>
-          <button 
-            class="response-btn maybe-btn" 
-            [class.active]="selectedResponse === 'tal-vez'"
-            (click)="selectResponse('tal-vez')"
-            [disabled]="isSubmitting">
-            🤔 Tal vez
           </button>
           <button 
             class="response-btn no-btn" 
@@ -184,10 +175,6 @@
           <div class="stat-item">
             <span class="stat-number">{{ getConfirmationStats().asistire }}</span>
             <span class="stat-label">Asistiré</span>
-          </div>
-          <div class="stat-item">
-            <span class="stat-number">{{ getConfirmationStats().talVez }}</span>
-            <span class="stat-label">Tal vez</span>
           </div>
           <div class="stat-item">
             <span class="stat-number">{{ getConfirmationStats().noAsistire }}</span>
@@ -273,7 +260,6 @@
               <label style="min-width:90px; color:#555;">Respuesta:</label>
               <select [(ngModel)]="editSelectedResponse" class="edit-select" style="padding:0.4rem 0.8rem; border-radius:8px; border:1px solid #e0e0e0;">
                 <option value="asistire">Asistiré</option>
-                <option value="tal-vez">Tal vez</option>
                 <option value="no-asistire">No asistiré</option>
               </select>
             </div>

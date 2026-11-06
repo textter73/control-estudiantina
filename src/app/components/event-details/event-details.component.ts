@@ -149,13 +149,11 @@ export class EventDetailsComponent implements OnInit {
     try {
       const responseIcons: { [key: string]: string } = {
         'asistire': '✅',
-        'tal-vez': '🤔',
         'no-asistire': '❌'
       };
 
       const responseTexts: { [key: string]: string } = {
         'asistire': 'Asistiré',
-        'tal-vez': 'Tal vez',
         'no-asistire': 'No asistiré'
       };
 
@@ -304,7 +302,6 @@ export class EventDetailsComponent implements OnInit {
     }
     const iconMap: { [key: string]: string } = {
       'asistire': '✅',
-      'tal-vez': '🤔',
       'no-asistire': '❌'
     };
     const lines = this.event.confirmations.map((c: any, idx: number) => {
@@ -402,7 +399,6 @@ export class EventDetailsComponent implements OnInit {
     return {
       asistire: asistireConfirmations.length,
       noAsistire: confirmations.filter((c: any) => c && c.response === 'no-asistire').length,
-      talVez: confirmations.filter((c: any) => c && c.response === 'tal-vez').length,
       total: confirmations.length,
       totalCompanions: totalCompanions,
       totalPeople: totalPeople,
@@ -442,7 +438,6 @@ export class EventDetailsComponent implements OnInit {
       input: 'select',
       inputOptions: {
         'asistire': 'Asistiré',
-        'tal-vez': 'Tal vez',
         'no-asistire': 'No asistiré'
       },
       inputPlaceholder: 'Selecciona la respuesta para todos',
@@ -543,7 +538,6 @@ export class EventDetailsComponent implements OnInit {
           <select id="response-select" class="swal2-input" style="width: 100%;">
             <option value="">Selecciona una respuesta</option>
             <option value="asistire">Asistiré</option>
-            <option value="tal-vez">Tal vez</option>
             <option value="no-asistire">No asistiré</option>
           </select>
         </div>
